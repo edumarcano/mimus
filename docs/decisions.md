@@ -76,7 +76,7 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   and the formal evaluation (Milestone 4) before the configuration can be
   approved. The configuration is not yet approved for release.
 
-## Open blockers and unverified prerequisites
+## Deployment and verification status
 
 - **Provider policy (blocks any public live endpoint):** The owner has not yet
   reviewed Google's Gemini API Additional Terms against the intended audience
@@ -84,9 +84,14 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   purposes, and paid services for the EEA, Switzerland, and the UK. Billing
   status must also be confirmed: the `google-unpaid-v1` notice assumes an
   unpaid project. Live inference stays local until this review is recorded.
-- **Vercel demo preview:** No Vercel project exists yet. A demo preview without
-  credentials has not been deployed or verified on the intended host.
-- **Vercel runtime facts:** The following are unverified:
+- **Vercel demo preview (resolved, owner-reported 2026-10-06):** A Preview
+  deployment with no Gemini key configured loads in demo mode. Examples are
+  labeled "Example — not generated" and Translate is disabled. An
+  authenticated `POST /api/translate` reached the app and returned 503
+  `SERVICE_UNAVAILABLE`. This was verified by the owner, not by this
+  repository's automated checks.
+- **Vercel runtime facts:** The following remain unverified (the demo preview
+  does not exercise them):
   - Node 24.x project setting;
   - `maxDuration = 60` on Hobby;
   - real streaming through the platform;

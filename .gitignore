@@ -1,0 +1,31 @@
+# Local planning, handoffs, experiments, and Cursor-generated plans.
+/.local/
+/.cursor/plans/
+/parlance-bootstrap.zip
+
+# Real environment files; keep the one documented placeholder template.
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated application output.
+node_modules/
+.next/
+out/
+dist/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# Test output and unreviewed evaluation runs.
+coverage/
+playwright-report/
+test-results/
+evals/results/raw/
+
+# Credentials and machine noise.
+*.pem
+*.key
+*.log
+.DS_Store
+Thumbs.db

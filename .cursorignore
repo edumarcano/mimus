@@ -1,0 +1,16 @@
+# AI-context exclusions, not a security boundary for terminal or MCP tools.
+# Never print or attach real secret values.
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+!/.env.example
+
+# Permit the non-secret implementation roadmap while .local stays Git-ignored.
+# Re-include its parent first; keep every other local path excluded.
+!/.local/
+/.local/**
+!/.local/IMPLEMENTATION_PLAN.md
+
+# The dependency lockfile is useful project evidence, not a secret.
+!/package-lock.json

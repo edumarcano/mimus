@@ -1,0 +1,3 @@
+interface:
+  display_name: "Plan Change"
+  short_description: "Plan a bounded Parlance change before implementation."

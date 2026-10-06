@@ -18,9 +18,10 @@ stays in the browser and is off by default.
 
 ## Status
 
-The first release targets **v1.0.0**. This repository currently contains the
-product specification and development guidance; the application and evaluation
-results have not been released yet.
+The first release targets **v1.0.0**. The application is in early development:
+the current UI exposes Human to LinkedIn at Balanced intensity, while the initial
+server path supports Human to LinkedIn and LinkedIn to Human. Evaluation results
+have not been published and no release has been made.
 
 ## Technical direction
 
@@ -30,9 +31,25 @@ Model selection and generation settings are versioned in code; credentials stay
 in server environment configuration.
 
 Live generation sends text to the configured provider. The product specification
-defines the required disclosure, data handling, and launch restrictions; a
-credential-free example mode is also planned. Generated text must be reviewed
-rather than treated as guaranteed faithful to the original.
+defines the required disclosure, data handling, and launch restrictions. A
+credential-free example mode is available for development and preview deployments.
+Generated text must be reviewed rather than treated as guaranteed faithful to the
+original.
+
+## Run locally
+
+Requires Node.js 24 (see `.nvmrc`).
+
+```bash
+npm ci
+npm run dev
+```
+
+Without any environment configuration the app runs in demo mode: examples are
+shown, no model is called, and no API key is needed. Live generation requires
+the server settings described in [`.env.example`](.env.example).
+
+Checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
 
 ## Documentation
 

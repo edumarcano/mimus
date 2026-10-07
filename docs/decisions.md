@@ -78,12 +78,26 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
 
 ## Deployment and verification status
 
-- **Provider policy (blocks any public live endpoint):** The owner has not yet
-  reviewed Google's Gemini API Additional Terms against the intended audience
-  and use. The terms cover adult use, professional or business development
-  purposes, and paid services for the EEA, Switzerland, and the UK. Billing
-  status must also be confirmed: the `google-unpaid-v1` notice assumes an
-  unpaid project. Live inference stays local until this review is recorded.
+- **Google terms review (reviewed 2026-10-07; public live remains blocked):**
+  Reviewed the Gemini API Additional Terms effective March 23, 2026, the
+  available-regions page, Gemini Developer API pricing/billing guidance, and
+  Interactions API storage guidance against the intended app. The terms require
+  API clients to be for professional or business purposes rather than consumer
+  use, prohibit clients directed toward or likely to be accessed by people
+  under 18, restrict service availability to listed regions, and require Paid
+  Services for users in the EEA, Switzerland, and the UK. The current US-only
+  allowlist is compatible with the regional rule for an unpaid project, but a
+  publicly accessible site plus self-attested adult acknowledgement does not by
+  itself establish compliance with the under-18 and non-consumer restrictions.
+  Keep public live inference disabled unless those audience/access questions are
+  resolved through stronger controls, written Google clarification, or a
+  provider/contract whose terms fit the intended public audience. The actual
+  Google project billing state still requires owner verification:
+  `google-unpaid-v1` is correct only if the API project does not have active
+  Cloud Billing. For an unpaid project, Google's terms state that submitted and
+  generated content is used to improve Google products and may be reviewed by
+  humans; `store: false` disables Interactions resource storage but does not
+  override that terms-level data use.
 - **Vercel demo preview (resolved, owner-reported 2026-10-06):** A Preview
   deployment with no Gemini key configured loads in demo mode. Examples are
   labeled "Example — not generated" and Translate is disabled. An
@@ -198,5 +212,7 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   not used); real upstream cancellation after Stop; Vercel geolocation
   (`x-vercel-ip-country`) behavior and spoofability on Preview and Production;
   what Vercel itself logs and retains; Google block metadata (not exposed by the
-  Interactions types); the owner's Google billing and terms review that the
-  `google-unpaid-v1` notice assumes; screen-reader output; Safari and Firefox.
+  Interactions types); the actual Google project billing state that the
+  `google-unpaid-v1` notice assumes; resolution of the under-18/non-consumer
+  public-live terms blockers recorded above; screen-reader output; Safari and
+  Firefox.

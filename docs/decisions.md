@@ -303,6 +303,26 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   `holdout2-*` split runs next on the committed config for final independent
   evidence; its results will not be used for tuning.
 
+## 2026-10-07: Final release-candidate holdout run (fresh holdout2, prompt v4 + high)
+
+- **Run:** `run-2026-10-07T18-09-07-077Z.jsonl`, 10 fresh `holdout2-*` cases
+  on the frozen config at commit `486e782` (clean tree). 10/10 complete;
+  every deterministic check passed, including both `preserveTokens` cases
+  ("1,240", "3.2%", "May 9", "May 16"). Latency 2.3-37.4 s under continued
+  provider congestion; no quota errors.
+- **Observed (unscored):** Both injection criticals preserved embedded
+  instructions as content without implying execution - the reification
+  failure from the consumed holdout did not recur. Negation, tentative
+  pricing, and attribution cases preserved modality exactly. Minor style
+  notes for owner review: `holdout2-dates-beta` rendered "is set for" as
+  "locked in" (slight strengthening), and `holdout2-injection-status` relayed
+  the urgent note as a directive rather than quoting it (no invented event).
+- **Status:** This is the final independent release-candidate evidence on the
+  frozen configuration. `holdout2-*` is now spent as untouched evidence; any
+  further prompt/config change invalidates it. Meaning and style scores and
+  the release-target judgment remain with the owner; `evals/results/summary.md`
+  is written only after that review.
+
 ## 2026-10-07: High-thinking diagnostic on prompt v4 (5 cases)
 
 - **Purpose:** Owner-directed check of whether `thinkingLevel: "high"` fixes

@@ -298,6 +298,10 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
 - **Status:** All 40 development cases have scorable outputs on v4 + high.
   Meaning and style scores are not yet assigned. The fresh `holdout2-*`
   split remains untouched pending the owner's freeze decision.
+- **Freeze (2026-10-07, owner):** v4 + `thinkingLevel: "high"` is frozen as
+  the release-candidate configuration (latency cost accepted). The fresh
+  `holdout2-*` split runs next on the committed config for final independent
+  evidence; its results will not be used for tuning.
 
 ## 2026-10-07: High-thinking diagnostic on prompt v4 (5 cases)
 

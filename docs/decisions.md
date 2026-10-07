@@ -207,9 +207,13 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   focus ring was checked by forcing `:focus-visible` through CDP (3px solid
   accent). Live-mode UI was driven with a mocked `/api/translate` response, so
   no text was sent to Google.
-- **Unverified:** real keyboard-only traversal and a visible focus ring under
-  native focus; real browser zoom; live mode against Google (the local key was
-  not used); real upstream cancellation after Stop; Vercel geolocation
+- **Owner-observed Milestone 3 checks (2026-10-07):** The owner exercised the
+  running interface directly and reported that keyboard traversal, real browser
+  zoom, and translation all work normally, and that live mode was tested on the
+  live site. This was verified by the owner, not by this repository's automated
+  checks. Which style directions, intensities, and failure states were exercised
+  was not recorded.
+- **Unverified:** real upstream cancellation after Stop; Vercel geolocation
   (`x-vercel-ip-country`) behavior and spoofability on Preview and Production;
   what Vercel itself logs and retains; Google block metadata (not exposed by the
   Interactions types); the actual Google project billing state that the

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { countCodePoints, MAX_INPUT_CODE_POINTS } from "@/lib/limits";
 import { NOTICE_VERSION } from "@/lib/notice";
 import { validateTranslateRequest } from "@/lib/schema";
+import { STYLE_IDS } from "@/lib/styles";
 
 function base(overrides: Record<string, unknown> = {}) {
   return {
@@ -70,21 +71,29 @@ describe("validateTranslateRequest", () => {
     });
   });
 
-  it("rejects identical styles and unsupported pairs", () => {
-    expect(
-      validateTranslateRequest(
-        base({ sourceStyle: "human", targetStyle: "human" }),
-      ),
-    ).toMatchObject({
-      ok: false,
-      message: "Choose a different target style.",
-    });
+  it("rejects all five same-style pairs", () => {
+    for (const style of STYLE_IDS) {
+      expect(
+        validateTranslateRequest(
+          base({ sourceStyle: style, targetStyle: style }),
+        ),
+      ).toMatchObject({
+        ok: false,
+        message: "Choose a different target style.",
+      });
+    }
+  });
 
-    expect(
-      validateTranslateRequest(
-        base({ sourceStyle: "human", targetStyle: "corporate" }),
-      ),
-    ).toMatchObject({ ok: false, code: "INVALID_REQUEST" });
+  it("accepts all twenty distinct style pairs", () => {
+    for (const sourceStyle of STYLE_IDS) {
+      for (const targetStyle of STYLE_IDS) {
+        if (sourceStyle === targetStyle) continue;
+        const result = validateTranslateRequest(
+          base({ sourceStyle, targetStyle }),
+        );
+        expect(result.ok).toBe(true);
+      }
+    }
   });
 
   it("normalizes human target intensity and preserves internal whitespace", () => {

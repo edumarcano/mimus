@@ -27,7 +27,7 @@ export default async function Home() {
           Same thought. Different voice.
         </p>
         <p className="mt-3 max-w-2xl text-ink-soft">
-          Say it plainly, then see how it would sound in full LinkedIn dress.
+          Say it plainly, then hear how it would sound as LinkedIn, Corporate, Startup, or Academic prose, or translate it back.
         </p>
         <p
           data-testid="availability"

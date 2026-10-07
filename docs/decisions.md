@@ -216,7 +216,21 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
 - **Unverified:** real upstream cancellation after Stop; Vercel geolocation
   (`x-vercel-ip-country`) behavior and spoofability on Preview and Production;
   what Vercel itself logs and retains; Google block metadata (not exposed by the
-  Interactions types); the actual Google project billing state that the
-  `google-unpaid-v1` notice assumes; resolution of the under-18/non-consumer
+  Interactions types); resolution of the under-18/non-consumer
   public-live terms blockers recorded above; screen-reader output; Safari and
   Firefox.
+
+## 2026-10-07: Owner-reported Google account status
+
+- The owner reports that the AI Studio project is on the **free tier with no
+  paid billing**, so the `google-unpaid-v1` notice matches the actual billing
+  state. This resolves the billing-verification prerequisite recorded above;
+  the notice remains correct only while the project stays unpaid.
+- The owner reports the relevant quota is **15 requests per minute**. Free-tier
+  limits can change; re-verify against the provider dashboard before relying on
+  them for the release-candidate run.
+- The evaluation runner spaces sequential requests ~4.2 seconds apart to stay
+  below that limit. The limit itself is owner-reported, not measured in this
+  repository.
+- This resolves the account prerequisites for live evaluation. No evaluation
+  run has happened yet; scoring and the release-candidate decision remain open.

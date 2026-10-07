@@ -52,7 +52,7 @@ Without any environment configuration the app runs in demo mode: examples are
 shown, no model is called, and no API key is needed. Live generation requires
 the server settings described in [`.env.example`](.env.example).
 
-Checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
+Checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`.
 
 ## Documentation
 

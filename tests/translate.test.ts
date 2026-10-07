@@ -8,6 +8,24 @@ import { AppError } from "@/lib/server/errors";
 import { createTranslateHandler } from "@/lib/server/translate";
 import { SseStreamParser } from "@/lib/stream";
 
+const ENV_KEYS = [
+  "PARLANCE_MODE",
+  "GEMINI_API_KEY",
+  "APP_ORIGIN",
+  "PARLANCE_LIVE_COUNTRIES",
+  "PARLANCE_DEV_ALLOW_LOCAL_LIVE",
+] as const;
+
+const envSnapshot = (): Record<string, string | undefined> => {
+  const out: Record<string, string | undefined> = {};
+  for (const key of ENV_KEYS) {
+    out[key] = process.env[key];
+  }
+  return out;
+};
+
+let savedEnv = envSnapshot();
+
 const liveConfig: ServerConfig = {
   mode: "live",
   isLive: true,
@@ -17,6 +35,14 @@ const liveConfig: ServerConfig = {
   liveCountries: ["US"],
   devAllowLocalLive: true,
 };
+
+function resetEnv(overrides: Record<string, string | undefined>) {
+  savedEnv = envSnapshot();
+  for (const key of ENV_KEYS) {
+    delete process.env[key];
+  }
+  Object.assign(process.env, overrides);
+}
 
 function validBody(overrides: Record<string, unknown> = {}) {
   return {
@@ -81,6 +107,14 @@ function adapterFrom(
 describe("createTranslateHandler", () => {
   afterEach(() => {
     vi.useRealTimers();
+    for (const key of ENV_KEYS) {
+      const value = savedEnv[key];
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
   });
 
   it("does not call adapter when validation fails", async () => {
@@ -408,6 +442,59 @@ describe("createTranslateHandler", () => {
     const logged = logSpy.mock.calls.map((call) => String(call[0])).join("\n");
     expect(logged).not.toContain(secretOutput);
     logSpy.mockRestore();
+  });
+
+  it("returns INCOMPLETE_OUTPUT when finish is complete with no text", async () => {
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: adapterFrom([{ type: "finish", reason: "complete" }]),
+    });
+    const response = await handler(
+      postRequest(validBody(), {
+        headers: { "x-vercel-ip-country": "US" },
+      }),
+    );
+    expect(response.status).toBe(ERROR_STATUS.INCOMPLETE_OUTPUT);
+    const json = await response.json();
+    expect(json.error.code).toBe("INCOMPLETE_OUTPUT");
+  });
+
+  it("returns INCOMPLETE_OUTPUT when empty delta precedes complete finish", async () => {
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: adapterFrom([
+        { type: "delta", text: "" },
+        { type: "finish", reason: "complete" },
+      ]),
+    });
+    const response = await handler(
+      postRequest(validBody(), {
+        headers: { "x-vercel-ip-country": "US" },
+      }),
+    );
+    expect(response.status).toBe(200);
+    const events = await collectSse(response);
+    expect(events).not.toContain("done");
+    expect(events.at(-1)).toBe("error");
+  });
+
+  it("returns 503 SERVICE_UNAVAILABLE in disabled mode without calling adapter", async () => {
+    resetEnv({ PARLANCE_MODE: "disabled" });
+    const { getServerConfig } = await import("@/lib/server/config");
+    const adapter = vi.fn(adapterFrom([]));
+    const handler = createTranslateHandler({
+      getConfig: getServerConfig,
+      adapter,
+    });
+    const response = await handler(
+      postRequest(validBody(), {
+        headers: { "x-vercel-ip-country": "US" },
+      }),
+    );
+    expect(response.status).toBe(503);
+    const json = await response.json();
+    expect(json.error.code).toBe("SERVICE_UNAVAILABLE");
+    expect(adapter).not.toHaveBeenCalled();
   });
 
   it("does not call adapter when the client aborts before the first event", async () => {

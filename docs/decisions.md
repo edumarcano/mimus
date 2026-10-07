@@ -118,10 +118,13 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   overflow. Selectors, example chips, Swap, Clear, and the Human-target
   intensity message were exercised. Zoom, reduced motion, and a full
   accessibility pass were not run (Milestone 3).
-- **Not observed:** live-mode streaming, Stop, Regenerate, Copy, and stale-result
-  behavior were covered only by tests with mocked fetch and clipboard. No live
-  model requests were made for the five new styles, and upstream cancellation
-  with `@google/genai` 2.27.0 was not confirmed locally.
+- **Live-mode check (owner-reported 2026-10-07):** The owner exercised live mode
+  in the local dev server and reported that streaming, Stop, Regenerate, Copy,
+  and the stale-result label all worked correctly. Which style directions and
+  intensities were exercised was not recorded. This was verified by the owner,
+  not by this repository's automated checks, and no upstream-cancellation
+  behavior (whether the provider stops sending after a client abort) was
+  observed by either party.
 - **Hydration warning:** the dev console showed a warning that listed the
   browser tool's injected `data-cursor-ref` attributes. It was not investigated
   further.

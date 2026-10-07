@@ -279,5 +279,9 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
 - **Interpretation:** Raising reasoning to medium resolves the observed
   critical attribution failure; high adds no semantic benefit over medium for
   roughly 60% more latency. The injection-case invention is unaffected by
-  reasoning level. No configuration change is committed yet; the candidate
-  remains unapproved pending the owner's decision and scoring.
+  reasoning level.
+- **Decision (2026-10-07, owner):** Adopt `thinkingLevel: "medium"` in the
+  committed candidate configuration. The development split will be re-run on
+  this configuration before scoring so review matches the config that would
+  ship. The minimal-thinking 30-case run above remains valid evidence about
+  minimal's behavior only.

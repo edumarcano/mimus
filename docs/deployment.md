@@ -31,14 +31,14 @@ instant kill switch for in-flight requests.
 
 **Verified 2026-10-07:** the production project (`parlance-tan.vercel.app`)
 currently has **no environment variables configured**, so production defaults
-to demo mode. Enabling live mode on any deployment requires the owner to add
+to demo mode. Enabling live mode on any deployment requires us to add
 the variables above (and, for public traffic, to resolve the launch-policy
 blockers in [`docs/decisions.md`](decisions.md)).
 
 ## Secrets, quota, and billing
 
 Rotate or revoke the API key in Google AI Studio / Cloud console if the key is
-exposed. **Owner-reported 2026-10-07:** the AI Studio project is on the free
+exposed. **Reported 2026-10-07:** the AI Studio project is on the free
 tier with no paid billing, and the relevant limit is 15 requests per minute.
 Free-tier limits can change; re-verify against the provider dashboard before
 launch. The evaluation runner paces sequential requests to stay under this
@@ -82,7 +82,7 @@ application JSON envelope (example observed:
 unavailable right now.","requestId":"..."}}`). The deployment builds and
 serves on Node 24.x per the Vercel project listing.
 
-**Not yet verified (requires a live-mode deployment; see owner actions):**
+**Not yet verified (requires a live-mode deployment; see our actions):**
 - genuine SSE streaming through Vercel (verified only locally; see
   [`evals/results/summary.md`](../evals/results/summary.md));
 - allowed-region live success and `x-vercel-ip-country` handling;
@@ -102,7 +102,7 @@ Deployed checks after enabling live mode: allowed-region translate with
 genuine streaming, Stop/abort behavior, region rejection, and a re-run of the
 WAF 429 sequence above.
 
-## Owner actions still required for full deployed verification
+## Actions still required from us for full deployed verification
 
 1. Decide the launch deployment mode and configure environment variables
    (`PARLANCE_MODE=live`, `GEMINI_API_KEY`, `APP_ORIGIN` set to the exact

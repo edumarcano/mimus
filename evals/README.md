@@ -23,7 +23,7 @@ holdout also requires a clean git tree for the committed prompt, styles,
 model-config, and Gemini adapter files.
 
 The runner spaces sequential provider requests ~4.2 seconds apart, below the
-owner-reported free-tier limit of 15 requests per minute. A full run
+reported free-tier limit of 15 requests per minute. A full run
 therefore takes a few minutes of wall time. If a request still hits a quota
 error, the run stops and records it instead of retrying.
 
@@ -47,7 +47,7 @@ that in review notes.
 
 ## Scoring
 
-**Meaning** and **style** scores (0–2) are assigned by the owner during manual
+**Meaning** and **style** scores (0–2) are assigned by us during manual
 review. The runner records deterministic checks only (nonempty output, size
 cap, completion status, optional `preserveTokens`). It does not assign
 meaning or style scores.
@@ -58,12 +58,12 @@ cases plus the 10 fresh `holdout2-*` cases, evaluated on the frozen
 configuration. The consumed `holdout-*` cases are supplemental development
 evidence and do not count toward targets.
 
-Release targets from the product spec, with the recorded owner revision:
+Release targets from the product spec, with the recorded revision:
 
 - Meaning score 2 on at least 36/40 cases — **met (36/40)**
 - Style score 2 on at least 32/40 cases — **met (40/40)**
 - No meaning score 0 on the 10 critical cases — **not met (9/10)**; the
-  owner accepted and recorded this limitation for v1 (see
+  we accepted and recorded this limitation for v1 (see
   [`evals/results/summary.md`](results/summary.md) for the rationale).
 
 ## Artifacts
@@ -74,5 +74,5 @@ SDK version, git revision, dirty flags, latency, and usage when reported.
 
 The reviewed, sanitized summary is
 [`evals/results/summary.md`](results/summary.md), written after the
-owner-reviewed release-candidate runs. It never contains submitted user
+reviewed release-candidate runs. It never contains submitted user
 text; quoted model outputs come from the fictional synthetic dataset only.

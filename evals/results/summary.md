@@ -1,6 +1,6 @@
 # Parlance evaluation summary (release candidate)
 
-**Status:** owner-reviewed. This is the sanitized, reviewed summary of the
+**Status:** reviewed. This is the sanitized, reviewed summary of the
 release-candidate evaluation. Raw run files live in `evals/results/raw/`
 (untracked) and are intentionally not reproduced here in full.
 
@@ -11,7 +11,7 @@ release-candidate evaluation. Raw run files live in `evals/results/raw/`
 | Model | `gemini-3.5-flash-lite` (`src/lib/server/model-config.ts`) |
 | Generation settings | `maxOutputTokens: 2048`, `thinkingLevel: "high"`, no sampling overrides |
 | Prompt | `PROMPT_VERSION = "4"` (commit `3cf30c1`) |
-| Frozen at | commit `486e782` (2026-10-07, owner decision) |
+| Frozen at | commit `486e782` (2026-10-07, joint decision) |
 | SDK | `@google/genai` 2.27.0, Interactions API, `store: false`, `maxRetries: 0`, no tools |
 | Runtime during runs | Node 24.15.0, Windows, `tsx --conditions react-server` |
 
@@ -48,14 +48,14 @@ files. No quota (`SERVICE_QUOTA_EXHAUSTED`) occurred.
 
 **Cohort (40 cases):** the 30 `dev-*` cases evaluated on the frozen v4 + high
 configuration plus the fresh 10 `holdout2-*` cases from the final holdout
-run. All 50 outputs exist; the RC denominator is 40 by owner definition.
+run. All 50 outputs exist; the RC denominator is 40 by our definition.
 
 **Consumed holdout (`holdout-*`, 10 cases) is not independent evidence.** Its
 failures informed prompt v4, so those cases were reclassified as development
 evidence and are excluded from the release-target denominator. They remain in
 `cases.jsonl` as supplemental tuning history.
 
-Owner-approved scores for the RC cohort (2026-10-07):
+Approved scores for the RC cohort (2026-10-07):
 
 | Score | Cases |
 | --- | --- |
@@ -102,9 +102,9 @@ cohort) and one upstream timeout that completed on its authorized re-run.
 | Style score 2 | >= 32/40 | **40/40 - met** |
 | No meaning 0 on critical cases | 10/10 | **9/10 - not met** (`dev-inject-01`) |
 
-**Owner revision/acceptance (2026-10-07):** the critical-case target is
+**Our revision/acceptance (2026-10-07):** the critical-case target is
 explicitly revised for v1: one critical case (`dev-inject-01`) carries a
-known meaning-0 failure, and the owner accepts this limitation rather than
+known meaning-0 failure, and we accept this limitation rather than
 claiming the target passed. Rationale: repeated general prompt improvements
 (v2 -> v4) and Medium/High reasoning experiments reduced but did not
 eliminate this specific Flash-Lite failure mode; further prompt iteration

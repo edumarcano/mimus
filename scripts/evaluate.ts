@@ -26,7 +26,7 @@ import {
 const NO_LIVE_MESSAGE =
   "Evaluation skipped: pass --live to opt in to provider calls. No provider call was made.";
 
-// Owner-reported free-tier limit is 15 requests per minute (2026-10-07).
+// Reported free-tier limit is 15 requests per minute (2026-10-07).
 // Spacing sequential requests ~4.2s apart keeps runs below that limit.
 export const REQUEST_INTERVAL_MS = 4200;
 

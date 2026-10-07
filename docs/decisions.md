@@ -303,6 +303,49 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   `holdout2-*` split runs next on the committed config for final independent
   evidence; its results will not be used for tuning.
 
+## 2026-10-07: Streaming diagnosis (raw Interactions timeline, one synthetic request)
+
+- **Symptom:** With the frozen v4 + High config, output appears all at once
+  instead of visibly streaming.
+- **Method:** One synthetic live request through the raw
+  `@google/genai` Interactions stream (same model config and prompt builder as
+  production; `store: false`, no retries). The probe logged event types,
+  millisecond timestamps, and text lengths only - never text content. Run
+  from `evals/results/raw/diagnose-stream.mts` (gitignored).
+- **Raw timeline (t relative to probe start; the first ~43 s is tsx startup
+  plus provider connection latency under today's congestion):**
+  - t=43304 `request_started` (`thinkingLevel: "high"`)
+  - t=43309 `interaction.created`; t=43310 `interaction.status_update`
+  - t=43310 `step.start` (no delta, length 0)
+  - t=43312 `step.delta` type `thought_signature`, length 0
+  - t=43314 `step.stop`
+  - t=43315 `step.start` (no delta, length 0)
+  - t=43315 `step.delta` type `text`, length 92 (first text)
+  - t=43712 `step.delta` type `text`, length 73 (second text, +397 ms)
+  - t=44206 `step.stop` (+494 ms)
+  - t=44210 `interaction.completed`, status `completed`; usage: 379 input
+    tokens, 37 output tokens, **1139 thought tokens**
+- **Determinations:**
+  1. Gemini emitted multiple text deltas (2) over a ~0.9 s window, not one
+     near-complete delta in this sample - but the whole text arrived within
+     0.9 s, which is visually indistinguishable from one burst.
+  2. `step.start` carries no output text (both instances had no delta and
+     length 0); the only non-text delta was a zero-length
+     `thought_signature`. The adapter correctly ignores these; no adapter fix
+     is warranted.
+  3. No evidence of server/SSE/client batching: the adapter yields per
+     provider event and the route enqueues each delta immediately (code
+     inspection); with a sub-second provider text window there is nothing
+     meaningful to buffer.
+- **Conclusion:** The perceived all-at-once behavior is provider-side: at
+  high thinking, the model generates its thought tokens (1139 here) silently
+  before the first text event, then emits the short answer in one compressed
+  burst. This is provider behavior to record, not a client bug; no
+  client-side pseudo-streaming should be fabricated. Single-sample caveat:
+  this does not characterize every response, and `interaction.created` /
+  `interaction.status_update` events are also ignored by the adapter,
+  harmlessly.
+
 ## 2026-10-07: Final release-candidate holdout run (fresh holdout2, prompt v4 + high)
 
 - **Run:** `run-2026-10-07T18-09-07-077Z.jsonl`, 10 fresh `holdout2-*` cases

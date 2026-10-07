@@ -5,6 +5,7 @@ export type ParsedEvalArgs = {
   split: EvalSplit;
   includeHoldout: boolean;
   limit?: number;
+  ids?: string[];
   parseError?: string;
 };
 
@@ -29,6 +30,7 @@ export function parseEvalArgs(argv: string[]): ParsedEvalArgs {
   let split: EvalSplit = "development";
   let includeHoldout = false;
   let limit: number | undefined;
+  let ids: string[] | undefined;
   let parseError: string | undefined;
 
   const fail = (message: string) => {
@@ -62,10 +64,26 @@ export function parseEvalArgs(argv: string[]): ParsedEvalArgs {
       } else {
         limit = parsed;
       }
+      continue;
+    }
+    if (arg === "--ids") {
+      const value = argv[++i];
+      const parsed = value
+        ? value
+            .split(",")
+            .map((id) => id.trim())
+            .filter((id) => id.length > 0)
+        : [];
+      if (parsed.length === 0) {
+        fail("Invalid --ids; pass a comma-separated list of case ids.");
+      } else {
+        ids = parsed;
+      }
+      continue;
     }
   }
 
-  return { live, split, includeHoldout, limit, parseError };
+  return { live, split, includeHoldout, limit, ids, parseError };
 }
 
 /** Returns a refusal reason code, or null when provider calls may proceed. */
@@ -87,6 +105,17 @@ export function filterCasesBySplit(
     return cases;
   }
   return cases.filter((item) => item.split === split);
+}
+
+export function filterCasesByIds(
+  cases: EvalCase[],
+  ids: string[] | undefined,
+): EvalCase[] {
+  if (!ids || ids.length === 0) {
+    return cases;
+  }
+  const wanted = new Set(ids);
+  return cases.filter((item) => wanted.has(item.id));
 }
 
 export function applyLimit(cases: EvalCase[], limit?: number): EvalCase[] {

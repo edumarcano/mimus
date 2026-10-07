@@ -61,6 +61,53 @@ describe("evaluate CLI helpers", () => {
     expect(streamRewrite).not.toHaveBeenCalled();
   });
 
+  it("rejects unmatched --ids before any adapter call", async () => {
+    const streamRewrite = vi.fn(async function* (): AsyncIterable<ModelEvent> {
+      yield { type: "delta", text: "nope" };
+    });
+    const code = await runEvaluation(["--live", "--ids", "no-such-case"], {
+      streamRewrite,
+    });
+    expect(code).toBe(1);
+    expect(streamRewrite).not.toHaveBeenCalled();
+  });
+
+  it("rejects an empty --ids value before any adapter call", async () => {
+    const streamRewrite = vi.fn(async function* (): AsyncIterable<ModelEvent> {
+      yield { type: "delta", text: "nope" };
+    });
+    const code = await runEvaluation(["--live", "--ids", " , "], {
+      streamRewrite,
+    });
+    expect(code).toBe(1);
+    expect(streamRewrite).not.toHaveBeenCalled();
+  });
+
+  it("runs only the requested case ids", async () => {
+    const streamRewrite = vi.fn(async function* (): AsyncIterable<ModelEvent> {
+      yield { type: "delta", text: "ok" };
+      yield { type: "finish", reason: "complete" };
+    });
+    const writes: string[] = [];
+    const code = await runEvaluation(
+      ["--live", "--ids", "dev-negation-01,dev-inject-01"],
+      {
+        streamRewrite,
+        gitRevision: () => "test",
+        gitPorcelain: () => "",
+        readGenaiVersion: () => "test",
+        writeRaw: (_filePath, line) => {
+          writes.push(line);
+        },
+      },
+    );
+    expect(code).toBe(0);
+    expect(streamRewrite).toHaveBeenCalledTimes(2);
+    expect(writes).toHaveLength(2);
+    expect(JSON.parse(writes[0]!).caseId).toBe("dev-negation-01");
+    expect(JSON.parse(writes[1]!).caseId).toBe("dev-inject-01");
+  });
+
   it("paces sequential live requests below the provider rate limit", async () => {
     const streamRewrite = vi.fn(async function* (): AsyncIterable<ModelEvent> {
       yield { type: "delta", text: "ok" };

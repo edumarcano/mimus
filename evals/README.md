@@ -28,6 +28,9 @@ The runner loads `GEMINI_API_KEY` from `.env.local` when that file exists (via
 Node's `--env-file-if-exists`). Otherwise export the variable in your shell; the
 runner does not read the key from anywhere else.
 
+Re-run specific development cases with `--ids dev-negation-01,dev-inject-01`.
+Unmatched ids fail the run before any provider call.
+
 ## Holdout separation
 
 Ten cases are tagged `split=holdout` and kept out of routine tuning. Once

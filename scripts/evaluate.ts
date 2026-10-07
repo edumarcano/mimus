@@ -10,6 +10,7 @@ import { REQUEST_DEADLINE_MS } from "../src/lib/limits";
 import { AppError } from "../src/lib/server/errors";
 import {
   applyLimit,
+  filterCasesByIds,
   filterCasesBySplit,
   parseDirtyTrackedFiles,
   parseEvalArgs,
@@ -126,9 +127,16 @@ export async function runEvaluation(
 
   const allCases = loadCases();
   const filtered = applyLimit(
-    filterCasesBySplit(allCases, args.split),
+    filterCasesByIds(filterCasesBySplit(allCases, args.split), args.ids),
     args.limit,
   );
+
+  if (args.ids && args.ids.length > 0 && filtered.length === 0) {
+    console.error(
+      "No development cases matched --ids. No provider call was made.",
+    );
+    return 1;
+  }
 
   const resultsDir = path.join(process.cwd(), "evals", "results", "raw");
   mkdirSync(resultsDir, { recursive: true });

@@ -520,3 +520,11 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   this configuration before scoring so review matches the config that would
   ship. The minimal-thinking 30-case run above remains valid evidence about
   minimal's behavior only.
+
+## 2026-10-07: Merge scope and live deployment decision
+
+- **Decision:** Merge PR #4 as the Milestone 4 code and evidence. Production stays in demo mode (no environment variables are configured), so the merge does not enable live inference. Live deployment readiness is tracked on a separate branch.
+- **Moved to the separate branch:** deployed live streaming through Vercel, region handling with x-vercel-ip-country, client abort and disconnect behavior, the 60-second function limit under a real stream, and the public-use terms questions recorded above.
+- **Reason:** These checks need a live-mode deployment and depend on decisions outside the code. They do not affect the merged code while live mode is off.
+- **Accepted limitation:** The critical-case target result (9 of 10) stands as recorded in the release-candidate summary. It is accepted for v1 and is not treated as passed.
+- **Condition before enabling live mode:** resolve the public-use terms questions, deploy with live mode, run the checks in docs/deployment.md, and record the results. Before Milestone 5 closes, confirm against docs/product-spec.md whether live verification is required before launch.

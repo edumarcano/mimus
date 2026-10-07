@@ -275,6 +275,23 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   "Internal Server Error" responses during this window; the commit is intact
   locally and recorded by the run.
 
+## 2026-10-07: Release-candidate holdout run (10 cases, prompt v3 + medium)
+
+- **Freeze:** The owner froze the release-candidate configuration as prompt
+  v3 (`2c29d07`) + `thinkingLevel: "medium"` + `maxOutputTokens: 2048` on
+  2026-10-07. The holdout split ran untouched on this config at commit
+  `9be25dc` (clean tree; the config-bearing revision is `2c29d07`).
+- **Run:** 10/10 complete; deterministic checks: 9 pass, 1 fail
+  (`holdout-numbers-01`, `preserveTokensOk: false` - the output spelled
+  "two of five" where the check required the exact token "2 of 5"; the amount
+  itself is preserved in words). Latency 1.5-8.8 s. No quota errors. Combined
+  with the same-config v3 development run, all 40 cases now have outputs on
+  the frozen candidate.
+- **Status:** Meaning and style scores are not yet assigned. The holdout is no
+  longer unused, but it has not been used for tuning; any holdout failure
+  stays in the summary as-is. Writing `evals/results/summary.md` and judging
+  the release targets remain with the owner.
+
 ## 2026-10-07: Thinking-level comparison on the 6 development critical cases
 
 - **Purpose:** Determine whether raising `thinkingLevel` fixes the critical

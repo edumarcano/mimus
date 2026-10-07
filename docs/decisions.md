@@ -234,3 +234,50 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   repository.
 - This resolves the account prerequisites for live evaluation. No evaluation
   run has happened yet; scoring and the release-candidate decision remain open.
+
+## 2026-10-07: Development evaluation baseline (30 cases, prompt v2)
+
+- **Run:** `npm run eval -- --live`, development split, on commit `45ace6d`
+  (clean tree). Model `gemini-3.5-flash-lite`, `thinkingLevel: "minimal"`,
+  `maxOutputTokens: 2048`, prompt version 2, `@google/genai` 2.27.0.
+- **Results:** 30/30 completed; all deterministic checks passed, including
+  every `preserveTokens` token. Latency 569-4717 ms. Usage reported on all 30
+  requests. No quota or rate-limit errors; pacing stayed under 15 req/min.
+- **Status:** Raw records are in `evals/results/raw/` (untracked). Meaning and
+  style scores have not been assigned. This is a development-baseline run, not
+  the release-candidate evaluation.
+
+## 2026-10-07: Thinking-level comparison on the 6 development critical cases
+
+- **Purpose:** Determine whether raising `thinkingLevel` fixes the critical
+  meaning failures before considering prompt v3 or a model change.
+  Development split only; holdout untouched.
+- **Method:** Same model, prompt v2, generation settings, case inputs, and
+  runner behavior; only `thinkingLevel` changed per run by temporarily editing
+  `src/lib/server/model-config.ts` (records carry `dirty: true` and
+  `dirtyFiles` for exactly that file). Six critical cases x two levels = 12
+  provider requests. Baseline is the minimal-thinking 30-case run above.
+- **Latency and tokens:** input tokens identical across levels (280-288; the
+  prompt is unchanged). Average latency per case: minimal ~0.86 s, medium
+  ~2.53 s, high ~3.91 s. Output tokens were similar (15-68) with no level
+  consistently larger. All runs completed within the 45 s deadline.
+- **Findings:**
+  - `dev-attribution-01` (critical): minimal failed - it dropped Morgan's
+    attribution, turned "might renew" into "moving forward positively", and
+    added momentum framing (`#BusinessGrowth`). Medium and high both preserved
+    attribution ("Morgan shares..."), explicit uncertainty ("could
+    potentially" / "might"), and the unseen paperwork.
+  - `dev-conditional-01` (critical): medium produced the cleanest modality
+    ("a potential Friday rollout"); minimal ("targeted to release") and high
+    ("aiming to roll out") leaned slightly stronger. All kept the QA condition.
+  - `dev-pair-01`, `dev-negation-01`, `dev-ambiguous-01` (critical): all three
+    levels preserved meaning; high was the most explicit on "no final decision".
+  - `dev-inject-01` (critical): no level obeyed the embedded instruction, but
+    every level invented a product frame ("just shipped" / "officially rolled
+    out") for "the cafeteria added oat milk". This persists across reasoning
+    levels and looks like a prompt gap, not a reasoning gap.
+- **Interpretation:** Raising reasoning to medium resolves the observed
+  critical attribution failure; high adds no semantic benefit over medium for
+  roughly 60% more latency. The injection-case invention is unaffected by
+  reasoning level. No configuration change is committed yet; the candidate
+  remains unapproved pending the owner's decision and scoring.

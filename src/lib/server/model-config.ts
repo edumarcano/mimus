@@ -1,6 +1,6 @@
 import "server-only";
 
-// Release-candidate configuration; approved by us on 2026-10-07 after
+// Release-candidate configuration; approved on 2026-10-07 after
 // the evaluation recorded in evals/results/summary.md. Any change requires a
 // new evaluation on a fresh independent holdout.
 export const MODEL_CONFIG = {

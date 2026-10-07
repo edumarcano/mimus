@@ -47,7 +47,7 @@ that in review notes.
 
 ## Scoring
 
-**Meaning** and **style** scores (0–2) are assigned by us during manual
+**Meaning** and **style** scores (0–2) are assigned during manual
 review. The runner records deterministic checks only (nonempty output, size
 cap, completion status, optional `preserveTokens`). It does not assign
 meaning or style scores.
@@ -63,7 +63,7 @@ Release targets from the product spec, with the recorded revision:
 - Meaning score 2 on at least 36/40 cases — **met (36/40)**
 - Style score 2 on at least 32/40 cases — **met (40/40)**
 - No meaning score 0 on the 10 critical cases — **not met (9/10)**; the
-  we accepted and recorded this limitation for v1 (see
+  this limitation is accepted and recorded for v1 (see
   [`evals/results/summary.md`](results/summary.md) for the rationale).
 
 ## Artifacts

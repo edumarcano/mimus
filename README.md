@@ -23,8 +23,13 @@ not been released. The translator supports all five styles and their directions 
 three intensities in demo and live modes, with a /privacy page, opt-in local
 history, and local preferences. Milestone 3 browser checks (layout, reduced
 motion, target sizes, contrast) are recorded in [docs/decisions.md](docs/decisions.md),
-including what remains unverified. Evaluation results have not been published,
-no public deployment has been verified, and no release has been made.
+including what remains unverified. The frozen release-candidate configuration
+(`gemini-3.5-flash-lite`, prompt v4, high thinking) has been evaluated and
+reviewed: see [evals/results/summary.md](evals/results/summary.md) for
+scores, met and revised targets, and documented limitations. A production
+WAF rate-limit rule and demo-mode 503 behavior are verified on the deployed
+host; deployed live streaming and region checks remain pending a live-mode
+deployment, and no release has been made.
 
 ## Technical direction
 
@@ -52,7 +57,7 @@ Without any environment configuration the app runs in demo mode: examples are
 shown, no model is called, and no API key is needed. Live generation requires
 the server settings described in [`.env.example`](.env.example).
 
-Checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
+Checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`.
 
 ## Documentation
 

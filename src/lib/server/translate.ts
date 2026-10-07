@@ -198,7 +198,11 @@ export function createTranslateHandler(deps: TranslateHandlerDeps) {
       return preStreamError("REQUEST_NOT_ALLOWED", requestId);
     }
 
-    const region = checkRegion(request, config);
+    const requestUrl = new URL(request.url);
+    const region = checkRegion(
+      { headers: request.headers, hostname: requestUrl.hostname },
+      config,
+    );
     if (!region.ok) {
       finishLog({ code: "REGION_UNAVAILABLE", styles });
       return preStreamError("REGION_UNAVAILABLE", requestId);

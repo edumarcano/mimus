@@ -341,6 +341,75 @@ describe("createTranslateHandler", () => {
     expect(events[0]?.data).toMatchObject({ effectiveIntensity: "balanced" });
   });
 
+  it("does not log submitted or generated text on success", async () => {
+    const secretInput = "SECRET_INPUT_TEXT";
+    const secretOutput = "SECRET_OUTPUT_TEXT";
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: adapterFrom([
+        { type: "delta", text: secretOutput },
+        { type: "finish", reason: "complete" },
+      ]),
+    });
+
+    const response = await handler(
+      postRequest(validBody({ text: secretInput }), {
+        headers: { "x-vercel-ip-country": "US" },
+      }),
+    );
+    await collectSse(response);
+
+    const logged = logSpy.mock.calls
+      .map((call) => String(call[0]))
+      .join("\n");
+    expect(logged).toContain('"requestId"');
+    expect(logged).not.toContain(secretInput);
+    expect(logged).not.toContain(secretOutput);
+    logSpy.mockRestore();
+  });
+
+  it("does not log submitted text on pre-stream errors", async () => {
+    const secretInput = "SECRET_ERROR_INPUT";
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: vi.fn(adapterFrom([])),
+    });
+
+    await handler(
+      postRequest(validBody({ text: secretInput, eligibilityConfirmed: false }), {
+        headers: { "x-vercel-ip-country": "US" },
+      }),
+    );
+
+    const logged = logSpy.mock.calls.map((call) => String(call[0])).join("\n");
+    expect(logged).not.toContain(secretInput);
+    logSpy.mockRestore();
+  });
+
+  it("does not log generated text on blocked responses", async () => {
+    const secretOutput = "BLOCKED_PARTIAL";
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: adapterFrom([
+        { type: "delta", text: secretOutput },
+        { type: "finish", reason: "blocked" },
+      ]),
+    });
+
+    await handler(
+      postRequest(validBody(), {
+        headers: { "x-vercel-ip-country": "US" },
+      }),
+    );
+
+    const logged = logSpy.mock.calls.map((call) => String(call[0])).join("\n");
+    expect(logged).not.toContain(secretOutput);
+    logSpy.mockRestore();
+  });
+
   it("does not call adapter when the client aborts before the first event", async () => {
     const adapter = vi.fn(adapterFrom([]));
     const handler = createTranslateHandler({

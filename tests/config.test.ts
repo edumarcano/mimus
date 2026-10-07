@@ -87,6 +87,25 @@ describe("getServerConfig", () => {
 });
 
 describe("getPublicConfig", () => {
+  it("projects liveAvailability from region headers", () => {
+    resetEnv({
+      PARLANCE_MODE: "live",
+      GEMINI_API_KEY: "test-key",
+      APP_ORIGIN: "http://localhost:3000",
+      PARLANCE_LIVE_COUNTRIES: "US",
+    });
+    const allowed = new Headers({ "x-vercel-ip-country": "US" });
+    const blocked = new Headers({ "x-vercel-ip-country": "CA" });
+    expect(
+      getPublicConfig({ headers: allowed, hostname: "example.com" })
+        .liveAvailability,
+    ).toBe("available");
+    expect(
+      getPublicConfig({ headers: blocked, hostname: "example.com" })
+        .liveAvailability,
+    ).toBe("region");
+  });
+
   it("never exposes secrets or origin", () => {
     resetEnv({
       PARLANCE_MODE: "live",

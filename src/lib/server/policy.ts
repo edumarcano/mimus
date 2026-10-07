@@ -30,7 +30,15 @@ function isLoopbackHostname(hostname: string): boolean {
   );
 }
 
-export function isLocalLiveBypass(request: Request, config: ServerConfig): boolean {
+export type PolicyContext = {
+  headers: Headers;
+  hostname: string;
+};
+
+export function isLocalLiveBypass(
+  ctx: PolicyContext,
+  config: ServerConfig,
+): boolean {
   if (!config.devAllowLocalLive) {
     return false;
   }
@@ -40,12 +48,7 @@ export function isLocalLiveBypass(request: Request, config: ServerConfig): boole
   if (process.env.VERCEL || process.env.VERCEL_ENV) {
     return false;
   }
-  try {
-    const url = new URL(request.url);
-    return isLoopbackHostname(url.hostname);
-  } catch {
-    return false;
-  }
+  return isLoopbackHostname(ctx.hostname);
 }
 
 export type RegionCheckResult =
@@ -53,14 +56,14 @@ export type RegionCheckResult =
   | { ok: false; reason: "missing" | "not_allowlisted" };
 
 export function checkRegion(
-  request: Request,
+  ctx: PolicyContext,
   config: ServerConfig,
 ): RegionCheckResult {
-  if (isLocalLiveBypass(request, config)) {
+  if (isLocalLiveBypass(ctx, config)) {
     return { ok: true };
   }
 
-  const country = request.headers.get("x-vercel-ip-country");
+  const country = ctx.headers.get("x-vercel-ip-country");
   if (!country || country.trim() === "" || country === "XX") {
     return { ok: false, reason: "missing" };
   }

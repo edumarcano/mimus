@@ -1,7 +1,9 @@
 import "server-only";
 
+import type { LiveAvailability } from "../api-types";
 import { MAX_INPUT_CODE_POINTS } from "../limits";
 import { NOTICE_FULL, NOTICE_VERSION } from "../notice";
+import { checkRegion, type PolicyContext } from "./policy";
 import { MODEL_PUBLIC_LABEL } from "./model-config";
 
 export type ParlanceMode = "demo" | "live" | "disabled";
@@ -97,17 +99,28 @@ export function getServerConfig(): ServerConfig {
 
 export type PublicConfig = {
   mode: ParlanceMode;
+  liveAvailability?: LiveAvailability;
   notice: { version: string; text: string };
   limits: { maxInputCodePoints: number };
   modelLabel: string;
 };
 
-export function getPublicConfig(): PublicConfig {
-  const { mode, isLive } = getServerConfig();
+export function getPublicConfig(ctx?: PolicyContext): PublicConfig {
+  const serverConfig = getServerConfig();
+  const { mode, isLive } = serverConfig;
   const displayMode: ParlanceMode =
     mode === "live" && !isLive ? "disabled" : isLive ? "live" : mode;
+
+  let liveAvailability: LiveAvailability | undefined;
+  if (displayMode === "live" && ctx) {
+    liveAvailability = checkRegion(ctx, serverConfig).ok
+      ? "available"
+      : "region";
+  }
+
   return {
     mode: displayMode,
+    liveAvailability,
     notice: {
       version: NOTICE_VERSION,
       text: NOTICE_FULL,

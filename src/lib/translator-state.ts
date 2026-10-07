@@ -1,4 +1,5 @@
 import { countCodePoints } from "./limits";
+import type { HistoryEntry } from "./history";
 import {
   effectiveIntensity,
   INTENSITY_LABELS,
@@ -7,6 +8,7 @@ import {
   type Intensity,
   type StyleId,
 } from "./styles";
+import type { LiveAvailability } from "./api-types";
 
 export type TranslatorStatus =
   | "idle"
@@ -17,7 +19,8 @@ export type TranslatorStatus =
   | "truncated"
   | "interrupted"
   | "failed"
-  | "example";
+  | "example"
+  | "history";
 
 export type RequestSnapshot = {
   text: string;
@@ -33,6 +36,10 @@ export type TranslatorState = {
   intensity: Intensity;
   rememberedIntensity: Intensity;
   acknowledged: boolean;
+  noticeOutdated: boolean;
+  historyEnabled: boolean;
+  historyEntries: HistoryEntry[];
+  storageNote: string | null;
   status: TranslatorStatus;
   output: string;
   message: string;
@@ -42,6 +49,7 @@ export type TranslatorState = {
 
 export type SubmitContext = {
   mode: "demo" | "live" | "disabled";
+  liveAvailability?: LiveAvailability;
   maxInputCodePoints: number;
 };
 
@@ -51,6 +59,21 @@ export type TranslatorAction =
   | { type: "setTargetStyle"; style: StyleId }
   | { type: "setIntensity"; intensity: Intensity }
   | { type: "setAcknowledged"; value: boolean }
+  | { type: "setHistoryEnabled"; enabled: boolean }
+  | {
+      type: "hydrateClient";
+      prefs?: {
+        sourceStyle?: StyleId;
+        targetStyle?: StyleId;
+        intensity?: Intensity;
+        rememberedIntensity?: Intensity;
+        historyEnabled?: boolean;
+      };
+      history?: HistoryEntry[];
+    }
+  | { type: "setHistoryEntries"; entries: HistoryEntry[] }
+  | { type: "setStorageNote"; message: string | null }
+  | { type: "loadHistory"; entry: HistoryEntry }
   | {
       type: "example";
       input: string;
@@ -79,12 +102,20 @@ export const INITIAL_TRANSLATOR_STATE: TranslatorState = {
   intensity: "balanced",
   rememberedIntensity: "balanced",
   acknowledged: false,
+  noticeOutdated: false,
+  historyEnabled: false,
+  historyEntries: [],
+  storageNote: null,
   status: "idle",
   output: "",
   message: "",
   runId: 0,
   snapshot: null,
 };
+
+export function isResultReady(status: TranslatorStatus): boolean {
+  return status === "complete" || status === "history";
+}
 
 export function buildRequestSnapshot(state: TranslatorState): RequestSnapshot {
   return {
@@ -116,11 +147,17 @@ export function submitBlockReason(
   state: TranslatorState,
   ctx: SubmitContext,
 ): string {
+  if (state.noticeOutdated) {
+    return "The notice has changed. Refresh the page to review it.";
+  }
   if (ctx.mode === "demo") {
     return "Translate is off in demo mode. Choose an example to see a sample.";
   }
   if (ctx.mode === "disabled") {
     return "Translation is currently unavailable.";
+  }
+  if (ctx.mode === "live" && ctx.liveAvailability === "region") {
+    return "Live generation isn't available in your region. Try an example instead.";
   }
   if (isBusy(state.status)) {
     return "A rewrite is in progress.";
@@ -142,18 +179,18 @@ export function submitBlockReason(
 
 export function canRegenerate(state: TranslatorState): boolean {
   return (
-    state.status === "complete" &&
+    isResultReady(state.status) &&
     !isStale(state) &&
     !isBusy(state.status)
   );
 }
 
 export function canSwapOutput(state: TranslatorState): boolean {
-  return state.status === "complete" && !isStale(state);
+  return isResultReady(state.status) && !isStale(state);
 }
 
 export function canCopy(state: TranslatorState): boolean {
-  return state.status === "complete" && state.output.length > 0;
+  return isResultReady(state.status) && state.output.length > 0;
 }
 
 export function formatCopyBoth(
@@ -232,6 +269,55 @@ export function translatorReducer(
     }
     case "setAcknowledged":
       return { ...state, acknowledged: action.value };
+    case "setHistoryEnabled":
+      return {
+        ...state,
+        historyEnabled: action.enabled,
+        historyEntries: action.enabled ? state.historyEntries : [],
+      };
+    case "hydrateClient": {
+      const next = { ...state };
+      if (action.prefs) {
+        if (action.prefs.sourceStyle) {
+          next.sourceStyle = action.prefs.sourceStyle;
+        }
+        if (action.prefs.targetStyle) {
+          next.targetStyle = action.prefs.targetStyle;
+        }
+        if (action.prefs.intensity) {
+          next.intensity = action.prefs.intensity;
+        }
+        if (action.prefs.rememberedIntensity) {
+          next.rememberedIntensity = action.prefs.rememberedIntensity;
+        }
+        if (action.prefs.historyEnabled !== undefined) {
+          next.historyEnabled = action.prefs.historyEnabled;
+        }
+      }
+      if (action.history) {
+        next.historyEntries = action.history;
+      }
+      return next;
+    }
+    case "setHistoryEntries":
+      return { ...state, historyEntries: action.entries };
+    case "setStorageNote":
+      return { ...state, storageNote: action.message };
+    case "loadHistory": {
+      const snap = action.entry.snapshot;
+      return {
+        ...state,
+        text: snap.text,
+        sourceStyle: snap.sourceStyle,
+        targetStyle: snap.targetStyle,
+        intensity: snap.effectiveIntensity,
+        rememberedIntensity: snap.effectiveIntensity,
+        output: action.entry.output,
+        snapshot: snap,
+        status: "history",
+        message: "",
+      };
+    }
     case "example":
       return {
         ...state,
@@ -350,6 +436,15 @@ export function translatorReducer(
           ...state,
           status: "blocked",
           output: "",
+          message: action.message,
+        };
+      }
+      if (action.code === "NOTICE_CHANGED") {
+        return {
+          ...state,
+          status: "failed",
+          acknowledged: false,
+          noticeOutdated: true,
           message: action.message,
         };
       }

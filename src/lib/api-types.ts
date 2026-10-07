@@ -9,6 +9,8 @@ export type TranslateRequest = {
   privacyNoticeVersion: string;
 };
 
+export type LiveAvailability = "available" | "region";
+
 export type AppErrorCode =
   | "INVALID_REQUEST"
   | "UNSUPPORTED_MEDIA_TYPE"

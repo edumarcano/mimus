@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ServerConfig } from "@/lib/server/config";
-import { checkRegion, isAllowedOrigin, isLocalLiveBypass } from "@/lib/server/policy";
+import {
+  checkRegion,
+  isAllowedOrigin,
+  isLocalLiveBypass,
+  type PolicyContext,
+} from "@/lib/server/policy";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -16,6 +21,11 @@ function liveConfig(): ServerConfig {
     liveCountries: ["US"],
     devAllowLocalLive: true,
   };
+}
+
+function ctx(url: string, headers?: Record<string, string>): PolicyContext {
+  const request = new Request(url, { headers });
+  return { headers: request.headers, hostname: new URL(url).hostname };
 }
 
 describe("isAllowedOrigin", () => {
@@ -51,14 +61,14 @@ describe("checkRegion", () => {
     const config = liveConfig();
     vi.stubEnv("NODE_ENV", "production");
 
-    expect(
-      checkRegion(new Request("http://example.com/api/translate"), config).ok,
-    ).toBe(false);
+    expect(checkRegion(ctx("http://example.com/api/translate"), config).ok).toBe(
+      false,
+    );
 
     expect(
       checkRegion(
-        new Request("http://example.com/api/translate", {
-          headers: { "x-vercel-ip-country": "CA" },
+        ctx("http://example.com/api/translate", {
+          "x-vercel-ip-country": "CA",
         }),
         config,
       ).ok,
@@ -66,8 +76,8 @@ describe("checkRegion", () => {
 
     expect(
       checkRegion(
-        new Request("http://example.com/api/translate", {
-          headers: { "x-vercel-ip-country": "US" },
+        ctx("http://example.com/api/translate", {
+          "x-vercel-ip-country": "US",
         }),
         config,
       ).ok,
@@ -80,7 +90,7 @@ describe("checkRegion", () => {
     vi.stubEnv("VERCEL", "");
     vi.stubEnv("VERCEL_ENV", "");
 
-    const loopback = new Request("http://localhost:3000/api/translate");
+    const loopback = ctx("http://localhost:3000/api/translate");
     expect(isLocalLiveBypass(loopback, config)).toBe(true);
     expect(checkRegion(loopback, config).ok).toBe(true);
 
@@ -93,7 +103,7 @@ describe("checkRegion", () => {
 
     vi.stubEnv("NODE_ENV", "development");
     expect(
-      isLocalLiveBypass(new Request("http://127.0.0.1:9999/api/translate"), {
+      isLocalLiveBypass(ctx("http://127.0.0.1:9999/api/translate"), {
         ...config,
         devAllowLocalLive: false,
       }),

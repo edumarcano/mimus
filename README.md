@@ -18,10 +18,13 @@ stays in the browser and is off by default.
 
 ## Status
 
-The first release targets **v1.0.0**. The application is in early development:
-the current UI exposes Human to LinkedIn at Balanced intensity, while the initial
-server path supports Human to LinkedIn and LinkedIn to Human. Evaluation results
-have not been published and no release has been made.
+The first release targets **v1.0.0**. The application is in development and has
+not been released. The translator supports all five styles and their directions at
+three intensities in demo and live modes, with a /privacy page, opt-in local
+history, and local preferences. Milestone 3 browser checks (layout, reduced
+motion, target sizes, contrast) are recorded in [docs/decisions.md](docs/decisions.md),
+including what remains unverified. Evaluation results have not been published,
+no public deployment has been verified, and no release has been made.
 
 ## Technical direction
 

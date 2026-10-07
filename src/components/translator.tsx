@@ -1,8 +1,29 @@
 "use client";
 
 import { useEffect, useId, useReducer, useRef, useState } from "react";
+import type { LiveAvailability } from "@/lib/api-types";
 import { EXAMPLES } from "@/lib/examples";
+import {
+  addEntry,
+  clearHistory,
+  historyPreview,
+  loadHistory,
+  saveHistory,
+  type HistoryEntry,
+} from "@/lib/history";
 import { countCodePoints } from "@/lib/limits";
+import {
+  ACK_STORAGE_KEY,
+  NOTICE_ACK_LABEL,
+  NOTICE_DEMO,
+  NOTICE_FULL,
+} from "@/lib/notice";
+import {
+  loadPreferences,
+  preferencesFromState,
+  savePreferences,
+} from "@/lib/preferences";
+import { safeRemoveItem, safeSetItem } from "@/lib/storage";
 import { SseStreamParser } from "@/lib/stream";
 import {
   effectiveIntensity,
@@ -29,16 +50,50 @@ import {
 
 export type TranslatorConfig = {
   mode: "demo" | "live" | "disabled";
+  liveAvailability?: LiveAvailability;
   notice: { version: string; text: string };
   limits: { maxInputCodePoints: number };
 };
 
+export function isLiveTranslationAvailable(
+  config: TranslatorConfig,
+): boolean {
+  return config.mode === "live" && config.liveAvailability !== "region";
+}
+
+const CLIENT_ERROR_BY_CODE: Record<string, string> = {
+  SERVICE_QUOTA_EXHAUSTED:
+    "Shared free capacity for rewrites is used up. Try again later.",
+  RATE_LIMITED:
+    "Too many requests from this network. Please wait and try again.",
+  REGION_UNAVAILABLE: "Live generation is not available in your region.",
+  SERVICE_UNAVAILABLE: "Live generation is unavailable right now.",
+};
+
 function genericMessage(status: number): string {
-  if (status === 429) return "Too many requests right now. Please try again shortly.";
+  if (status === 429) {
+    return "Too many requests. Shared networks sometimes hit the same limit.";
+  }
   if (status === 413) return "That text is too long to send.";
   if (status === 403) return "Translation isn't available for this request.";
-  if (status >= 500) return "The service is unavailable right now. Please try again later.";
+  if (status >= 500) {
+    return "The service is unavailable right now. Please try again later.";
+  }
   return "Something went wrong with that request. Please try again.";
+}
+
+function resolveClientMessage(
+  code: string | undefined,
+  status: number,
+  serverMessage: string,
+): string {
+  if (code && CLIENT_ERROR_BY_CODE[code]) {
+    return CLIENT_ERROR_BY_CODE[code];
+  }
+  if (status === 429 && !code) {
+    return genericMessage(429);
+  }
+  return serverMessage;
 }
 
 async function parseHttpError(
@@ -61,6 +116,7 @@ async function parseHttpError(
   } catch {
     // Body was HTML, empty, or not JSON: keep the generic message.
   }
+  message = resolveClientMessage(code, response.status, message);
   const retry = response.headers.get("Retry-After");
   if (retry && /^\d+$/.test(retry.trim())) {
     message += ` Try again in about ${retry.trim()} seconds.`;
@@ -78,6 +134,7 @@ const STATUS_LABEL: Record<TranslatorStatus, string> = {
   interrupted: "Interrupted",
   failed: "Failed",
   example: "Example — not generated",
+  history: "From history — saved in this browser",
 };
 
 const PARTIAL_STATUSES: readonly TranslatorStatus[] = [
@@ -90,7 +147,7 @@ const PARTIAL_STATUSES: readonly TranslatorStatus[] = [
 const selectClass =
   "min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-3 text-base text-ink disabled:bg-canvas disabled:opacity-60";
 const secondaryButton =
-  "min-h-11 rounded-lg border border-line bg-white px-4 text-sm font-medium text-ink hover:border-accent disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-11 rounded-lg border border-line bg-white px-4 text-sm font-medium transition-colors text-ink hover:border-accent disabled:cursor-not-allowed disabled:opacity-50";
 
 function StyleSelect(props: {
   id: string;
@@ -133,6 +190,8 @@ export function Translator({ config }: { config: TranslatorConfig }) {
   } | null>(null);
   const runCounter = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
+  const prefsHydrated = useRef(false);
+  const prevStatus = useRef(state.status);
   const ids = {
     text: useId(),
     ack: useId(),
@@ -140,9 +199,104 @@ export function Translator({ config }: { config: TranslatorConfig }) {
     count: useId(),
     source: useId(),
     target: useId(),
+    history: useId(),
   };
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const liveAvailable = isLiveTranslationAvailable(config);
+  const noticeVersion = config.notice.version;
+  const {
+    sourceStyle,
+    targetStyle,
+    intensity,
+    rememberedIntensity,
+    historyEnabled,
+  } = state;
+
   useEffect(() => () => abortRef.current?.abort(), []);
+
+  useEffect(() => {
+    dispatch({
+      type: "hydrateClient",
+      prefs: loadPreferences() ?? undefined,
+      history: loadHistory(),
+    });
+    prefsHydrated.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!liveAvailable) return;
+    try {
+      const stored = sessionStorage.getItem(ACK_STORAGE_KEY);
+      if (stored === noticeVersion) {
+        dispatch({ type: "setAcknowledged", value: true });
+      }
+    } catch {
+      // sessionStorage unavailable
+    }
+  }, [liveAvailable, noticeVersion]);
+
+  useEffect(() => {
+    if (!prefsHydrated.current) {
+      return;
+    }
+    const prefs = preferencesFromState({
+      sourceStyle,
+      targetStyle,
+      intensity,
+      rememberedIntensity,
+      historyEnabled,
+    });
+    if (!prefs) {
+      return;
+    }
+    if (!savePreferences(prefs)) {
+      dispatch({
+        type: "setStorageNote",
+        message: "Couldn't save to this browser.",
+      });
+    }
+  }, [sourceStyle, targetStyle, intensity, rememberedIntensity, historyEnabled]);
+
+  useEffect(() => {
+    if (
+      prevStatus.current !== "complete" &&
+      state.status === "complete" &&
+      state.historyEnabled &&
+      state.snapshot &&
+      state.output.length > 0
+    ) {
+      const next = addEntry(
+        state.historyEntries,
+        state.snapshot!,
+        state.output,
+      );
+      if (!saveHistory(next)) {
+        dispatch({
+          type: "setStorageNote",
+          message: "Couldn't save to this browser.",
+        });
+      }
+      dispatch({ type: "setHistoryEntries", entries: next });
+    }
+    prevStatus.current = state.status;
+    // historyEntries is a dependency, but saving only happens on the
+    // transition into "complete" (guarded by prevStatus), so the
+    // setHistoryEntries dispatch below cannot cause a second save.
+  }, [
+    state.status,
+    state.historyEnabled,
+    state.snapshot,
+    state.output,
+    state.historyEntries,
+  ]);
+
+  useEffect(() => {
+    if (state.noticeOutdated) {
+      const el = document.getElementById(ids.why);
+      el?.focus();
+    }
+  }, [state.noticeOutdated, ids.why]);
 
   const { mode } = config;
   const max = config.limits.maxInputCodePoints;
@@ -152,8 +306,10 @@ export function Translator({ config }: { config: TranslatorConfig }) {
   const isHuman = state.targetStyle === "human";
   const reason = submitBlockReason(state, {
     mode,
+    liveAvailability: config.liveAvailability,
     maxInputCodePoints: max,
   });
+  const noticeText = liveAvailable ? NOTICE_FULL : NOTICE_DEMO;
   const canTranslate = reason === "";
   const stale = isStale(state);
   const regenerateOk = canRegenerate(state) && reason === "";
@@ -194,6 +350,10 @@ export function Translator({ config }: { config: TranslatorConfig }) {
       const type = response.headers.get("Content-Type") ?? "";
       if (response.status !== 200 || !type.includes("text/event-stream") || !response.body) {
         const { message, code } = await parseHttpError(response);
+        if (code === "NOTICE_CHANGED") {
+          safeRemoveItem(sessionStorage, ACK_STORAGE_KEY);
+          dispatch({ type: "setAcknowledged", value: false });
+        }
         dispatch({ type: "failure", runId, message, code });
         return;
       }
@@ -291,16 +451,47 @@ export function Translator({ config }: { config: TranslatorConfig }) {
     const ex = EXAMPLES.find((e) => e.id === id);
     if (!ex) return;
     dispatch({ type: "setSourceStyle", style: ex.sourceStyle });
-    if (mode === "demo") {
+    if (!liveAvailable) {
       dispatch({ type: "setTargetStyle", style: ex.targetStyle });
       dispatch({ type: "setIntensity", intensity: ex.intensity });
     }
     dispatch({
       type: "example",
       input: ex.input,
-      showOutput: mode === "demo",
+      showOutput: !liveAvailable,
       output: ex.output,
     });
+  }
+
+  function persistAck(value: boolean) {
+    dispatch({ type: "setAcknowledged", value });
+    if (value) {
+      if (!safeSetItem(sessionStorage, ACK_STORAGE_KEY, config.notice.version)) {
+        dispatch({
+          type: "setStorageNote",
+          message: "Couldn't save to this browser.",
+        });
+      }
+    } else {
+      safeRemoveItem(sessionStorage, ACK_STORAGE_KEY);
+    }
+  }
+
+  function toggleHistory(enabled: boolean) {
+    dispatch({ type: "setHistoryEnabled", enabled });
+    if (!enabled) {
+      if (!clearHistory()) {
+        dispatch({
+          type: "setStorageNote",
+          message: "Couldn't save to this browser.",
+        });
+      }
+      dispatch({ type: "setHistoryEntries", entries: [] });
+    }
+  }
+
+  function loadFromHistory(entry: HistoryEntry) {
+    dispatch({ type: "loadHistory", entry });
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -314,7 +505,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
   const announcement =
     state.status === "generating"
       ? "Generating…"
-      : state.status === "complete"
+      : state.status === "complete" || state.status === "history"
         ? "Rewrite complete"
         : state.status === "canceled"
           ? "Stopped"
@@ -323,12 +514,13 @@ export function Translator({ config }: { config: TranslatorConfig }) {
   const statusText =
     state.message &&
     state.status !== "complete" &&
+    state.status !== "history" &&
     state.status !== "example" &&
     state.status !== "canceled"
       ? `${STATUS_LABEL[state.status]} — ${state.message}`
       : STATUS_LABEL[state.status];
   const statusTone =
-    state.status === "example"
+    state.status === "example" || state.status === "history"
       ? "text-accent-strong"
       : state.status === "blocked" || PARTIAL_STATUSES.includes(state.status)
         ? "text-red-700"
@@ -383,6 +575,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
             disabled={busy}
             onChange={(e) => dispatch({ type: "setText", text: e.target.value })}
             onKeyDown={onKeyDown}
+            ref={textareaRef}
             aria-describedby={ids.count}
             rows={10}
             placeholder="Say it the way you'd say it out loud."
@@ -400,7 +593,10 @@ export function Translator({ config }: { config: TranslatorConfig }) {
             <button
               type="button"
               disabled={busy}
-              onClick={() => dispatch({ type: "clear" })}
+              onClick={() => {
+                dispatch({ type: "clear" });
+                textareaRef.current?.focus();
+              }}
               className={secondaryButton}
             >
               Clear
@@ -416,7 +612,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
                   type="button"
                   disabled={busy}
                   onClick={() => applyExample(ex.id)}
-                  className="min-h-11 rounded-full border border-line bg-accent-soft px-4 text-sm font-medium text-accent-strong hover:border-accent disabled:opacity-50"
+                  className="min-h-11 rounded-full transition-colors border border-line bg-accent-soft px-4 text-sm font-medium text-accent-strong hover:border-accent disabled:opacity-50"
                 >
                   {ex.label}
                 </button>
@@ -425,31 +621,28 @@ export function Translator({ config }: { config: TranslatorConfig }) {
           </div>
 
           <div className="mt-6 border-t border-line pt-4">
-            <p className="text-sm text-ink-soft">{config.notice.text}</p>
-            <label
-              htmlFor={ids.ack}
-              className="mt-3 flex min-h-11 cursor-pointer items-start gap-3"
-            >
-              <input
-                id={ids.ack}
-                type="checkbox"
-                checked={state.acknowledged}
-                disabled={busy}
-                onChange={(e) =>
-                  dispatch({ type: "setAcknowledged", value: e.target.checked })
-                }
-                className="mt-1 size-5 shrink-0 accent-accent"
-              />
-              <span className="text-sm">
-                I am an adult, I understand this notice, and I won&rsquo;t submit
-                personal or confidential text.
-              </span>
-            </label>
+            <p className="text-sm text-ink-soft">{noticeText}</p>
+            {liveAvailable && (
+              <label
+                htmlFor={ids.ack}
+                className="mt-3 flex min-h-11 cursor-pointer items-start gap-3"
+              >
+                <input
+                  id={ids.ack}
+                  type="checkbox"
+                  checked={state.acknowledged}
+                  disabled={busy}
+                  onChange={(e) => persistAck(e.target.checked)}
+                  className="mt-1 size-5 shrink-0 accent-accent"
+                />
+                <span className="text-sm">{NOTICE_ACK_LABEL}</span>
+              </label>
+            )}
             {busy ? (
               <button
                 type="button"
                 onClick={stop}
-                className="mt-3 min-h-11 w-full rounded-lg border border-accent bg-white px-6 font-semibold text-accent-strong hover:bg-accent-soft sm:w-auto"
+                className="mt-3 min-h-11 w-full rounded-lg transition-colors border border-accent bg-white px-6 font-semibold text-accent-strong hover:bg-accent-soft sm:w-auto"
               >
                 Stop
               </button>
@@ -459,14 +652,23 @@ export function Translator({ config }: { config: TranslatorConfig }) {
                 onClick={translate}
                 disabled={!canTranslate}
                 aria-describedby={reason ? ids.why : undefined}
-                className="mt-3 min-h-11 w-full rounded-lg bg-accent px-6 font-semibold text-white hover:bg-accent-strong disabled:cursor-not-allowed disabled:bg-line disabled:text-ink sm:w-auto"
+                className="mt-3 min-h-11 w-full rounded-lg transition-colors bg-accent px-6 font-semibold text-white hover:bg-accent-strong disabled:cursor-not-allowed disabled:bg-line disabled:text-ink sm:w-auto"
               >
                 Translate
               </button>
             )}
             {reason && (
-              <p id={ids.why} className="mt-2 text-sm text-ink-soft">
+              <p
+                id={ids.why}
+                tabIndex={-1}
+                className="mt-2 text-sm text-ink-soft outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
                 {reason}
+              </p>
+            )}
+            {state.storageNote && (
+              <p className="mt-2 text-sm text-ink-soft" role="status">
+                {state.storageNote}
               </p>
             )}
           </div>
@@ -475,7 +677,10 @@ export function Translator({ config }: { config: TranslatorConfig }) {
         <div className="flex items-center justify-center lg:self-start lg:pt-24">
           <button
             type="button"
-            onClick={() => dispatch({ type: "swap" })}
+            onClick={() => {
+              dispatch({ type: "swap" });
+              textareaRef.current?.focus();
+            }}
             disabled={busy}
             aria-label="Swap source and target styles"
             title={
@@ -548,6 +753,13 @@ export function Translator({ config }: { config: TranslatorConfig }) {
             data-testid="status"
             className={`mb-2 text-sm font-medium ${statusTone}`}
           >
+            {busy && (
+              <span
+                aria-hidden="true"
+                data-testid="busy-indicator"
+                className="mr-2 inline-block size-2 rounded-full bg-accent align-middle motion-safe:animate-pulse"
+              />
+            )}
             {statusText}
           </p>
           {showStale && (
@@ -560,7 +772,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
             tabIndex={0}
             aria-label={`${targetLabel} rewrite`}
             className={`min-h-56 whitespace-pre-wrap break-words rounded-lg border p-3 text-base ${
-              state.status === "example"
+              state.status === "example" || state.status === "history"
                 ? "border-dashed border-accent bg-accent-soft"
                 : "border-line bg-canvas"
             }`}
@@ -614,6 +826,80 @@ export function Translator({ config }: { config: TranslatorConfig }) {
           )}
         </section>
       </div>
+
+      <details className="mt-8 rounded-xl border border-line bg-white p-4">
+        <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-ink">
+          History in this browser
+        </summary>
+        <div className="mt-4 space-y-3 text-sm text-ink-soft">
+          <label className="flex min-h-11 cursor-pointer items-center gap-3">
+            <input
+              type="checkbox"
+              checked={state.historyEnabled}
+              disabled={busy}
+              onChange={(e) => toggleHistory(e.target.checked)}
+              className="size-5 accent-accent"
+            />
+            <span>Save completed rewrites in this browser</span>
+          </label>
+          <p>
+            History is off by default, stored unencrypted in localStorage, and
+            not suitable for shared devices.
+          </p>
+          <button
+            type="button"
+            disabled={busy || state.historyEntries.length === 0}
+            onClick={() => {
+              if (!clearHistory()) {
+                dispatch({
+                  type: "setStorageNote",
+                  message: "Couldn't save to this browser.",
+                });
+              }
+              dispatch({ type: "setHistoryEntries", entries: [] });
+            }}
+            className={secondaryButton}
+          >
+            Clear history
+          </button>
+          {state.historyEntries.length > 0 ? (
+            <ul className="space-y-2" aria-labelledby={ids.history}>
+              <li id={ids.history} className="sr-only">
+                Saved rewrites
+              </li>
+              {state.historyEntries.map((entry) => (
+                <li
+                  key={entry.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-ink">
+                      {STYLE_LABELS[entry.snapshot.sourceStyle]} →{" "}
+                      {STYLE_LABELS[entry.snapshot.targetStyle]}
+                    </p>
+                    <p className="text-xs">
+                      {new Date(entry.savedAt).toLocaleString()}
+                    </p>
+                    <p className="mt-1 truncate text-ink-soft">
+                      {historyPreview(entry.output)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => loadFromHistory(entry)}
+                    className={secondaryButton}
+                  >
+                    Load
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No saved rewrites yet.</p>
+          )}
+        </div>
+      </details>
 
       <div role="status" aria-live="polite" className="sr-only">
         {announcement}

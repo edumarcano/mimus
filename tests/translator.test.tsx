@@ -11,13 +11,17 @@ import { Translator, type TranslatorConfig } from "@/components/translator";
 import { EXAMPLES } from "@/lib/examples";
 import { encodeSseEvent } from "@/lib/stream";
 
-const base: Omit<TranslatorConfig, "mode"> = {
+const base: Omit<TranslatorConfig, "mode" | "liveAvailability"> = {
   notice: { version: "v-test", text: "Notice text." },
   limits: { maxInputCodePoints: 3000 },
 };
-const cfg = (mode: TranslatorConfig["mode"]): TranslatorConfig => ({
+const cfg = (
+  mode: TranslatorConfig["mode"],
+  liveAvailability?: TranslatorConfig["liveAvailability"],
+): TranslatorConfig => ({
   ...base,
   mode,
+  liveAvailability,
 });
 
 const translateBtn = () =>
@@ -48,6 +52,8 @@ async function fillAndSubmit() {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  sessionStorage.clear();
+  localStorage.clear();
 });
 
 describe("Translator", () => {
@@ -561,5 +567,200 @@ describe("Translator workflow", () => {
     expect(btn("Copy result").disabled).toBe(false);
     fireEvent.click(btn(/Swap/));
     expect(textarea().value).toBe("hello there!");
+  });
+});
+
+describe("Translator privacy and history", () => {
+  const memoryStorage = () => {
+    const map = new Map<string, string>();
+    return {
+      getItem: (key: string) => map.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        map.set(key, value);
+      },
+      removeItem: (key: string) => {
+        map.delete(key);
+      },
+    };
+  };
+
+  it("hides acknowledgement in demo, disabled, and region-unavailable modes", () => {
+    render(<Translator config={cfg("demo")} />);
+    expect(screen.queryByLabelText(/I am an adult/)).toBeNull();
+    fireEvent.click(btn(EXAMPLES[0].label));
+    expect(status()).toContain("Example — not generated");
+
+    cleanup();
+    render(<Translator config={cfg("disabled")} />);
+    expect(screen.queryByLabelText(/I am an adult/)).toBeNull();
+    fireEvent.click(btn(EXAMPLES[0].label));
+    expect(status()).toContain("Example — not generated");
+
+    cleanup();
+    render(<Translator config={cfg("live", "region")} />);
+    expect(screen.queryByLabelText(/I am an adult/)).toBeNull();
+    fireEvent.click(btn(EXAMPLES[0].label));
+    expect(status()).toContain("Example — not generated");
+  });
+
+  it("restores acknowledgement from sessionStorage only on version match", () => {
+    sessionStorage.setItem("parlance:ack", "v-test");
+    render(<Translator config={cfg("live", "available")} />);
+    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
+      true,
+    );
+
+    cleanup();
+    sessionStorage.setItem("parlance:ack", "old-version");
+    render(<Translator config={cfg("live", "available")} />);
+    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
+      false,
+    );
+  });
+
+  it("409 NOTICE_CHANGED clears acknowledgement and blocks resubmit", async () => {
+    sessionStorage.setItem("parlance:ack", "v-test");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "NOTICE_CHANGED",
+              message: "Notice changed.",
+            },
+          }),
+          { status: 409, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+    render(<Translator config={cfg("live", "available")} />);
+    fireEvent.change(textarea(), { target: { value: "hello" } });
+    await waitFor(() =>
+      expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
+        true,
+      ),
+    );
+    fireEvent.click(translateBtn());
+    await waitFor(() => expect(status()).toContain("Notice changed"));
+    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
+      false,
+    );
+    expect(sessionStorage.getItem("parlance:ack")).toBeNull();
+    expect(translateBtn().disabled).toBe(true);
+    expect(screen.getByText(/Refresh the page/)).toBeTruthy();
+  });
+
+  it("shows quota exhausted message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "SERVICE_QUOTA_EXHAUSTED",
+              message: "server quota",
+            },
+          }),
+          { status: 503, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+    render(<Translator config={cfg("live", "available")} />);
+    await fillAndSubmit();
+    await waitFor(() => expect(status()).toContain("Shared free capacity"));
+  });
+
+  it("shows HTML 429 with Retry-After", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response("<html>rate limited</html>", {
+          status: 429,
+          headers: { "Content-Type": "text/html", "Retry-After": "30" },
+        }),
+      ),
+    );
+    render(<Translator config={cfg("live", "available")} />);
+    await fillAndSubmit();
+    await waitFor(() => expect(status()).toContain("Shared networks"));
+    expect(status()).toContain("30 seconds");
+  });
+
+  it("history is off by default, saves complete results, loads, and clears", async () => {
+    const storage = memoryStorage();
+    vi.stubGlobal("localStorage", storage);
+    stubComplete("SAVED_OUT");
+    render(<Translator config={cfg("live", "available")} />);
+    expect(
+      (screen.getByLabelText(/Save completed rewrites/) as HTMLInputElement).checked,
+    ).toBe(false);
+
+    await fillAndSubmit();
+    await waitFor(() => expect(status()).toBe("Complete"));
+    expect(storage.getItem("parlance:history:v1")).toBeNull();
+
+    fireEvent.click(screen.getByLabelText(/Save completed rewrites/));
+    fireEvent.click(translateBtn());
+    await waitFor(() => expect(status()).toBe("Complete"));
+    await waitFor(() =>
+      expect(storage.getItem("parlance:history:v1")).toContain("SAVED_OUT"),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Load" })).toBeTruthy(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Load" }));
+    expect(status()).toContain("From history");
+    expect(output()).toBe("SAVED_OUT");
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear history" }));
+    expect(JSON.parse(storage.getItem("parlance:history:v1") ?? "[]")).toEqual(
+      [],
+    );
+
+    fireEvent.click(screen.getByLabelText(/Save completed rewrites/));
+    expect(JSON.parse(storage.getItem("parlance:history:v1") ?? "[]")).toEqual(
+      [],
+    );
+  });
+
+  it("restores preferences after mount", async () => {
+    localStorage.setItem(
+      "parlance:prefs:v1",
+      JSON.stringify({
+        sourceStyle: "academic",
+        targetStyle: "startup",
+        intensity: "maximum",
+        rememberedIntensity: "maximum",
+        historyEnabled: false,
+      }),
+    );
+    render(<Translator config={cfg("live", "available")} />);
+    await waitFor(() => expect(sourceSel().value).toBe("academic"));
+    expect(targetSel().value).toBe("startup");
+    expect((screen.getByLabelText("Maximum") as HTMLInputElement).checked).toBe(
+      true,
+    );
+  });
+
+  it("shows a storage note without breaking translation", async () => {
+    vi.stubGlobal("localStorage", {
+      getItem: () => null,
+      setItem: () => {
+        throw new Error("quota");
+      },
+      removeItem: () => undefined,
+    });
+    stubComplete("OK");
+    render(<Translator config={cfg("live", "available")} />);
+    fireEvent.change(screen.getAllByLabelText("Source style")[0], {
+      target: { value: "corporate" },
+    });
+    await waitFor(() =>
+      expect(screen.getByText(/Couldn't save to this browser/)).toBeTruthy(),
+    );
+    await fillAndSubmit();
+    await waitFor(() => expect(status()).toBe("Complete"));
   });
 });

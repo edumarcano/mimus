@@ -128,3 +128,75 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
 - **Hydration warning:** the dev console showed a warning that listed the
   browser tool's injected `data-cursor-ref` attributes. It was not investigated
   further.
+
+## 2026-10-07: Milestone 3 polish, privacy, and resilience
+
+- **Implemented:** `/privacy` page and footer link, mode- and region-aware
+  notice and acknowledgement (session-scoped, tied to the notice version),
+  `NOTICE_CHANGED` handling, local preferences, opt-in bounded history, and
+  client copy for quota, rate-limit, region, and unavailable errors. Polish:
+  long output grows with the page (no nested scroll) with actions directly
+  below, a motion-safe busy indicator, focus return to the textarea after Clear
+  and Swap, focus on the reason text after `NOTICE_CHANGED`, and 44px targets
+  for the history summary and the `/privacy` back link.
+- **Lint:** the three `react-hooks/exhaustive-deps` warnings were fixed without
+  `eslint-disable` (primitive dependencies; ack restore split into its own
+  effect; history save keeps `historyEntries` as a dependency and is guarded by
+  the transition into `complete`).
+- **Defect found in browser and fixed:** the page passed the host with its port
+  (`localhost:3000`, from `x-forwarded-host`) as the hostname, so the loopback
+  dev bypass was never recognized and a local live session showed the "region"
+  state. The page now parses the host as a URL authority, as the API route
+  already did. Also fixed: the history `<summary>` (20px) and the `/privacy`
+  back link (18px) were below the 44px target.
+- **Automated checks:** lint (0 warnings), typecheck, 110 Vitest tests, and a
+  credential-free build passed.
+- **Browser checks (Cursor browser, `npm run dev`; demo mode, then live mode
+  with the local-loopback bypass):**
+  - *Overflow:* no horizontal overflow at 360px or 1440px on `/` and
+    `/privacy` (`scrollWidth` equals `clientWidth`; no element extends past the
+    viewport), including with a long output loaded.
+  - *~200% zoom (approximation):* emulated by viewport widths of 720px and 640px
+    (half of 1440 and of a 1280 window), not a real browser zoom. Single-column
+    layout, no overflow.
+  - *Long output:* an 8,000-code-point output was seeded into `localStorage`
+    history through the console and loaded with Load. The output box was about
+    6,360px tall at 360px and 4,060px at 1440px with `overflow-y: visible`, and
+    the action row sat 12px below it.
+  - *Reduced motion:* `prefers-reduced-motion: reduce` was emulated through CDP.
+    The busy indicator had `animation-name: none`; without the emulation it
+    pulsed (`pulse 2s`).
+  - *Focus:* programmatic `click()` on Clear and Swap left focus on the
+    textarea. With a mocked stream, a real click on Translate left focus on the
+    same button once it became Stop, and focus returned to Translate on
+    completion. A mocked 409 `NOTICE_CHANGED` cleared the stored acknowledgement,
+    disabled Translate, and moved focus to the reason text.
+  - *Target sizes:* bounding boxes of every button, link, select, summary,
+    textarea, and checkbox/radio label were at least 44px in both dimensions at
+    360px and 1440px after the fixes above (inline prose links on `/privacy`
+    excluded; the Next.js dev-tools button is dev-only and excluded).
+  - *Contrast* (computed from the theme tokens, WCAG relative luminance):
+    ink on white 16.0, ink on canvas 15.0, ink-soft on white 7.7, on canvas 7.3,
+    on accent-soft 6.8, accent-strong on white 9.1, white on accent 6.4, red-700
+    errors on white 6.4. All are at least 4.5:1. Disabled controls are exempt.
+    The 3px `accent` focus outline on white is 6.4:1.
+  - *History and preferences:* with a mocked stream, history was off by default,
+    saved one completed result when enabled (newest first, alongside two seeded
+    entries), Load showed "From history — saved in this browser" without saving
+    again, and turning history off wrote an empty list. Preferences were written
+    to `localStorage`.
+  - *`/privacy`:* renders the notice version and all sections at both widths.
+- **Method limits:** the browser tool's key presses are synthetic DOM events and
+  do not move native focus, and the document did not have OS focus, so
+  `:focus-visible` never matched. Keyboard-only Tab traversal was therefore not
+  performed. Tab order was checked as DOM order of focusable elements, and the
+  focus ring was checked by forcing `:focus-visible` through CDP (3px solid
+  accent). Live-mode UI was driven with a mocked `/api/translate` response, so
+  no text was sent to Google.
+- **Unverified:** real keyboard-only traversal and a visible focus ring under
+  native focus; real browser zoom; live mode against Google (the local key was
+  not used); real upstream cancellation after Stop; Vercel geolocation
+  (`x-vercel-ip-country`) behavior and spoofability on Preview and Production;
+  what Vercel itself logs and retains; Google block metadata (not exposed by the
+  Interactions types); the owner's Google billing and terms review that the
+  `google-unpaid-v1` notice assumes; screen-reader output; Safari and Firefox.

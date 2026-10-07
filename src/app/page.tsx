@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { headers } from "next/headers";
 import { connection } from "next/server";
 import { Translator } from "@/components/translator";
 import { getPublicConfig } from "@/lib/server/config";
@@ -8,14 +10,46 @@ const NOTICE_BY_MODE = {
   disabled: "Translation is temporarily unavailable. Please check back later.",
 } as const;
 
+const REGION_BANNER =
+  "Live generation is not available in your region from this network. Examples are prewritten; nothing you type is sent.";
+
 export default async function Home() {
   await connection();
-  const config = getPublicConfig();
+  const headerList = await headers();
+  const rawHost =
+    headerList.get("x-forwarded-host")?.split(",")[0]?.trim() ||
+    headerList.get("host") ||
+    "";
+  // Strip any port (and bracket handling for IPv6) the same way the API
+  // route does, by parsing the host as a URL authority.
+  let hostname = "";
+  try {
+    hostname = new URL(`http://${rawHost}`).hostname;
+  } catch {
+    hostname = "";
+  }
+
+  const config = getPublicConfig({
+    headers: headerList,
+    hostname,
+  });
+
   const publicConfig = {
     mode: config.mode,
+    liveAvailability: config.liveAvailability,
     notice: config.notice,
     limits: config.limits,
   };
+
+  const bannerText =
+    config.mode === "live" && config.liveAvailability === "region"
+      ? REGION_BANNER
+      : NOTICE_BY_MODE[config.mode];
+
+  const bannerLabel =
+    config.mode === "live" && config.liveAvailability === "region"
+      ? "region"
+      : config.mode;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-6 lg:py-12">
@@ -26,17 +60,18 @@ export default async function Home() {
         <p className="mt-2 text-xl text-accent-strong">
           Same thought. Different voice.
         </p>
-        <p className="mt-3 max-w-2xl text-ink-soft">
-          Say it plainly, then hear how it would sound as LinkedIn, Corporate, Startup, or Academic prose, or translate it back.
+        <p className="mt-3 max-w-2xl leading-relaxed text-ink-soft">
+          Say it plainly, then hear how it would sound as LinkedIn, Corporate,
+          Startup, or Academic prose, or translate it back.
         </p>
         <p
           data-testid="availability"
-          className="mt-5 inline-block rounded-lg border border-line bg-white px-4 py-2 text-sm text-ink"
+          className="mt-5 inline-block max-w-2xl rounded-lg border border-line bg-white px-4 py-2 text-sm leading-relaxed text-ink"
         >
           <strong className="font-semibold uppercase tracking-wide">
-            {config.mode}
+            {bannerLabel}
           </strong>{" "}
-          — {NOTICE_BY_MODE[config.mode]}
+          — {bannerText}
         </p>
       </header>
 
@@ -45,13 +80,19 @@ export default async function Home() {
       </main>
 
       <footer className="mt-12 border-t border-line pt-6 text-sm text-ink-soft">
-        <p>
+        <p className="flex flex-wrap gap-x-4 gap-y-2">
           <a
             className="inline-flex min-h-11 items-center font-medium text-accent-strong underline underline-offset-4"
             href="https://github.com/edumarcano/parlance"
           >
             Source on GitHub
           </a>
+          <Link
+            href="/privacy"
+            className="inline-flex min-h-11 items-center font-medium text-accent-strong underline underline-offset-4"
+          >
+            Privacy
+          </Link>
         </p>
         <p className="mt-1 max-w-2xl">
           Parlance is an independent project. It is not affiliated with or

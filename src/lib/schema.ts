@@ -1,8 +1,9 @@
 import { countCodePoints, MAX_INPUT_CODE_POINTS } from "./limits";
 import type { ValidatedTranslateRequest } from "./api-types";
 import {
+  effectiveIntensity,
   INTENSITIES,
-  isSupportedDirection,
+  isDistinctPair,
   STYLE_IDS,
   type Intensity,
   type StyleId,
@@ -137,7 +138,7 @@ export function validateTranslateRequest(body: unknown): SchemaResult {
     };
   }
 
-  if (sourceStyle === targetStyle) {
+  if (!isDistinctPair(sourceStyle, targetStyle)) {
     return {
       ok: false,
       code: "INVALID_REQUEST",
@@ -145,16 +146,7 @@ export function validateTranslateRequest(body: unknown): SchemaResult {
     };
   }
 
-  if (!isSupportedDirection(sourceStyle, targetStyle)) {
-    return {
-      ok: false,
-      code: "INVALID_REQUEST",
-      message: "This style combination is not available yet.",
-    };
-  }
-
-  const effectiveIntensity: Intensity =
-    targetStyle === "human" ? "balanced" : intensity;
+  const normalizedIntensity = effectiveIntensity(targetStyle, intensity);
 
   return {
     ok: true,
@@ -165,7 +157,7 @@ export function validateTranslateRequest(body: unknown): SchemaResult {
       intensity,
       eligibilityConfirmed,
       privacyNoticeVersion,
-      effectiveIntensity,
+      effectiveIntensity: normalizedIntensity,
     },
   };
 }

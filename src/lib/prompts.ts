@@ -5,7 +5,7 @@ import {
   type StyleId,
 } from "./styles";
 
-export const PROMPT_VERSION = "1";
+export const PROMPT_VERSION = "2";
 
 export const PASSAGE_JSON_FIELD = "passage";
 
@@ -33,9 +33,6 @@ export type RewritePrompt = {
 function profileSection(style: StyleId, role: "source" | "target"): string {
   const profile = STYLE_PROFILES[style];
   const label = STYLE_LABELS[style];
-  if (!profile) {
-    return `${role === "source" ? "Source" : "Target"} style hint: ${label}. Actual text wins when it conflicts with the selected source.`;
-  }
   const lines = [
     `${role === "source" ? "Source" : "Target"} style (${label}): ${profile.writingBehavior}`,
     `Boundary: ${profile.boundary}`,
@@ -48,11 +45,8 @@ function intensitySection(targetStyle: StyleId, intensity: Intensity): string {
     return "Target is plain English (Human): intensity does not apply; keep the rewrite direct and natural.";
   }
   const profile = STYLE_PROFILES[targetStyle];
-  const guidance = profile?.intensityGuidance[intensity];
-  if (guidance) {
-    return `Intensity (${intensity}): ${guidance}`;
-  }
-  return `Intensity (${intensity}): Apply a clearly recognizable ${STYLE_LABELS[targetStyle]} register at this level.`;
+  const guidance = profile.intensityGuidance[intensity]!;
+  return `Intensity (${intensity}): ${guidance}`;
 }
 
 export function buildRewritePrompt(

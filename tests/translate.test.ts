@@ -283,6 +283,64 @@ describe("createTranslateHandler", () => {
     process.off("unhandledRejection", onRejection);
   });
 
+  it("passes corporate profile text to the adapter for human to corporate", async () => {
+    let systemInstruction = "";
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: async function* (req) {
+        systemInstruction = req.systemInstruction;
+        yield { type: "delta", text: "Aligned copy." };
+        yield { type: "finish", reason: "complete" };
+      },
+    });
+
+    const response = await handler(
+      postRequest(
+        validBody({
+          text: "The team spent three hours discussing a button color.",
+          sourceStyle: "human",
+          targetStyle: "corporate",
+          intensity: "balanced",
+        }),
+        { headers: { "x-vercel-ip-country": "US" } },
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(systemInstruction).toContain("Formal workplace phrasing");
+    expect(systemInstruction).toMatch(/Do not add emojis or hashtags/i);
+  });
+
+  it("returns balanced effectiveIntensity in meta for human target", async () => {
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: adapterFrom([
+        { type: "delta", text: "Plain." },
+        { type: "finish", reason: "complete" },
+      ]),
+    });
+
+    const response = await handler(
+      postRequest(
+        validBody({
+          sourceStyle: "linkedin",
+          targetStyle: "human",
+          intensity: "maximum",
+          text: "Three hours. One button color.",
+        }),
+        { headers: { "x-vercel-ip-country": "US" } },
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    const parser = new SseStreamParser();
+    const reader = response.body!.getReader();
+    const { value } = await reader.read();
+    const events = parser.push(value!);
+    expect(events[0]?.event).toBe("meta");
+    expect(events[0]?.data).toMatchObject({ effectiveIntensity: "balanced" });
+  });
+
   it("does not call adapter when the client aborts before the first event", async () => {
     const adapter = vi.fn(adapterFrom([]));
     const handler = createTranslateHandler({

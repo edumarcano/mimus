@@ -35,7 +35,7 @@ export type StyleProfile = {
   intensityGuidance: Partial<Record<Intensity, string>>;
 };
 
-export const STYLE_PROFILES: Partial<Record<StyleId, StyleProfile>> = {
+export const STYLE_PROFILES: Record<StyleId, StyleProfile> = {
   human: {
     writingBehavior:
       "Direct, natural plain English. Remove needless jargon and repetition.",
@@ -57,21 +57,57 @@ export const STYLE_PROFILES: Partial<Record<StyleId, StyleProfile>> = {
         "Obvious parody of the LinkedIn register, still preserving facts and intent. Permit at most two emojis and three relevant hashtags.",
     },
   },
+  corporate: {
+    writingBehavior:
+      "Formal workplace phrasing, diplomatic language, process vocabulary, clear professional requests.",
+    boundary:
+      "Do not invent approvals, meetings, deadlines, consensus, or authority.",
+    intensityGuidance: {
+      subtle:
+        "Light stylistic adjustment; broadly usable in real workplace writing. Do not add emojis or hashtags.",
+      balanced:
+        "Clearly recognizable Corporate style with restrained exaggeration. Do not add emojis or hashtags.",
+      maximum:
+        "Obvious parody of the Corporate register, still preserving facts and intent. Do not add emojis or hashtags.",
+    },
+  },
+  startup: {
+    writingBehavior:
+      "Energetic, concise, launch-oriented language and startup vocabulary where appropriate.",
+    boundary:
+      "No fabricated customers, growth, funding, traction, or claims of market leadership.",
+    intensityGuidance: {
+      subtle:
+        "Light stylistic adjustment; broadly usable in real writing. Avoid added hashtags and emojis.",
+      balanced:
+        "Clearly recognizable Startup Founder style with restrained exaggeration. Permit at most one emoji and two relevant hashtags when they fit.",
+      maximum:
+        "Obvious parody of the Startup Founder register, still preserving facts and intent. Permit at most two emojis and three relevant hashtags.",
+    },
+  },
+  academic: {
+    writingBehavior:
+      "Formal analytical phrasing, careful qualification, precise terminology.",
+    boundary:
+      "No fabricated experiments, findings, references, statistics, or evidence of causation.",
+    intensityGuidance: {
+      subtle:
+        "Light stylistic adjustment; broadly usable in scholarly writing. Do not add emojis or hashtags.",
+      balanced:
+        "Clearly recognizable Academic style with restrained exaggeration. Do not add emojis or hashtags.",
+      maximum:
+        "Obvious parody of the Academic register, still preserving facts and intent. Do not add emojis or hashtags.",
+    },
+  },
 };
 
-/** Milestone 1: Human ↔ LinkedIn only; Milestone 2 adds remaining pairs. */
-export const SUPPORTED_DIRECTIONS = new Set<string>([
-  "human->linkedin",
-  "linkedin->human",
-]);
-
-export function directionKey(source: StyleId, target: StyleId): string {
-  return `${source}->${target}`;
+export function isDistinctPair(source: StyleId, target: StyleId): boolean {
+  return source !== target;
 }
 
-export function isSupportedDirection(
-  source: StyleId,
+export function effectiveIntensity(
   target: StyleId,
-): boolean {
-  return SUPPORTED_DIRECTIONS.has(directionKey(source, target));
+  intensity: Intensity,
+): Intensity {
+  return target === "human" ? "balanced" : intensity;
 }

@@ -104,3 +104,27 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   in this check.
 - **Quota:** The project's long-run free-tier quota beyond these 11 requests
   is not measured.
+
+## 2026-10-06: Milestone 2 translator workflow
+
+- **Prompt version:** bumped `PROMPT_VERSION` from `1` to `2`. The prompt now
+  covers all five style profiles and 20 directions. The Human/LinkedIn wording
+  was not tuned, and the Maximum-intensity meaning issues noted above are still
+  open for Milestone 4.
+- **Verified by automated checks:** lint, typecheck, 90 Vitest tests (prompts,
+  schema, route, translator state, component) and a credential-free build all
+  passed.
+- **Browser check (demo mode only):** 360px and 1440px showed no horizontal
+  overflow. Selectors, example chips, Swap, Clear, and the Human-target
+  intensity message were exercised. Zoom, reduced motion, and a full
+  accessibility pass were not run (Milestone 3).
+- **Live-mode check (owner-reported 2026-10-07):** The owner exercised live mode
+  in the local dev server and reported that streaming, Stop, Regenerate, Copy,
+  and the stale-result label all worked correctly. Which style directions and
+  intensities were exercised was not recorded. This was verified by the owner,
+  not by this repository's automated checks, and no upstream-cancellation
+  behavior (whether the provider stops sending after a client abort) was
+  observed by either party.
+- **Hydration warning:** the dev console showed a warning that listed the
+  browser tool's injected `data-cursor-ref` attributes. It was not investigated
+  further.

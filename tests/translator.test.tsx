@@ -213,10 +213,353 @@ describe("Translator", () => {
     render(<Translator config={cfg("live")} />);
     await fillAndSubmit();
     await waitFor(() =>
-      expect(screen.getByTestId("status").textContent).toContain("Error"),
+      expect(screen.getByTestId("status").textContent).toContain("Failed"),
     );
     const text = screen.getByTestId("status").textContent ?? "";
     expect(text).toContain("unavailable");
     expect(text).not.toContain("<html>");
+  });
+});
+
+const enc = new TextEncoder();
+const delta = (text: string) => encodeSseEvent("delta", { text });
+const done = () =>
+  encodeSseEvent("done", { requestId: "r", finishReason: "complete", durationMs: 1 });
+
+function controlledStream() {
+  let ctrl!: ReadableStreamDefaultController<Uint8Array>;
+  let canceled = false;
+  const stream = new ReadableStream<Uint8Array>({
+    start(c) {
+      ctrl = c;
+    },
+    cancel() {
+      canceled = true;
+    },
+  });
+  return {
+    wasCanceled: () => canceled,
+    response: new Response(stream, {
+      status: 200,
+      headers: { "Content-Type": "text/event-stream" },
+    }),
+    push: (s: string) => {
+      try {
+        ctrl.enqueue(enc.encode(s));
+      } catch {
+        // Stream already canceled by the consumer.
+      }
+    },
+    close: () => {
+      try {
+        ctrl.close();
+      } catch {
+        // Already closed or canceled.
+      }
+    },
+  };
+}
+
+const textarea = () => screen.getByLabelText("Your text") as HTMLTextAreaElement;
+const sourceSel = () => screen.getByLabelText("Source style") as HTMLSelectElement;
+const targetSel = () => screen.getByLabelText("Target style") as HTMLSelectElement;
+const btn = (name: string | RegExp) =>
+  screen.getByRole("button", { name }) as HTMLButtonElement;
+const status = () => screen.getByTestId("status").textContent ?? "";
+const output = () => screen.getByTestId("output").textContent ?? "";
+
+function stubComplete(out: string) {
+  const fetchMock = vi
+    .fn()
+    .mockImplementation(async () => sseResponse([delta(out), done()]));
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+async function completeRun(out = "OUT") {
+  const fetchMock = stubComplete(out);
+  render(<Translator config={cfg("live")} />);
+  await fillAndSubmit();
+  await waitFor(() => expect(status()).toBe("Complete"));
+  return fetchMock;
+}
+
+function stubClipboard(writeText: (s: string) => Promise<void>) {
+  Object.defineProperty(navigator, "clipboard", {
+    value: { writeText },
+    configurable: true,
+  });
+}
+
+describe("Translator workflow", () => {
+  it("offers all five styles in labeled selectors and blocks same-pair submit", () => {
+    render(<Translator config={cfg("live")} />);
+    for (const sel of [sourceSel(), targetSel()]) {
+      expect(Array.from(sel.options).map((o) => o.textContent)).toEqual([
+        "Human",
+        "LinkedIn",
+        "Corporate",
+        "Startup Founder",
+        "Academic",
+      ]);
+    }
+    fireEvent.change(textarea(), { target: { value: "hi" } });
+    fireEvent.click(screen.getByLabelText(/I am an adult/));
+    expect(translateBtn().disabled).toBe(false);
+    fireEvent.change(targetSel(), { target: { value: "human" } });
+    expect(translateBtn().disabled).toBe(true);
+    expect(screen.getByText("Choose a different target style.")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /Human · Result/ })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /Human · Source/ })).toBeTruthy();
+  });
+
+  it("disables intensity for Human target and restores it afterwards", () => {
+    render(<Translator config={cfg("live")} />);
+    fireEvent.change(sourceSel(), { target: { value: "corporate" } });
+    fireEvent.click(screen.getByLabelText("Maximum"));
+    fireEvent.change(targetSel(), { target: { value: "human" } });
+    expect((screen.getByLabelText("Subtle") as HTMLInputElement).disabled).toBe(true);
+    expect(screen.getByText("Plain English keeps it direct.")).toBeTruthy();
+    fireEvent.change(targetSel(), { target: { value: "startup" } });
+    expect((screen.getByLabelText("Maximum") as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText("Maximum") as HTMLInputElement).disabled).toBe(false);
+  });
+
+  it("sends the chosen styles and intensity", async () => {
+    const fetchMock = stubComplete("x");
+    render(<Translator config={cfg("live")} />);
+    fireEvent.change(sourceSel(), { target: { value: "academic" } });
+    fireEvent.change(targetSel(), { target: { value: "startup" } });
+    fireEvent.click(screen.getByLabelText("Maximum"));
+    fireEvent.change(textarea(), { target: { value: "hello" } });
+    fireEvent.click(screen.getByLabelText(/I am an adult/));
+    fireEvent.click(translateBtn());
+    await waitFor(() => expect(status()).toBe("Complete"));
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toMatchObject({
+      text: "hello",
+      sourceStyle: "academic",
+      targetStyle: "startup",
+      intensity: "maximum",
+    });
+  });
+
+  it("Swap moves a fresh complete result into the input", async () => {
+    await completeRun("OUT");
+    fireEvent.click(btn(/Swap/));
+    expect(textarea().value).toBe("OUT");
+    expect(sourceSel().value).toBe("linkedin");
+    expect(targetSel().value).toBe("human");
+    expect(status()).toBe("Idle");
+    expect(output()).not.toContain("OUT");
+  });
+
+  it("Swap without a result keeps the input", () => {
+    render(<Translator config={cfg("live")} />);
+    fireEvent.change(textarea(), { target: { value: "keep me" } });
+    fireEvent.click(btn(/Swap/));
+    expect(textarea().value).toBe("keep me");
+    expect(sourceSel().value).toBe("linkedin");
+    expect(targetSel().value).toBe("human");
+  });
+
+  it("shows over-limit after Swap without truncating", async () => {
+    await completeRun("b".repeat(3001));
+    fireEvent.click(btn(/Swap/));
+    expect(textarea().value.length).toBe(3001);
+    expect(screen.getByTestId("counter").textContent).toContain("over the limit");
+    expect(translateBtn().disabled).toBe(true);
+  });
+
+  it("locks controls during generation but keeps Stop enabled", async () => {
+    const s = controlledStream();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(s.response));
+    render(<Translator config={cfg("live")} />);
+    await fillAndSubmit();
+    await waitFor(() => expect(status()).toBe("Generating"));
+    expect(textarea().disabled).toBe(true);
+    expect(sourceSel().disabled).toBe(true);
+    expect(targetSel().disabled).toBe(true);
+    expect((screen.getByLabelText("Subtle") as HTMLInputElement).disabled).toBe(true);
+    expect(btn(/Swap/).disabled).toBe(true);
+    expect(btn("Clear").disabled).toBe(true);
+    expect(btn(EXAMPLES[0].label).disabled).toBe(true);
+    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).disabled).toBe(true);
+    expect(btn("Stop").disabled).toBe(false);
+    s.close();
+  });
+
+  it("Clear works after a result and keeps selections", async () => {
+    await completeRun("OUT");
+    fireEvent.click(btn("Clear"));
+    expect(textarea().value).toBe("");
+    expect(status()).toBe("Idle");
+    expect(targetSel().value).toBe("linkedin");
+  });
+
+  it("Stop keeps partial text as Stopped", async () => {
+    const s = controlledStream();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(s.response));
+    render(<Translator config={cfg("live")} />);
+    await fillAndSubmit();
+    s.push(delta("Par"));
+    await waitFor(() => expect(output()).toBe("Par"));
+    fireEvent.click(btn("Stop"));
+    expect(status()).toBe("Stopped");
+    expect(output()).toBe("Par");
+    expect(screen.getByText(/incomplete/)).toBeTruthy();
+    expect(btn("Copy result").disabled).toBe(true);
+    expect(btn("Regenerate").disabled).toBe(true);
+    expect(textarea().disabled).toBe(false);
+  });
+
+  it("Stop then immediate resubmit never shows old-run text", async () => {
+    const first = controlledStream();
+    const second = controlledStream();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(first.response)
+      .mockResolvedValueOnce(second.response);
+    vi.stubGlobal("fetch", fetchMock);
+    render(<Translator config={cfg("live")} />);
+    await fillAndSubmit();
+    first.push(delta("OLD1"));
+    await waitFor(() => expect(output()).toBe("OLD1"));
+    fireEvent.click(btn("Stop"));
+    fireEvent.click(translateBtn());
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    first.push(delta("OLD2"));
+    second.push(delta("NEW"));
+    await waitFor(() => expect(output()).toBe("NEW"));
+    await waitFor(() => expect(first.wasCanceled()).toBe(true));
+    first.push(delta("OLD3") + done());
+    second.push(done());
+    await waitFor(() => expect(status()).toBe("Complete"));
+    expect(output()).toBe("NEW");
+  });
+
+  it("Regenerate resubmits the snapshot with one new request and no prior output", async () => {
+    const fetchMock = await completeRun("OUT");
+    fireEvent.click(btn("Regenerate"));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock.mock.calls[1][1].body).toBe(fetchMock.mock.calls[0][1].body);
+    expect(fetchMock.mock.calls[1][1].body).not.toContain("OUT");
+    await waitFor(() => expect(status()).toBe("Complete"));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("copies the result and both texts", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    stubClipboard(writeText);
+    await completeRun("OUT");
+    fireEvent.click(btn("Copy result"));
+    await waitFor(() => expect(screen.getByTestId("copy-note").textContent).toContain("Copied"));
+    expect(writeText).toHaveBeenLastCalledWith("OUT");
+    fireEvent.click(btn("Copy both"));
+    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(2));
+    expect(writeText).toHaveBeenLastCalledWith(
+      "Human:\nhello there\n\nLinkedIn (Balanced):\nOUT",
+    );
+  });
+
+  it("shows a useful message when the clipboard rejects", async () => {
+    stubClipboard(vi.fn().mockRejectedValue(new Error("denied")));
+    await completeRun("OUT");
+    fireEvent.click(btn("Copy result"));
+    await waitFor(() =>
+      expect(screen.getByTestId("copy-note").textContent).toContain("Couldn't copy"),
+    );
+  });
+
+  it("Ctrl/Cmd+Enter submits, but not during composition or while busy", async () => {
+    const s = controlledStream();
+    const fetchMock = vi.fn().mockResolvedValue(s.response);
+    vi.stubGlobal("fetch", fetchMock);
+    render(<Translator config={cfg("live")} />);
+    fireEvent.change(textarea(), { target: { value: "hi" } });
+    fireEvent.click(screen.getByLabelText(/I am an adult/));
+
+    fireEvent.keyDown(textarea(), { key: "Enter", ctrlKey: true, isComposing: true });
+    fireEvent.keyDown(textarea(), { key: "Enter", ctrlKey: true, keyCode: 229 });
+    fireEvent.keyDown(textarea(), { key: "Enter" });
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(textarea(), { key: "Enter", metaKey: true });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    fireEvent.keyDown(textarea(), { key: "Enter", ctrlKey: true });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    s.close();
+  });
+
+  it("demo example sets direction and labels the output", () => {
+    render(<Translator config={cfg("demo")} />);
+    const ex = EXAMPLES.find((e) => e.id === "button-linkedin-human")!;
+    fireEvent.click(btn(ex.label));
+    expect(sourceSel().value).toBe("linkedin");
+    expect(targetSel().value).toBe("human");
+    expect(textarea().value).toBe(ex.input);
+    expect(status()).toContain("Example — not generated");
+    expect(output()).toBe(ex.output);
+    expect(screen.getByTestId("direction").textContent).toContain("LinkedIn → Human");
+  });
+
+  it("live example chip sets only the source style", () => {
+    render(<Translator config={cfg("live")} />);
+    const ex = EXAMPLES.find((e) => e.id === "button-linkedin-human")!;
+    fireEvent.click(btn(ex.label));
+    expect(sourceSel().value).toBe("linkedin");
+    expect(targetSel().value).toBe("linkedin");
+    expect(status()).toBe("Idle");
+  });
+
+  it("shows Blocked for a pre-stream 422 CONTENT_BLOCKED response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({ error: { code: "CONTENT_BLOCKED", message: "Can't help with that." } }),
+          { status: 422, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+    render(<Translator config={cfg("live")} />);
+    await fillAndSubmit();
+    await waitFor(() => expect(status()).toContain("Blocked"));
+    expect(status()).toContain("Can't help with that.");
+    expect(output()).not.toContain("Can't help");
+  });
+
+  it("distinguishes Truncated from Interrupted", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        sseResponse([
+          delta("Half"),
+          encodeSseEvent("error", {
+            code: "INCOMPLETE_OUTPUT",
+            message: "Hit the length limit.",
+            requestId: "r",
+          }),
+        ]),
+      ),
+    );
+    render(<Translator config={cfg("live")} />);
+    await fillAndSubmit();
+    await waitFor(() => expect(status()).toContain("Truncated"));
+    expect(output()).toBe("Half");
+    expect(status()).not.toContain("Interrupted");
+  });
+
+  it("labels the result stale after editing and keeps Copy available", async () => {
+    stubClipboard(vi.fn().mockResolvedValue(undefined));
+    await completeRun("OUT");
+    expect(screen.queryByTestId("stale")).toBeNull();
+    fireEvent.change(textarea(), { target: { value: "hello there!" } });
+    expect(screen.getByTestId("stale").textContent).toBe(
+      "Result is from your previous input",
+    );
+    expect(btn("Regenerate").disabled).toBe(true);
+    expect(btn("Copy result").disabled).toBe(false);
+    fireEvent.click(btn(/Swap/));
+    expect(textarea().value).toBe("hello there!");
   });
 });

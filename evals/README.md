@@ -28,14 +28,22 @@ The runner loads `GEMINI_API_KEY` from `.env.local` when that file exists (via
 Node's `--env-file-if-exists`). Otherwise export the variable in your shell; the
 runner does not read the key from anywhere else.
 
+The runner loads `GEMINI_API_KEY` from `.env.local` when that file exists (via
+Node's `--env-file-if-exists`). Otherwise export the variable in your shell; the
+runner does not read the key from anywhere else.
+
 Re-run specific development cases with `--ids dev-negation-01,dev-inject-01`.
 Unmatched ids fail the run before any provider call.
 
 ## Holdout separation
 
-Ten cases are tagged `split=holdout` and kept out of routine tuning. Once
-holdout failures inform prompt changes, those cases are no longer independent
-evidence—record that in review notes.
+The original 10-case holdout (`holdout-*` ids) was consumed on 2026-10-07: its
+failures informed prompt v4, so those cases were reclassified as development
+evidence and are no longer independent. The fresh independent set uses ids
+starting with `holdout2-` and must stay untouched until the final
+release-candidate run on the frozen configuration. Once holdout failures
+inform prompt changes, those cases are no longer independent evidence—record
+that in review notes.
 
 ## Scoring
 

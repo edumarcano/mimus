@@ -58,8 +58,8 @@ function pairKey(source: string, target: string): string {
 describe("evals/cases.jsonl", () => {
   const cases = loadCases();
 
-  it("has exactly 40 cases with required fields and unique ids", () => {
-    expect(cases).toHaveLength(40);
+  it("has exactly 50 cases with required fields and unique ids", () => {
+    expect(cases).toHaveLength(50);
     const ids = new Set<string>();
     for (const item of cases) {
       expect(item.id.length).toBeGreaterThan(0);
@@ -77,9 +77,19 @@ describe("evals/cases.jsonl", () => {
   });
 
   it("matches split and critical counts", () => {
-    expect(cases.filter((c) => c.split === "development")).toHaveLength(30);
+    expect(cases).toHaveLength(50);
+    expect(cases.filter((c) => c.split === "development")).toHaveLength(40);
     expect(cases.filter((c) => c.split === "holdout")).toHaveLength(10);
     expect(cases.filter((c) => c.critical)).toHaveLength(10);
+  });
+
+  it("keeps fresh holdout texts distinct from every development text", () => {
+    const devTexts = new Set(
+      cases.filter((c) => c.split === "development").map((c) => c.text),
+    );
+    for (const holdout of cases.filter((c) => c.split === "holdout")) {
+      expect(devTexts.has(holdout.text)).toBe(false);
+    }
   });
 
   it("covers all 20 distinct style pairs", () => {

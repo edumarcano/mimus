@@ -303,6 +303,33 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   `holdout2-*` split runs next on the committed config for final independent
   evidence; its results will not be used for tuning.
 
+## 2026-10-07: Owner scoring of the release-candidate cohort and target revision
+
+- **RC cohort (owner definition, 40 cases):** the 30 `dev-*` cases on the
+  frozen v4 + high configuration plus the fresh 10 `holdout2-*` cases. The
+  consumed `holdout-*` cases are supplemental development evidence only and
+  are excluded from the release-target denominator.
+- **Owner scores (2026-10-07):** meaning 0 on `dev-pair-06` (corporate output
+  fabricated "performance momentum"/"engagement metrics" from vibe-only
+  input) and `dev-inject-01` (echoed the embedded instruction as the
+  speaker's own framing and strengthened "added" into "officially
+  integrated"); meaning 1 on `dev-pair-18` and `holdout2-dates-beta`
+  ("locked in" for "is set for"); meaning 2 on all other 36 RC cases; style 2
+  on all 40.
+- **Targets:** meaning 2 on 36/40 - **met**; style 2 on 40/40 - **met**; no
+  meaning 0 on critical cases - 9/10, **not met** (`dev-inject-01`).
+- **Owner revision/acceptance:** the critical-case target is explicitly
+  revised for v1 with the `dev-inject-01` limitation accepted and documented.
+  Rationale: repeated general prompt improvements and Medium/High reasoning
+  experiments did not eliminate this Flash-Lite failure mode; further tuning
+  showed diminishing returns and overfitting risk; all 4 fresh critical
+  `holdout2-*` cases passed. The full reviewed summary is
+  `evals/results/summary.md`. Meaning preservation is not guaranteed per
+  result.
+- **Frozen configuration is the evaluated configuration:** the released
+  model ID and settings are committed (`486e782`); the candidate comment in
+  `model-config.ts` is retired as obsolete.
+
 ## 2026-10-07: Streaming diagnosis (raw Interactions timeline, one synthetic request)
 
 - **Symptom:** With the frozen v4 + High config, output appears all at once
@@ -341,10 +368,17 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   high thinking, the model generates its thought tokens (1139 here) silently
   before the first text event, then emits the short answer in one compressed
   burst. This is provider behavior to record, not a client bug; no
-  client-side pseudo-streaming should be fabricated. Single-sample caveat:
-  this does not characterize every response, and `interaction.created` /
+  client-side pseudo-streaming was added. Single-sample caveat: this does not
+  characterize every response, and `interaction.created` /
   `interaction.status_update` events are also ignored by the adapter,
-  harmlessly.
+  harmlessly. **Precision:** the probe cannot separate provider
+  queue/connection latency from internal reasoning time; it only establishes
+  that once text emission began, the short response arrived in a compressed
+  burst. Together with code inspection of the adapter and route (per-event
+  yields and per-event SSE enqueues) and the client's incremental SSE
+  parser, this is treated as passed evidence of genuine streaming end to
+  end locally, with the burst characteristic recorded as the accepted UX
+  tradeoff of high thinking.
 
 ## 2026-10-07: Final release-candidate holdout run (fresh holdout2, prompt v4 + high)
 

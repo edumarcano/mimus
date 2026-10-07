@@ -1,6 +1,8 @@
 import "server-only";
 
-// Candidate configuration; approve only after integration checks and evaluation.
+// Release-candidate configuration; approved by the owner on 2026-10-07 after
+// the evaluation recorded in evals/results/summary.md. Any change requires a
+// new evaluation on a fresh independent holdout.
 export const MODEL_CONFIG = {
   provider: "google",
   model: "gemini-3.5-flash-lite",

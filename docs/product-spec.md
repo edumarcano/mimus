@@ -1,13 +1,13 @@
-# Parlance product specification
+# Mimus product specification
 
-**Same thought. Different voice.**
+**Translate meaning, not just words.**
 
-Target release: **v1.0.0** | Updated: October 6, 2026
+Target release: **v1.0.0** | Updated: October 10, 2026
 
 Status: specification. The target version does not imply that the application
 has shipped or that release checks have passed.
 
-This is the single product and technical specification for Parlance. It describes
+This is the single product and technical specification for Mimus. It describes
 what the application is intended to do, not what has already been implemented or
 verified. Numerical limits and evaluation thresholds are project decisions, not
 measured results. External-service assumptions require verification before launch.
@@ -32,11 +32,11 @@ evidence establish which requirements have actually been met.
 
 ## 1. Product purpose
 
-Parlance rewrites text between recognizable writing styles while aiming to preserve its underlying meaning. The hero experience is **Human <-> LinkedIn**: ordinary language becomes exaggerated professional-social writing, and inflated writing becomes plain English.
+Mimus rewrites text between recognizable writing styles while aiming to preserve its underlying meaning. The hero experience is **Human <-> LinkedIn**: ordinary language becomes exaggerated professional-social writing, and inflated writing becomes plain English.
 
-The application should be understandable without reading documentation. Its primary interaction is a two-panel translator, not a chat conversation.
+The application should be understandable without reading documentation. Its primary interaction is a two-panel translator, not a chat conversation. Here, "translation" means rewriting English writing registers, not translating between human languages.
 
-Parlance is a standalone application. Its scope emphasizes a complete, approachable interaction, controlled model behavior, and inspectable evaluation rather than a general writing platform.
+Mimus is a standalone application. Its scope emphasizes a complete, approachable interaction, controlled model behavior, and inspectable evaluation rather than a general writing platform.
 
 **Primary audience:** Adults exploring writing styles, professional jargon, and playful rewrites. Treat the application as a writing experiment, not a factual interpreter of someone's hidden intentions or a professional advice service.
 
@@ -48,7 +48,8 @@ Parlance is a standalone application. Its scope emphasizes a complete, approacha
 
 | Area | Decision |
 | --- | --- |
-| Name | Parlance. Domain and trademark availability are not established by this spec. |
+| Name | Mimus. Domain and trademark availability are not established by this spec. |
+| Brand | Bird + Speech Hybrid mark and Mimus wordmark; primary tagline: "Translate meaning, not just words." |
 | Positioning | A playful writing-register translator, not a language-translation service. |
 | Initial styles | Human, LinkedIn, Corporate, Startup Founder, Academic. |
 | Default | Human -> LinkedIn, Balanced intensity. |
@@ -70,7 +71,7 @@ Parlance is a standalone application. Its scope emphasizes a complete, approacha
 | Abuse control | Vercel WAF rate limiting plus application request limits. No Redis. [S6] |
 | Budget | Target $0 recurring cost within eligible free allowances. No paid service activation without owner approval. |
 | Analytics | No analytics SDK or content-tracking service in v1. |
-| Design | Light theme, readable typography, playful copy, restrained motion. |
+| Design | Light theme, Mimus bird/wordmark identity, readable typography, playful copy, restrained motion. |
 | Evaluation | 40 synthetic cases, deterministic checks, and manual quality scoring. |
 
 **Launch distinction:** Free-tier development is the starting choice; unrestricted worldwide public inference is not assumed. Section 12 defines a conservative initial live-access policy and the public-launch gate.
@@ -101,7 +102,7 @@ Keep future ideas separate from release work. Adding them requires an explicit s
 
 ### Main page
 
-Keep the translator visible near the top of the page. Include a Parlance wordmark, tagline, short explanation, and a compact footer linking to GitHub and Privacy. Show a clear live/demo availability notice.
+Keep the translator visible near the top of the page. Include the Mimus bird-and-speech mark with its wordmark, the tagline "Translate meaning, not just words.", a short explanation that the app rewrites English writing styles, and a compact footer linking to GitHub and Privacy. Show a clear live/demo availability notice. Prefer a compact horizontal logo without the tagline in the persistent header; the tagline can appear in the introduction.
 
 On desktop, place input and output side by side. On mobile, stack input before output. Both panels have an explicit style label. The source selector describes the submitted text; the target selector controls the rewrite.
 
@@ -141,7 +142,11 @@ A canceled, blocked, failed, truncated, or interrupted result is not a completed
 
 The identity should contrast with a dense technical dashboard: calm, bright, spacious, and a little witty. Use the transformation itself as the visual centerpiece.
 
-Start with a typographic wordmark, neutral background, one accent color, clear panel borders, and generous spacing. A separate illustrated logo is not required. Use a system font stack or a properly licensed bundled font; avoid unnecessary third-party font requests.
+Use the Mimus **Bird + Speech Hybrid** identity: a restrained, simplified mockingbird/speech mark beside a readable Mimus wordmark. Keep neutral surfaces, clear panel borders, generous spacing, and a little wit. The mark is an identity element, not a chatbot avatar or a reason to introduce a mascot experience. Use a system font stack or a properly licensed bundled font; avoid unnecessary third-party font requests.
+
+The brand palette is **primary teal** `#0F5C63`, **secondary teal** `#2E7D86`, **sky accent** `#7BC4D6`, **mist** `#F5FAFB`, and **dark ink** `#14323A`. Apply these as logo colors and restrained UI accents, not as a requirement to recolor every existing interface element. Use "context-aware translation" only with nearby copy that identifies English writing-style rewriting; do not imply multilingual capability.
+
+Use appropriately optimized PNG assets where suitable: the bird mark, horizontal logo lockups with and without tagline, relevant light/dark-surface variants, favicon/browser icons, and a social-preview image. A vector redraw is not required. Before release, verify real transparency, clean edges, consistent bird and wing geometry across variants, accurate wordmark/tagline text, and legibility at deployed sizes (including 16 px and 32 px favicons). Dark-surface logo variants do not introduce dark mode into v1.
 
 Do not imitate LinkedIn's exact product UI, use its logo, or imply endorsement. Add a brief independent-project disclaimer. Other named styles are descriptors, not partnerships.
 
@@ -525,7 +530,7 @@ Google's terms require adult use, restrict API clients directed at or likely acc
 
 **Conservative v1 deployment default:** Publicly viewable examples, with live unpaid-Google requests limited to US traffic after owner review. The US appears on Google's supported-region list. This geographic scope is a project choice, not a claim that Google only permits US use. [S12]
 
-Use Vercel's platform-supplied country information at the server boundary; reject unknown or non-allowlisted locations for live requests. Do not accept a country sent in the JSON body. Local development may use `PARLANCE_DEV_ALLOW_LOCAL_LIVE=true` only in a loopback development server with `NODE_ENV=development` and no Vercel deployment environment. Fail closed outside that context; never activate the bypass through a request parameter. Vercel documents the geolocation headers and their deployment/proxy limitations. [S13]
+Use Vercel's platform-supplied country information at the server boundary; reject unknown or non-allowlisted locations for live requests. Do not accept a country sent in the JSON body. Local development may use `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` only in a loopback development server with `NODE_ENV=development` and no Vercel deployment environment. Fail closed outside that context; never activate the bypass through a request parameter. Vercel documents the geolocation headers and their deployment/proxy limitations. [S13]
 
 Target adult professional audiences and require affirmative acknowledgement before the first live request. An age checkbox and IP location are not proof of eligibility or comprehensive compliance. Before public inference is enabled, the owner must review professional/business-purpose eligibility, the intended audience and distribution, actual project billing status, permitted regions, and displayed policy. Record that review in the launch checklist.
 
@@ -533,7 +538,7 @@ When those conditions cannot be met, keep live inference off and obtain approval
 
 ### Suggested unpaid-Google notice
 
-> Text is sent to Google to generate a rewrite. Google may use input and output to improve its products, and human reviewers may review it. Use fictional text; do not submit personal, confidential, or sensitive information. Parlance does not intentionally save your text on its servers. Optional history stays in this browser. [S11]
+> Text is sent to Google to generate a rewrite. Google may use input and output to improve its products, and human reviewers may review it. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser. [S11]
 
 Display the age/availability condition alongside this notice. Keep exact disclosure copy in one shared module used by the UI and `/privacy` page. Changes in provider or data policy require a new notice version and fresh acknowledgement.
 
@@ -683,7 +688,7 @@ instructions and development-tool configuration remain separate from application
 code.
 
 ```text
-parlance/
+mimus/
   README.md
   LICENSE
   AGENTS.md
@@ -748,19 +753,27 @@ GEMINI_API_KEY=
 # There is intentionally no model-selection environment variable.
 
 # demo | live | disabled. Default: demo; no model calls or key required.
-PARLANCE_MODE=demo
+MIMUS_MODE=demo
 
 # Exact trusted browser origin for this environment, without a trailing slash.
 APP_ORIGIN=http://localhost:3000
 
 # Conservative unpaid-Google region policy; review before live deployment.
 # Use uppercase country codes.
-PARLANCE_LIVE_COUNTRIES=US
+MIMUS_LIVE_COUNTRIES=US
 
 # Local loopback development only; must be rejected on deployed/production hosts.
 # Does not bypass the privacy notice, validation, or any other request limits.
-PARLANCE_DEV_ALLOW_LOCAL_LIVE=false
+MIMUS_DEV_ALLOW_LOCAL_LIVE=false
 ```
+
+These are the canonical v1.0.0 configuration names after the pre-release rename.
+Migrate the former `PARLANCE_MODE`, `PARLANCE_LIVE_COUNTRIES`, and
+`PARLANCE_DEV_ALLOW_LOCAL_LIVE` settings in code, tests, local ignored files,
+deployment environments, and documentation together. Do not retain a second
+legacy-name lookup in the released app. Renaming configuration must preserve
+demo-by-default and fail-closed location checks; update `APP_ORIGIN` to match
+the actual trusted deployment origin if that origin changes.
 
 ### Configuration ownership
 
@@ -818,6 +831,7 @@ A release candidate is ready when:
 - Automated checks pass, or any unmet release gate is explicitly identified as blocking completion.
 - The synthetic evaluation has actually run, scores and failures are recorded, and release targets are met or revised transparently by the owner before release.
 - The repository, README, permitted live deployment, screenshots, setup instructions, and engineering case study are ready for public use and match the verified implementation.
+- The Mimus name, logo/favicon assets, page metadata, privacy wording, active URLs, and release documentation are consistent; supplied PNGs have been checked for transparency, mark consistency, and legibility at their actual sizes.
 
 Publishing the repository and the v1.0.0 tag/release is a maintainer action after
 acceptance. A version in package metadata or a prepared release note is not proof

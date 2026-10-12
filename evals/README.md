@@ -1,4 +1,4 @@
-# Parlance evaluation
+# Mimus evaluation
 
 The synthetic set lives in `cases.jsonl`: 50 fictional cases total —
 40 development cases (30 original `dev-*` plus the 10 consumed `holdout-*`

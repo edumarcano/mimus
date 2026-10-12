@@ -1,8 +1,8 @@
-# Parlance Repository Instructions
+# Mimus Repository Instructions
 
 ## Project
 
-Parlance is a small public AI writing-register translator.
+Mimus is a small public AI writing-register translator.
 
 `docs/product-spec.md` is the authoritative v1 product specification.
 

@@ -1,6 +1,6 @@
 ---
 name: review-change
-description: Perform a read-only review of a Parlance diff, branch, or implementation. Use after substantive changes or when explicitly asked to review code.
+description: Perform a read-only review of a Mimus diff, branch, or implementation. Use after substantive changes or when explicitly asked to review code.
 ---
 
 # Review Change

@@ -528,3 +528,11 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
 - **Reason:** These checks need a live-mode deployment and depend on decisions outside the code. They do not affect the merged code while live mode is off.
 - **Accepted limitation:** The critical-case target result (9 of 10) stands as recorded in the release-candidate summary. It is accepted for v1 and is not treated as passed.
 - **Condition before enabling live mode:** resolve the public-use terms questions, deploy with live mode, run the checks in docs/deployment.md, and record the results. Before Milestone 5 closes, confirm against docs/product-spec.md whether live verification is required before launch.
+
+## 2026-10-12: Mimus rebrand (Milestone 5)
+
+- **Decision:** The product is renamed from Parlance to Mimus. Model configuration, prompts (v4), style semantics, API route, and evaluation datasets/results are unchanged; M4 evaluation evidence stays as recorded and was not re-run. Earlier entries in this log keep the original name and `PARLANCE_*` variables as historical record.
+- **Configuration:** `PARLANCE_MODE`, `PARLANCE_LIVE_COUNTRIES`, and `PARLANCE_DEV_ALLOW_LOCAL_LIVE` became `MIMUS_MODE`, `MIMUS_LIVE_COUNTRIES`, and `MIMUS_DEV_ALLOW_LOCAL_LIVE` with no legacy fallback; leftover old names fail closed to demo. Deployments must set the new names.
+- **Browser storage:** `parlance:prefs:v1`, `parlance:history:v1`, and session `parlance:ack` move once to `mimus:*` keys on first load (raw value copied only if the new key is empty; legacy key always removed). Values are not altered, and the history toggle is not changed. `NOTICE_VERSION` stays `google-unpaid-v1` because only the product name in the notice changed.
+- **Assets:** Brand PNGs were checked for real alpha, correct text, and 16/32 px legibility. The standalone mark's wing is slightly more elongated than the bird in the horizontal logos; the mark is the canonical source for favicons and icons.
+- **Not changed by this entry:** Public live inference remains blocked by the Google terms review above; production stays examples-only.

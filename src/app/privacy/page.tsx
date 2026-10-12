@@ -14,7 +14,7 @@ export default function PrivacyPage() {
             href="/"
             className="inline-flex min-h-11 items-center font-medium text-accent-strong underline underline-offset-4"
           >
-            Back to Parlance
+            Back to Mimus
           </Link>
         </p>
         <h1 className="mt-4 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { connection } from "next/server";
@@ -54,15 +55,24 @@ export default async function Home() {
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-6 lg:py-12">
       <header className="mb-8">
-        <h1 className="text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
-          Parlance
+        <h1>
+          <Image
+            src="/brand/mimus-logo.png"
+            alt="Mimus"
+            width={720}
+            height={210}
+            priority
+            className="block h-10 w-auto sm:h-12 md:h-14"
+          />
         </h1>
         <p className="mt-2 text-xl text-accent-strong">
-          Same thought. Different voice.
+          Translate meaning, not just words.
         </p>
         <p className="mt-3 max-w-2xl leading-relaxed text-ink-soft">
-          Say it plainly, then hear how it would sound as LinkedIn, Corporate,
-          Startup, or Academic prose, or translate it back.
+          Mimus rewrites English writing styles: Human, LinkedIn, Corporate,
+          Startup Founder, and Academic. It does not translate between
+          languages. Say it plainly, then hear how it would sound in another
+          style, or translate it back.
         </p>
         <p
           data-testid="availability"
@@ -83,7 +93,7 @@ export default async function Home() {
         <p className="flex flex-wrap gap-x-4 gap-y-2">
           <a
             className="inline-flex min-h-11 items-center font-medium text-accent-strong underline underline-offset-4"
-            href="https://github.com/edumarcano/parlance"
+            href="https://github.com/edumarcano/mimus"
           >
             Source on GitHub
           </a>
@@ -95,7 +105,7 @@ export default async function Home() {
           </Link>
         </p>
         <p className="mt-1 max-w-2xl">
-          Parlance is an independent project. It is not affiliated with or
+          Mimus is an independent project. It is not affiliated with or
           endorsed by LinkedIn.
         </p>
       </footer>

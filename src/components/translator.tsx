@@ -149,9 +149,9 @@ const PARTIAL_STATUSES: readonly TranslatorStatus[] = [
 ];
 
 const selectClass =
-  "min-h-11 w-full min-w-0 rounded-lg border border-line bg-white px-3 text-base text-ink disabled:bg-canvas disabled:opacity-60";
+  "min-h-11 w-full min-w-0 rounded-lg border border-control-line bg-white px-3 text-base text-ink disabled:bg-canvas disabled:opacity-60";
 const secondaryButton =
-  "min-h-11 rounded-lg border border-line bg-white px-4 text-sm font-medium transition-colors text-ink hover:border-accent disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-11 rounded-lg border border-control-line bg-white px-4 text-sm font-medium transition-colors text-ink hover:border-accent disabled:cursor-not-allowed disabled:opacity-50";
 
 function StyleSelect(props: {
   id: string;
@@ -584,7 +584,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
             aria-describedby={ids.count}
             rows={10}
             placeholder="Say it the way you'd say it out loud."
-            className="block min-h-56 w-full resize-y rounded-lg border border-line bg-white p-3 text-base text-ink placeholder:text-ink-soft disabled:bg-canvas"
+            className="block min-h-56 w-full resize-y rounded-lg border border-control-line bg-white p-3 text-base text-ink placeholder:text-ink-soft disabled:bg-canvas"
           />
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
             <p
@@ -617,7 +617,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
                   type="button"
                   disabled={busy}
                   onClick={() => applyExample(ex.id)}
-                  className="min-h-11 rounded-full transition-colors border border-line bg-accent-soft px-4 text-sm font-medium text-accent-strong hover:border-accent disabled:opacity-50"
+                  className="min-h-11 rounded-full transition-colors border border-control-line bg-accent-soft px-4 text-sm font-medium text-accent-strong hover:border-accent disabled:opacity-50"
                 >
                   {ex.label}
                 </button>
@@ -730,7 +730,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
               {INTENSITIES.map((level: Intensity) => (
                 <label
                   key={level}
-                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-line px-3 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60"
+                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-control-line px-3 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60"
                 >
                   <input
                     type="radio"

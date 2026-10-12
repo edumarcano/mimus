@@ -4,7 +4,12 @@ import "./globals.css";
 const description =
   "Mimus rewrites English text between writing styles such as LinkedIn, Corporate, and plain English. Translate meaning, not just words.";
 
+// Canonical public origin; resolves social image URLs independent of the
+// per-deployment host Vercel would otherwise infer.
+const CANONICAL_ORIGIN = "https://mimus-rewrite.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(CANONICAL_ORIGIN),
   title: "Mimus",
   description,
   openGraph: {

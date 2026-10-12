@@ -2,7 +2,7 @@ import type { RequestSnapshot } from "./translator-state";
 import { safeGetItem, safeSetItem, type StorageLike } from "./storage";
 import { INTENSITIES, isDistinctPair, STYLE_IDS } from "./styles";
 
-export const HISTORY_STORAGE_KEY = "parlance:history:v1";
+export const HISTORY_STORAGE_KEY = "mimus:history:v1";
 export const HISTORY_MAX_ENTRIES = 10;
 
 export type HistoryEntry = {

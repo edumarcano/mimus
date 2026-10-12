@@ -1,6 +1,6 @@
 # Deployment notes
 
-This document describes the production configuration for Parlance. Items are
+This document describes the production configuration for Mimus. Items are
 separated into **verified** (observed against the deployed host on
 2026-10-07) and **not yet verified** (requires actions or access described
 below). No item is claimed verified without the evidence shown here.
@@ -14,10 +14,10 @@ environments. Never commit credentials or real user text.
 | Variable | Role |
 | --- | --- |
 | `GEMINI_API_KEY` | Server-only Google Gemini Developer API key |
-| `PARLANCE_MODE` | `demo`, `live`, or `disabled` |
+| `MIMUS_MODE` | `demo`, `live`, or `disabled` |
 | `APP_ORIGIN` | Exact browser origin (no trailing slash) |
-| `PARLANCE_LIVE_COUNTRIES` | Uppercase allowlist (initial policy: `US`) |
-| `PARLANCE_DEV_ALLOW_LOCAL_LIVE` | Loopback-only bypass; must be `false` on Vercel |
+| `MIMUS_LIVE_COUNTRIES` | Uppercase allowlist (initial policy: `US`) |
+| `MIMUS_DEV_ALLOW_LOCAL_LIVE` | Loopback-only bypass; must be `false` on Vercel |
 
 The model id, output cap, and thinking level live in
 [`src/lib/server/model-config.ts`](../src/lib/server/model-config.ts), not in
@@ -105,8 +105,8 @@ WAF 429 sequence above.
 ## Actions still required for full deployed verification
 
 1. Decide the launch deployment mode and configure environment variables
-   (`PARLANCE_MODE=live`, `GEMINI_API_KEY`, `APP_ORIGIN` set to the exact
-   deployment origin, `PARLANCE_LIVE_COUNTRIES=US`) on a protected preview or
+   (`MIMUS_MODE=live`, `GEMINI_API_KEY`, `APP_ORIGIN` set to the exact
+   deployment origin, `MIMUS_LIVE_COUNTRIES=US`) on a protected preview or
    production. Note the unresolved public-live terms blockers in
    [`docs/decisions.md`](decisions.md) before opening public traffic.
 2. Re-run the deployed live checks listed above on that deployment.
@@ -117,7 +117,7 @@ WAF 429 sequence above.
 
 To stop live inference:
 
-1. Set `PARLANCE_MODE=disabled` and redeploy, **or**
+1. Set `MIMUS_MODE=disabled` and redeploy, **or**
 2. Deny traffic at the WAF (verified control surface: the published rule above
    can be tightened or a deny rule added via `vercel firewall`), **or**
 3. Revoke or rotate the Gemini API key.

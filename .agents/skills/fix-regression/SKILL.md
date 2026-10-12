@@ -1,6 +1,6 @@
 ---
 name: fix-regression
-description: Diagnose and repair a Parlance defect with focused regression coverage. Use for incorrect runtime behavior, failed tests or builds, type errors, UI regressions, or bugs introduced by a change.
+description: Diagnose and repair a Mimus defect with focused regression coverage. Use for incorrect runtime behavior, failed tests or builds, type errors, UI regressions, or bugs introduced by a change.
 ---
 
 # Fix Regression

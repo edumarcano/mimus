@@ -1,7 +1,7 @@
 export const NOTICE_VERSION = "google-unpaid-v1";
 
 export const NOTICE_TEXT =
-  "Text is sent to Google to generate a rewrite. Google may use input and output to improve its products, and human reviewers may review it. Use fictional text; do not submit personal, confidential, or sensitive information. Parlance does not intentionally save your text on its servers. Optional history stays in this browser.";
+  "Text is sent to Google to generate a rewrite. Google may use input and output to improve its products, and human reviewers may review it. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser.";
 
 export const NOTICE_AVAILABILITY =
   "For adults only. Live generation is currently limited to approved regions and is intended for professional writing experiments.";
@@ -34,9 +34,9 @@ export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
   },
   {
     id: "server-storage",
-    title: "What Parlance stores on its servers",
+    title: "What Mimus stores on its servers",
     paragraphs: [
-      "Parlance does not intentionally persist your input or generated rewrite text on its servers, in logs, or in URLs.",
+      "Mimus does not intentionally persist your input or generated rewrite text on its servers, in logs, or in URLs.",
       "Allowlisted operational logs may include a request ID, model ID, prompt version, style IDs, duration, status or error code, and aggregate token counts when reported by the provider. They exclude submitted text, generated text, provider error payloads, raw IP addresses, authorization headers, and full request bodies.",
     ],
   },
@@ -44,7 +44,7 @@ export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
     id: "hosting",
     title: "Hosting and network processing",
     paragraphs: [
-      "The site is hosted on Vercel. Vercel processes requests as part of serving the application and may record standard request metadata (such as path, timing, and platform geolocation headers used for region checks). Parlance does not operate a separate application database.",
+      "The site is hosted on Vercel. Vercel processes requests as part of serving the application and may record standard request metadata (such as path, timing, and platform geolocation headers used for region checks). Mimus does not operate a separate application database.",
     ],
   },
   {
@@ -73,9 +73,9 @@ export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
     id: "disclaimer",
     title: "Independent project",
     paragraphs: [
-      "Parlance is an independent project. It is not affiliated with or endorsed by LinkedIn or other style names used as descriptors.",
+      "Mimus is an independent project. It is not affiliated with or endorsed by LinkedIn or other style names used as descriptors.",
     ],
   },
 ];
 
-export const ACK_STORAGE_KEY = "parlance:ack";
+export const ACK_STORAGE_KEY = "mimus:ack";

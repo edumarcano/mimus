@@ -1,4 +1,6 @@
-# Parlance evaluation summary (release candidate)
+# Mimus evaluation summary (release candidate)
+
+> **Provenance:** This evaluation was run before the product was renamed from Parlance to Mimus. The rename changed branding, environment-variable names, and storage keys only; the model configuration, prompts, and style semantics evaluated here are unchanged, so these results were not re-run.
 
 **Status:** reviewed. This is the sanitized, reviewed summary of the
 release-candidate evaluation. Raw run files live in `evals/results/raw/`

@@ -47,3 +47,57 @@ export function safeParseJson<T>(
     return null;
   }
 }
+
+export type StorageMigrationPair = {
+  legacy: string;
+  current: string;
+};
+
+export function migrateStorageKeys(
+  storage: StorageLike,
+  pairs: readonly StorageMigrationPair[],
+): void {
+  for (const { legacy, current } of pairs) {
+    const legacyValue = safeGetItem(storage, legacy);
+    if (legacyValue === null) {
+      continue;
+    }
+    if (safeGetItem(storage, current) === null) {
+      safeSetItem(storage, current, legacyValue);
+    }
+    safeRemoveItem(storage, legacy);
+  }
+}
+
+let legacyStorageMigrated = false;
+
+const LOCAL_STORAGE_MIGRATIONS: readonly StorageMigrationPair[] = [
+  { legacy: "parlance:prefs:v1", current: "mimus:prefs:v1" },
+  { legacy: "parlance:history:v1", current: "mimus:history:v1" },
+];
+
+const SESSION_STORAGE_MIGRATIONS: readonly StorageMigrationPair[] = [
+  { legacy: "parlance:ack", current: "mimus:ack" },
+];
+
+export function migrateLegacyStorage(): void {
+  if (legacyStorageMigrated || typeof window === "undefined") {
+    return;
+  }
+  legacyStorageMigrated = true;
+  try {
+    migrateStorageKeys(localStorage, LOCAL_STORAGE_MIGRATIONS);
+  } catch {
+    // localStorage unavailable
+  }
+  try {
+    migrateStorageKeys(sessionStorage, SESSION_STORAGE_MIGRATIONS);
+  } catch {
+    // sessionStorage unavailable
+  }
+}
+
+/** @internal Resets one-time migration guard for tests. */
+export function resetLegacyStorageMigrationForTests(): void {
+  legacyStorageMigrated = false;
+}

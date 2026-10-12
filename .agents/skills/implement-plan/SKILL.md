@@ -1,6 +1,6 @@
 ---
 name: implement-plan
-description: Execute an approved Parlance implementation plan or one planned unit of work. Use when the intended behavior and implementation direction have already been established.
+description: Execute an approved Mimus implementation plan or one planned unit of work. Use when the intended behavior and implementation direction have already been established.
 ---
 
 # Implement Plan

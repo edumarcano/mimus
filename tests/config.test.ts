@@ -2,12 +2,15 @@ import { afterEach, describe, expect, it } from "vitest";
 import { getPublicConfig, getServerConfig } from "@/lib/server/config";
 
 const ENV_KEYS = [
-  "PARLANCE_MODE",
+  "MIMUS_MODE",
   "GEMINI_API_KEY",
   "APP_ORIGIN",
+  "MIMUS_LIVE_COUNTRIES",
+  "MIMUS_DEV_ALLOW_LOCAL_LIVE",
+  "GEMINI_MODEL",
+  "PARLANCE_MODE",
   "PARLANCE_LIVE_COUNTRIES",
   "PARLANCE_DEV_ALLOW_LOCAL_LIVE",
-  "GEMINI_MODEL",
 ] as const;
 
 const snapshot = (): Record<string, string | undefined> => {
@@ -48,51 +51,79 @@ describe("getServerConfig", () => {
   });
 
   it("treats invalid mode as not live", () => {
-    resetEnv({ PARLANCE_MODE: "bogus" });
+    resetEnv({ MIMUS_MODE: "bogus" });
     const config = getServerConfig();
     expect(config.isLive).toBe(false);
     expect(config.configError).toBe(true);
   });
 
   it("requires key, origin, and countries for live", () => {
-    resetEnv({ PARLANCE_MODE: "live" });
+    resetEnv({ MIMUS_MODE: "live" });
     expect(getServerConfig().isLive).toBe(false);
 
     resetEnv({
-      PARLANCE_MODE: "live",
+      MIMUS_MODE: "live",
       GEMINI_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
     });
     expect(getServerConfig().isLive).toBe(false);
 
     resetEnv({
-      PARLANCE_MODE: "live",
+      MIMUS_MODE: "live",
       GEMINI_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
-      PARLANCE_LIVE_COUNTRIES: "US",
+      MIMUS_LIVE_COUNTRIES: "US",
     });
     expect(getServerConfig().isLive).toBe(true);
   });
 
   it("ignores GEMINI_MODEL env", () => {
     resetEnv({
+      MIMUS_MODE: "live",
+      GEMINI_API_KEY: "test-key",
+      APP_ORIGIN: "http://localhost:3000",
+      MIMUS_LIVE_COUNTRIES: "US",
+      GEMINI_MODEL: "some-other-model",
+    });
+    expect(getServerConfig().isLive).toBe(true);
+  });
+
+  it("does not enable live from legacy PARLANCE_MODE alone", () => {
+    resetEnv({
       PARLANCE_MODE: "live",
       GEMINI_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
       PARLANCE_LIVE_COUNTRIES: "US",
-      GEMINI_MODEL: "some-other-model",
     });
-    expect(getServerConfig().isLive).toBe(true);
+    const config = getServerConfig();
+    expect(config.mode).toBe("demo");
+    expect(config.isLive).toBe(false);
+    expect(config.liveCountries).toEqual([]);
+    expect(config.devAllowLocalLive).toBe(false);
+  });
+
+  it("ignores legacy PARLANCE_LIVE_COUNTRIES and PARLANCE_DEV_ALLOW_LOCAL_LIVE", () => {
+    resetEnv({
+      MIMUS_MODE: "live",
+      GEMINI_API_KEY: "test-key",
+      APP_ORIGIN: "http://localhost:3000",
+      PARLANCE_LIVE_COUNTRIES: "US",
+      PARLANCE_DEV_ALLOW_LOCAL_LIVE: "true",
+    });
+    const config = getServerConfig();
+    expect(config.isLive).toBe(false);
+    expect(config.liveCountries).toEqual([]);
+    expect(config.devAllowLocalLive).toBe(false);
   });
 });
 
 describe("getPublicConfig", () => {
   it("projects liveAvailability from region headers", () => {
     resetEnv({
-      PARLANCE_MODE: "live",
+      MIMUS_MODE: "live",
       GEMINI_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
-      PARLANCE_LIVE_COUNTRIES: "US",
+      MIMUS_LIVE_COUNTRIES: "US",
     });
     const allowed = new Headers({ "x-vercel-ip-country": "US" });
     const blocked = new Headers({ "x-vercel-ip-country": "CA" });
@@ -108,10 +139,10 @@ describe("getPublicConfig", () => {
 
   it("never exposes secrets or origin", () => {
     resetEnv({
-      PARLANCE_MODE: "live",
+      MIMUS_MODE: "live",
       GEMINI_API_KEY: "secret-key",
       APP_ORIGIN: "http://localhost:3000",
-      PARLANCE_LIVE_COUNTRIES: "US",
+      MIMUS_LIVE_COUNTRIES: "US",
     });
     const pub = getPublicConfig();
     expect(JSON.stringify(pub)).not.toContain("secret-key");

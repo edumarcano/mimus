@@ -1,6 +1,6 @@
 ---
 name: plan-change
-description: Research and plan a Parlance feature, milestone, integration, or architectural change into an implementation-ready plan. Use when work needs repository investigation or design decisions before implementation.
+description: Research and plan a Mimus feature, milestone, integration, or architectural change into an implementation-ready plan. Use when work needs repository investigation or design decisions before implementation.
 ---
 
 # Plan Change

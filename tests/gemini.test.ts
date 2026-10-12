@@ -15,9 +15,9 @@ import { resetGeminiClientForTests, streamRewrite } from "@/lib/server/gemini";
 
 const ENV_KEYS = [
   "GEMINI_API_KEY",
-  "PARLANCE_MODE",
+  "MIMUS_MODE",
   "APP_ORIGIN",
-  "PARLANCE_LIVE_COUNTRIES",
+  "MIMUS_LIVE_COUNTRIES",
 ] as const;
 
 let savedEnv: Record<string, string | undefined> = {};
@@ -28,9 +28,9 @@ beforeEach(() => {
     savedEnv[key] = process.env[key];
   }
   process.env.GEMINI_API_KEY = "test-key";
-  process.env.PARLANCE_MODE = "live";
+  process.env.MIMUS_MODE = "live";
   process.env.APP_ORIGIN = "http://localhost:3000";
-  process.env.PARLANCE_LIVE_COUNTRIES = "US";
+  process.env.MIMUS_LIVE_COUNTRIES = "US";
   resetGeminiClientForTests();
   createMock.mockReset();
 });

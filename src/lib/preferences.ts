@@ -7,7 +7,7 @@ import {
   type StyleId,
 } from "./styles";
 
-export const PREFS_STORAGE_KEY = "parlance:prefs:v1";
+export const PREFS_STORAGE_KEY = "mimus:prefs:v1";
 
 export type Preferences = {
   sourceStyle: StyleId;

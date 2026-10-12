@@ -27,4 +27,24 @@ test.describe("demo mode", () => {
     await expect(page.getByRole("button", { name: "Translate" })).toBeDisabled();
     await expect(page.getByText(/off in demo mode/)).toBeVisible();
   });
+
+  test("brand: single h1 named Mimus, tagline, and privacy back link", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const headings = page.getByRole("heading", { level: 1 });
+    await expect(headings).toHaveCount(1);
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Mimus" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Translate meaning, not just words.", { exact: true }),
+    ).toBeVisible();
+
+    await page.goto("/privacy");
+    await expect(
+      page.getByRole("link", { name: "Back to Mimus" }),
+    ).toBeVisible();
+  });
 });

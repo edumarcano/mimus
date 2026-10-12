@@ -9,11 +9,11 @@ import { createTranslateHandler } from "@/lib/server/translate";
 import { SseStreamParser } from "@/lib/stream";
 
 const ENV_KEYS = [
-  "PARLANCE_MODE",
+  "MIMUS_MODE",
   "GEMINI_API_KEY",
   "APP_ORIGIN",
-  "PARLANCE_LIVE_COUNTRIES",
-  "PARLANCE_DEV_ALLOW_LOCAL_LIVE",
+  "MIMUS_LIVE_COUNTRIES",
+  "MIMUS_DEV_ALLOW_LOCAL_LIVE",
 ] as const;
 
 const envSnapshot = (): Record<string, string | undefined> => {
@@ -479,7 +479,7 @@ describe("createTranslateHandler", () => {
   });
 
   it("returns 503 SERVICE_UNAVAILABLE in disabled mode without calling adapter", async () => {
-    resetEnv({ PARLANCE_MODE: "disabled" });
+    resetEnv({ MIMUS_MODE: "disabled" });
     const { getServerConfig } = await import("@/lib/server/config");
     const adapter = vi.fn(adapterFrom([]));
     const handler = createTranslateHandler({

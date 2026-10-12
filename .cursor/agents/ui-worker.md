@@ -1,6 +1,6 @@
 ---
 name: ui-worker
-model: claude-sonnet-5-5[context=300k,reasoning_effort=medium]
+model: claude-haiku-5-5[thinking=true,context=300k,reasoning_effort=high]
 description: Implement approved frontend and documentation work including React interactions, responsive layout, accessibility, visual polish, user-facing copy, README content, and case-study prose. Use after the parent has established the product and design plan.
 ---
 

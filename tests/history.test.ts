@@ -107,6 +107,6 @@ describe("history", () => {
     const entries = addEntry([], snapshot, "saved");
     expect(saveHistory(entries, storage)).toBe(true);
     expect(clearHistory(storage)).toBe(true);
-    expect(storage.getItem("parlance:history:v1")).toBe(JSON.stringify([]));
+    expect(storage.getItem("mimus:history:v1")).toBe(JSON.stringify([]));
   });
 });

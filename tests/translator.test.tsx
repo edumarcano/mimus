@@ -9,6 +9,10 @@ import {
 } from "@testing-library/react";
 import { Translator, type TranslatorConfig } from "@/components/translator";
 import { EXAMPLES } from "@/lib/examples";
+import { addEntry, HISTORY_STORAGE_KEY } from "@/lib/history";
+import { ACK_STORAGE_KEY } from "@/lib/notice";
+import { PREFS_STORAGE_KEY } from "@/lib/preferences";
+import { resetLegacyStorageMigrationForTests } from "@/lib/storage";
 import { encodeSseEvent } from "@/lib/stream";
 
 const base: Omit<TranslatorConfig, "mode" | "liveAvailability"> = {
@@ -52,6 +56,7 @@ async function fillAndSubmit() {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  resetLegacyStorageMigrationForTests();
   sessionStorage.clear();
   localStorage.clear();
 });
@@ -604,14 +609,14 @@ describe("Translator privacy and history", () => {
   });
 
   it("restores acknowledgement from sessionStorage only on version match", () => {
-    sessionStorage.setItem("parlance:ack", "v-test");
+    sessionStorage.setItem("mimus:ack", "v-test");
     render(<Translator config={cfg("live", "available")} />);
     expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
       true,
     );
 
     cleanup();
-    sessionStorage.setItem("parlance:ack", "old-version");
+    sessionStorage.setItem("mimus:ack", "old-version");
     render(<Translator config={cfg("live", "available")} />);
     expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
       false,
@@ -619,7 +624,7 @@ describe("Translator privacy and history", () => {
   });
 
   it("409 NOTICE_CHANGED clears acknowledgement and blocks resubmit", async () => {
-    sessionStorage.setItem("parlance:ack", "v-test");
+    sessionStorage.setItem("mimus:ack", "v-test");
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
@@ -646,7 +651,7 @@ describe("Translator privacy and history", () => {
     expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
       false,
     );
-    expect(sessionStorage.getItem("parlance:ack")).toBeNull();
+    expect(sessionStorage.getItem("mimus:ack")).toBeNull();
     expect(translateBtn().disabled).toBe(true);
     expect(screen.getByText(/Refresh the page/)).toBeTruthy();
   });
@@ -698,13 +703,13 @@ describe("Translator privacy and history", () => {
 
     await fillAndSubmit();
     await waitFor(() => expect(status()).toBe("Complete"));
-    expect(storage.getItem("parlance:history:v1")).toBeNull();
+    expect(storage.getItem("mimus:history:v1")).toBeNull();
 
     fireEvent.click(screen.getByLabelText(/Save completed rewrites/));
     fireEvent.click(translateBtn());
     await waitFor(() => expect(status()).toBe("Complete"));
     await waitFor(() =>
-      expect(storage.getItem("parlance:history:v1")).toContain("SAVED_OUT"),
+      expect(storage.getItem("mimus:history:v1")).toContain("SAVED_OUT"),
     );
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Load" })).toBeTruthy(),
@@ -715,19 +720,19 @@ describe("Translator privacy and history", () => {
     expect(output()).toBe("SAVED_OUT");
 
     fireEvent.click(screen.getByRole("button", { name: "Clear history" }));
-    expect(JSON.parse(storage.getItem("parlance:history:v1") ?? "[]")).toEqual(
+    expect(JSON.parse(storage.getItem("mimus:history:v1") ?? "[]")).toEqual(
       [],
     );
 
     fireEvent.click(screen.getByLabelText(/Save completed rewrites/));
-    expect(JSON.parse(storage.getItem("parlance:history:v1") ?? "[]")).toEqual(
+    expect(JSON.parse(storage.getItem("mimus:history:v1") ?? "[]")).toEqual(
       [],
     );
   });
 
   it("restores preferences after mount", async () => {
     localStorage.setItem(
-      "parlance:prefs:v1",
+      "mimus:prefs:v1",
       JSON.stringify({
         sourceStyle: "academic",
         targetStyle: "startup",
@@ -741,6 +746,69 @@ describe("Translator privacy and history", () => {
     expect(targetSel().value).toBe("startup");
     expect((screen.getByLabelText("Maximum") as HTMLInputElement).checked).toBe(
       true,
+    );
+  });
+
+  it("migrates legacy sessionStorage acknowledgement on mount", () => {
+    sessionStorage.setItem("parlance:ack", "v-test");
+    render(<Translator config={cfg("live", "available")} />);
+    expect(sessionStorage.getItem("parlance:ack")).toBeNull();
+    expect(sessionStorage.getItem(ACK_STORAGE_KEY)).toBe("v-test");
+    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
+      true,
+    );
+  });
+
+  it("migrates legacy preferences without overwriting newer keys", async () => {
+    localStorage.setItem(
+      "parlance:prefs:v1",
+      JSON.stringify({
+        sourceStyle: "human",
+        targetStyle: "linkedin",
+        intensity: "subtle",
+        rememberedIntensity: "subtle",
+        historyEnabled: false,
+      }),
+    );
+    localStorage.setItem(
+      PREFS_STORAGE_KEY,
+      JSON.stringify({
+        sourceStyle: "academic",
+        targetStyle: "startup",
+        intensity: "maximum",
+        rememberedIntensity: "maximum",
+        historyEnabled: false,
+      }),
+    );
+    render(<Translator config={cfg("live", "available")} />);
+    expect(localStorage.getItem("parlance:prefs:v1")).toBeNull();
+    await waitFor(() => expect(sourceSel().value).toBe("academic"));
+  });
+
+  it("migrates valid legacy history without turning history on", async () => {
+    const entry = addEntry(
+      [],
+      {
+        text: "hello",
+        sourceStyle: "human",
+        targetStyle: "linkedin",
+        effectiveIntensity: "balanced",
+      },
+      "legacy-out",
+    )[0];
+    localStorage.setItem(
+      "parlance:history:v1",
+      JSON.stringify([entry]),
+    );
+    render(<Translator config={cfg("live", "available")} />);
+    expect(localStorage.getItem("parlance:history:v1")).toBeNull();
+    expect(localStorage.getItem(HISTORY_STORAGE_KEY)).toContain("legacy-out");
+    expect(
+      (screen.getByLabelText(/Save completed rewrites/) as HTMLInputElement)
+        .checked,
+    ).toBe(false);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Load" })).toBeTruthy(),
     );
   });
 

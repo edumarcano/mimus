@@ -23,7 +23,11 @@ import {
   preferencesFromState,
   savePreferences,
 } from "@/lib/preferences";
-import { safeRemoveItem, safeSetItem } from "@/lib/storage";
+import {
+  migrateLegacyStorage,
+  safeRemoveItem,
+  safeSetItem,
+} from "@/lib/storage";
 import { SseStreamParser } from "@/lib/stream";
 import {
   effectiveIntensity,
@@ -216,6 +220,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
   useEffect(() => () => abortRef.current?.abort(), []);
 
   useEffect(() => {
+    migrateLegacyStorage();
     dispatch({
       type: "hydrateClient",
       prefs: loadPreferences() ?? undefined,

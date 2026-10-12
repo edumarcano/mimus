@@ -29,7 +29,7 @@ export default defineConfig({
     {
       command: "npm run build && npm run start -- -p 3000",
       url: demoOrigin,
-      env: { PARLANCE_MODE: "demo" },
+      env: { MIMUS_MODE: "demo" },
       reuseExistingServer: !process.env.CI,
       timeout: 240_000,
     },
@@ -37,11 +37,11 @@ export default defineConfig({
       command: "node scripts/e2e-live-server.mjs",
       url: liveOrigin,
       env: {
-        PARLANCE_MODE: "live",
+        MIMUS_MODE: "live",
         GEMINI_API_KEY: "e2e-placeholder",
         APP_ORIGIN: liveOrigin,
-        PARLANCE_LIVE_COUNTRIES: "US",
-        PARLANCE_DEV_ALLOW_LOCAL_LIVE: "false",
+        MIMUS_LIVE_COUNTRIES: "US",
+        MIMUS_DEV_ALLOW_LOCAL_LIVE: "false",
       },
       reuseExistingServer: !process.env.CI,
       timeout: 300_000,

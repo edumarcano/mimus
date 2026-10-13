@@ -144,16 +144,77 @@ serves on Node 24.x per the Vercel project listing.
 
 ## OpenRouter migration status (2026-10-13)
 
-- **Not performed:** Phase 4 (local live smoke test) and Phase 5 (protected preview
-  live verification). No deployed live check for OpenRouter exists.
+- **Local smoke:** technical pass, recorded in
+  [`docs/decisions.md`](decisions.md). One synthetic `dev-short-01` request
+  streamed six content deltas and finished `complete`. The output preserved a
+  negative response and added unsupported request and temporal context. That
+  limitation is not an adapter failure and is not release acceptance.
+- **Not performed:** protected Preview live verification. No deployed live check
+  for OpenRouter exists.
 - **Not verified on any host:** genuine streaming through Vercel with OpenRouter,
   allowed-region live success, Stop/abort propagation to OpenRouter, and the
   60-second route limit under a real stream.
-- **Production:** demo only; no production key was added.
+- **Production:** demo only; no production key was added. Do not set
+  `MIMUS_MODE=live` or `OPENROUTER_API_KEY` on Production for this migration.
 - **Observed development run:** local only, see
   [`docs/decisions.md`](decisions.md) and
   [`evals/results/glm-development.md`](../evals/results/glm-development.md). It did
   not meet the original meaning-preservation target and is not deployment evidence.
+
+## Prepared Preview live verification (not active)
+
+This configuration is written so it can be applied later. It has not been
+applied, and Preview live mode must stay off until the owner approves it.
+Do not reuse the local evaluation key.
+
+**Branch scope.** Set the variables below on Vercel Preview for git branch
+`feat/openrouter-glm-migration` only. Do not set them for all Preview
+deployments, and do not set them on Production.
+
+| Variable | Branch Preview value |
+| --- | --- |
+| `OPENROUTER_API_KEY` | A new key, separate from the local evaluation key, with a hard spending cap of $5 or less and auto-recharge off |
+| `MIMUS_MODE` | `live` |
+| `APP_ORIGIN` | The exact Preview origin, no trailing slash and no path |
+| `MIMUS_LIVE_COUNTRIES` | `US` |
+| `MIMUS_DEV_ALLOW_LOCAL_LIVE` | `false` |
+
+`APP_ORIGIN` is unknown until the branch has a deployment URL. First deploy
+the branch with Preview left in demo (no live key and `MIMUS_MODE` unset or
+`demo`). Copy that deployment's origin, set `APP_ORIGIN` to it, then set the
+key and `MIMUS_MODE=live`, then redeploy that branch. A mismatched origin
+fails closed with `REQUEST_NOT_ALLOWED`.
+
+**Access protection.** Turn on Vercel Authentication (or the project's
+Deployment Protection) for Preview so the URL is not public. Browser checks
+must be performed while authenticated. An unauthenticated request should be
+rejected by the platform before the app runs. Protection does not replace the
+origin check, the region allowlist, or the WAF rate limit.
+
+**Production, unchanged.** Production `MIMUS_MODE` is not `live`, and
+Production has no `OPENROUTER_API_KEY`. Confirm that before any Preview live
+variable is saved.
+
+**Checks to run only after the owner approves this configuration.** Use a
+short synthetic sentence, not real user text.
+
+- Authenticated `GET /` shows the live availability notice and
+  `openrouter-zdr-v1`.
+- One allowed-region translate streams more than one SSE `delta` and ends
+  `done`. Stop during a second request, then submit again.
+- `POST /api/translate` from a disallowed or unknown region returns
+  `REGION_UNAVAILABLE` without a model call. If the tester's exit is in the
+  US, Vercel will not honor a spoofed `x-vercel-ip-country`, so this check
+  may stay blocked and must be recorded as blocked.
+- Six rapid synthetic `POST`s to `/api/translate`: the sixth should be the
+  WAF `429` if the rate-limit rule is still enforcing.
+- Function logs for the live request contain the request id, model id, and
+  token counts, and do not contain the submitted sentence or the rewrite.
+- `https://mimus-rewrite.vercel.app/api/translate` still returns
+  `503` `SERVICE_UNAVAILABLE`.
+
+Record the results in [`docs/decisions.md`](decisions.md). Until then, this
+section is a plan, not evidence.
 
 ## Smoke checks
 
@@ -195,11 +256,11 @@ and none should be read as done.
   these checks and the audience review in [`docs/decisions.md`](decisions.md).
 - [ ] **Launch decision:** decide whether and when live mode is enabled on
   production. Until then, production remains examples-only.
-- [ ] **Optional protected-preview live verification:** only with a separate
-  preview-scoped key and explicit owner approval. Enable live mode on a
-  protected preview, check allowed-region streaming, Stop/abort behavior, and
-  region rejection, then record the results (or leave them explicitly blocked)
-  in [`docs/decisions.md`](decisions.md).
+- [ ] **Protected Preview live verification:** not started. The exact
+  branch-scoped variables, separate capped key, access protection, and checks
+  are in [Prepared Preview live verification](#prepared-preview-live-verification-not-active).
+  Do not enable them until the owner approves that configuration. Production
+  stays demo.
 
 ## Shutdown / recovery
 

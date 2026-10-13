@@ -563,11 +563,29 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
   acknowledged again.
 - **Scope of this entry:** this change includes the OpenRouter adapter, the
   model configuration, the environment example, the notice, the privacy page,
-  tests, and documentation. It made no live API calls.
-- **Not performed:** Phase 4 (local live smoke test) and Phase 5 (protected
-  preview live verification) were **not performed**. Deployed live streaming,
-  allowed-region behavior, abort propagation, and the WAF rule on the current
-  host remain unverified.
+  tests, and documentation. The only live call in this entry is the local smoke
+  below. No Preview or Production live mode was enabled.
+- **Local smoke (2026-10-13): technical PASS.** One synthetic request,
+  `dev-short-01` (input "No.", Human to Corporate, subtle), through the
+  production `streamRewrite` adapter and prompt v4. The OpenRouter account was
+  already limited to ZDR providers. The owner stated that prompt and completion
+  logging was not intentionally enabled, and OpenRouter disables content
+  logging by default. The application still sent `data_collection: "deny"`,
+  `zdr: true`, and `provider.require_parameters: true`. No production or
+  Preview setting was changed. Prompt v4 and the GLM settings were not changed.
+  - Six text deltas (5, 5, 9, 22, 16, and 11 characters) arrived between 1.5 s
+    and 1.6 s. The adapter forwarded only content deltas.
+  - Finish reason `complete`. Reported usage: 368 input tokens and 24 output
+    tokens. The stream did not include a dollar amount. Elapsed time about 1.6 s.
+  - Exact output: "Thank you, but I am unable to accommodate that request at this time."
+  - **Semantic limitation:** the negative response is preserved in a Corporate
+    register, and the output adds unsupported request and temporal context
+    ("that request", "at this time"). This is not conclusively a model-level
+    refusal or an adapter failure. It is not a release score.
+- **Not performed:** protected Preview live verification was **not performed**.
+  Deployed live streaming, allowed-region behavior, abort propagation, and the
+  WAF rule on the current host remain unverified. The prepared Preview
+  configuration is in [`docs/deployment.md`](deployment.md) and is not active.
 - **Production:** remains in demo mode. No production `OPENROUTER_API_KEY` is set
   or added by this change. Production stays demo until the owner explicitly
   authorizes live activation.

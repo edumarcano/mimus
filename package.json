@@ -16,7 +16,6 @@
     "eval": "tsx --env-file-if-exists=.env.local --conditions react-server scripts/evaluate.ts"
   },
   "dependencies": {
-    "@google/genai": "2.27.0",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",

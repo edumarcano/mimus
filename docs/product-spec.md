@@ -2,7 +2,7 @@
 
 **Translate meaning, not just words.**
 
-Target release: **v1.0.0** | Updated: October 10, 2026
+Target release: **v1.0.0** | Updated: October 13, 2026
 
 Status: specification. The target version does not imply that the application
 has shipped or that release checks have passed.
@@ -60,10 +60,11 @@ Mimus is a standalone application. Its scope emphasizes a complete, approachable
 | Output | Streamed plain text; one result per request. |
 | Stack | Next.js App Router, React, TypeScript, Tailwind CSS. |
 | Backend | One Next.js Node.js route: `POST /api/translate`. |
-| Initial AI provider | Google Gemini Developer API, with an AI Studio-managed key. |
-| Initial model candidate | `gemini-3.5-flash-lite`; confirm access and evaluate before approving the release configuration. [S1] |
+| Active AI provider | OpenRouter, called server-side with a server-only `OPENROUTER_API_KEY`. Requests use zero data retention (`zdr: true`) and data-collection denial (`data_collection: "deny"`) routing. [S9, S10] |
+| Active model | `z-ai/glm-5.3-flash`, reasoning effort `low`, 2,048-token output cap, committed in `src/lib/server/model-config.ts`. Access, price, and endpoint eligibility are verified per deployment, not assumed. [S9, S10] |
+| Superseded provider | Google Gemini Developer API with `gemini-3.5-flash-lite` and an AI Studio-managed key. This was the provider for the earlier release-candidate evaluation; that record is historical and lives in `evals/results/summary.md`. Its privacy and storage requirements below are retained only where marked historical. [S1, S3, S4] |
 | Model configuration | Model ID and model-specific parameters are versioned together in server-side code, not environment variables. |
-| Provider portability | One small internal adapter boundary. Only Google is implemented initially. |
+| Provider portability | One small internal adapter boundary. Only OpenRouter is active. Changing provider requires a reviewed notice update first. |
 | Database and accounts | None. No authentication, user profiles, or application database. |
 | Local state | Preferences; optional browser-only history of at most 10 completed results, off by default. |
 | Sharing | Copy result or copy input/output pair. No permanent result links or generated images. |
@@ -92,7 +93,7 @@ Do not add accounts, billing, teams, a database, cloud history, public result st
 
 Do not add automatic retries, automatic model fallback, semantic caching, or a second LLM call to judge every production result. Evaluation is an offline development activity.
 
-Do not implement OpenRouter merely to demonstrate abstraction. Its integration contract is documented in Section 8 for a later deliberate switch, or an explicitly approved change needed for launch.
+OpenRouter is the active provider, implemented as the committed adapter described in Section 8. It is not a demonstration abstraction, and the v1 provider set is OpenRouter only.
 
 Keep future ideas separate from release work. Adding them requires an explicit specification change; they do not expand v1 implicitly.
 
@@ -238,11 +239,28 @@ Keep the model ID and its generation settings together in
 `src/lib/server/model-config.ts`. This module defines application behavior; it
 contains no credentials. Use one active configuration, not a model registry.
 
-An initial candidate has this application-owned shape:
+The active configuration has this application-owned shape:
 
 ```ts
 // src/lib/server/model-config.ts
-// Candidate configuration; approve it only after integration checks and evaluation.
+export const MODEL_CONFIG = {
+  provider: "openrouter",
+  maxOutputTokens: 2_048,
+  model: "z-ai/glm-5.3-flash",
+  reasoningEffort: "low",
+  dataCollection: "deny",
+  zdr: true,
+} as const;
+
+export const MODEL_PUBLIC_LABEL = "GLM 5.3 Flash";
+```
+
+*Historical (superseded provider):* the earlier Google candidate was
+`gemini-3.5-flash-lite` with `thinkingLevel: "minimal"` and was later evaluated
+at `thinkingLevel: "high"`. The block below is retained only as that history:
+
+```ts
+// Historical Google configuration; not the active configuration.
 export const MODEL_CONFIG = {
   provider: "google",
   model: "gemini-3.5-flash-lite",
@@ -251,12 +269,14 @@ export const MODEL_CONFIG = {
 } as const;
 ```
 
-The adapter translates these application fields into the exact parameters supported
-by the installed SDK. This is not a raw API request. Google's Interactions API uses
-`generation_config`; its thinking controls depend on the selected model. The
-initial candidate supports `minimal`, but another model may require different
-settings. Verify that combination rather than changing only its model string.
-Leave sampling overrides unset unless evaluation supports a change. [S3, S15]
+The OpenRouter adapter translates these fields into its chat-completions request
+(`reasoning.effort`, `max_tokens`, and `provider` routing preferences). The output
+cap counts reasoning tokens as well as visible text. Verify any change to the model
+or its supported parameters against the live endpoint; do not change only the model
+string. Leave sampling overrides unset unless evaluation supports a change. [S9, S10, S16]
+
+The Gemini settings above (`thinkingLevel`, Google's `generation_config`) are
+historical and do not apply to the active adapter. [S3, S15]
 
 Do not read a model ID, thinking setting, or sampling setting from `.env.local`,
 deployment environment variables, or a browser request. Credentials, deployment
@@ -273,26 +293,40 @@ For initial experiments, edit a complete candidate configuration in code and
 record which revision was tested. Do not build an environment-driven override,
 model picker, or generic experiment framework for this release.
 
-### Google adapter
+### OpenRouter adapter
 
-Use the official `@google/genai` SDK on the server. Request a single streamed
-Interactions API response with `store: false`, no prior interaction ID, no
-background execution, and no tools. Google stores interaction objects by default;
-disabling that storage does not override its broader data-use terms. [S3, S4]
+The active adapter calls OpenRouter's chat-completions endpoint with native
+`fetch` and a streamed response. Each request carries the trusted system
+instruction and the submitted text as untrusted user content, the committed
+`model`, `max_tokens`, and `reasoning.effort`, and these provider preferences:
+
+- `provider.zdr: true`, so only zero-data-retention endpoints are eligible;
+- `provider.data_collection: "deny"`, so endpoints that may collect data are excluded;
+- `provider.require_parameters: true`, so an endpoint that cannot honor the settings is not used;
+- no plugins and no tools. The app does not enforce account-level prompt logging;
+  the owner must confirm the OpenRouter account setting before live activation.
+
+If no eligible route exists, the request fails rather than relaxing privacy. The
+adapter does not pin a single model host; behavior can vary across the hosts that
+serve the model. [S9, S10, S16]
 
 Read the active configuration from the server-side module and the API key from
 server environment configuration. Initialize live-provider access lazily so a
 credential-free build or demo never requires a key or contacts the provider.
 
-The initial candidate's published pricing includes unpaid text input/output;
-account access and quota remain prerequisites to verify. Quotas apply to the
-Google project, not independently to each API key. [S1, S2]
+Account-level access, price, and endpoint availability remain prerequisites to
+verify before live activation. [S16]
+
+*Historical (superseded Google adapter):* the earlier adapter used the official
+`@google/genai` SDK with a streamed Interactions request, `store: false`, no prior
+interaction ID, no background execution, and no tools. Disabling Interactions
+storage did not override Google's broader data-use terms. [S3, S4, S11]
 
 Use the configured 2,048-token output cap and the 45-second application deadline.
 Treat output-length exhaustion as incomplete, not successful. Do not assume the
 cap buys that many visible text tokens when a model also generates reasoning.
 Confirm actual event types, completion metadata, cancellation, and retry settings
-against the locked SDK version. Never forward thinking events to the browser.
+against the implemented adapter and live endpoint. Never forward reasoning events to the browser.
 
 ### Small internal boundary
 
@@ -341,16 +375,16 @@ model quality. Do not silently substitute another model when the chosen one fail
 The initial check supports integration; the full evaluation in Section 14 supports
 release acceptance.
 
-### Later OpenRouter contract - not required implementation
+### OpenRouter contract - active provider
 
-A future adapter must reuse the internal contract and evaluation set. Its selected
-model, generation parameters, and required privacy-routing preferences must also
-be committed together in server-side code. Verify the exact model ID, current
-price, supported parameters, streaming, and eligible endpoint before selection.
+The OpenRouter adapter reuses the internal contract above. Its selected model,
+generation parameters, and privacy-routing preferences are committed together in
+server-side code. Before live activation, verify the exact model ID, current price,
+supported parameters, streaming, and eligible endpoint. [S16]
 
-Send provider preferences including `zdr: true` and `data_collection: "deny"`; keep prompt logging disabled and use no plugins or tools. If no eligible route exists, fail rather than relax privacy. ZDR is an endpoint-routing policy, not a promise of anonymity or no operational metadata; OpenRouter also permits certain in-memory prompt caching under that policy. [S9, S10]
+Send provider preferences including `zdr: true` and `data_collection: "deny"`; use no plugins or tools. Account-level prompt logging must be disabled by the owner; the app cannot enforce it. If no eligible route exists, fail rather than relax privacy. ZDR is an endpoint-routing policy, not a promise of anonymity or no operational metadata; OpenRouter also permits certain in-memory prompt caching under that policy. [S9, S10]
 
-Changing provider requires updating the visible privacy policy before traffic is sent. There is no automatic Google-to-OpenRouter failover and no routing by visitor without a separate product decision. Reusing the same model across eligible OpenRouter endpoints is distinct from changing models; document any chosen routing behavior.
+Changing provider requires updating the visible privacy policy before traffic is sent. There is no automatic failover to Google or any other provider and no routing by visitor without a separate product decision. Reusing the same model across eligible OpenRouter endpoints is distinct from changing models; document any chosen routing behavior.
 
 ---
 
@@ -367,8 +401,8 @@ Next.js /api/translate (Node.js)
   | origin, mode, region, body, schema, and notice checks
   | trusted prompt builder
   v
-Google adapter -> Gemini API
-  |
+OpenRouter adapter -> OpenRouter chat completions (ZDR, data_collection deny)
+  |                   -> third-party model host (not pinned)
   v
 Normalized events -> SSE -> browser output panel
 
@@ -399,7 +433,7 @@ Do not put input/output text in query parameters, URL fragments, analytics paylo
   "targetStyle": "linkedin",
   "intensity": "balanced",
   "eligibilityConfirmed": true,
-  "privacyNoticeVersion": "google-unpaid-v1"
+  "privacyNoticeVersion": "openrouter-zdr-v1"
 }
 ```
 
@@ -526,21 +560,44 @@ Keep first-use acknowledgement in session memory or `sessionStorage`, tied to th
 
 ### Current provider constraint
 
-Google's terms require adult use, restrict API clients directed at or likely accessed by minors, limit the Services to development for professional/business purposes, and require Paid Services for clients offered in the EEA, Switzerland, or UK. Unpaid-service content can be used for improvement and human review; Google instructs developers not to submit personal, sensitive, or confidential information. A privacy notice alone does not resolve these requirements. [S11]
+Live requests go to OpenRouter, which passes each request to a third-party model
+host. OpenRouter's terms and privacy policy apply to the request, and downstream
+host terms vary because Mimus does not pin a single host. The app requests
+zero-data-retention endpoints and denies data-collection endpoints, but that routing
+is not anonymity and does not mean nobody can see the text. OpenRouter still records
+request metadata, may categorize prompts anonymously, and a host may cache prompt
+text in memory. The owner must confirm account-level prompt-logging settings, since the
+app cannot enforce them. [S9, S10, S16, S17]
 
-**Conservative v1 deployment default:** Publicly viewable examples, with live unpaid-Google requests limited to US traffic after owner review. The US appears on Google's supported-region list. This geographic scope is a project choice, not a claim that Google only permits US use. [S12]
+The owner must also review the adult, professional-use, and audience conditions before
+public live activation. A privacy notice alone does not resolve them.
+
+**Conservative v1 deployment default:** Publicly viewable examples, with live requests
+limited to US traffic after owner review. The US allowlist is a visitor restriction
+in this app. It is not data residency, and the app does not claim that inference
+stays in the US. Production remains demo until the owner authorizes live activation.
+
+*Historical (superseded Google terms):* the earlier Google-backed release required
+Google's unpaid Gemini terms review, including adult use, professional/business
+purposes, EEA/Switzerland/UK paid-service limits, and the US-only region policy.
+That review is recorded in `docs/decisions.md` and is not the current policy. [S11, S12]
 
 Use Vercel's platform-supplied country information at the server boundary; reject unknown or non-allowlisted locations for live requests. Do not accept a country sent in the JSON body. Local development may use `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` only in a loopback development server with `NODE_ENV=development` and no Vercel deployment environment. Fail closed outside that context; never activate the bypass through a request parameter. Vercel documents the geolocation headers and their deployment/proxy limitations. [S13]
 
 Target adult professional audiences and require affirmative acknowledgement before the first live request. An age checkbox and IP location are not proof of eligibility or comprehensive compliance. Before public inference is enabled, the owner must review professional/business-purpose eligibility, the intended audience and distribution, actual project billing status, permitted regions, and displayed policy. Record that review in the launch checklist.
 
-When those conditions cannot be met, keep live inference off and obtain approval for a suitable provider/deployment policy. A paid Google project would not by itself resolve every use restriction. Do not bypass restrictions or silently change providers.
+When those conditions cannot be met, keep live inference off and obtain approval for a suitable provider/deployment policy. Do not bypass restrictions or silently change providers.
 
-### Suggested unpaid-Google notice
+### Active notice (`openrouter-zdr-v1`)
 
-> Text is sent to Google to generate a rewrite. Google may use input and output to improve its products, and human reviewers may review it. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser. [S11]
+> Text is sent to OpenRouter to generate a rewrite. OpenRouter routes each request to a third-party model host that it classifies as not storing prompts and not using them for training. OpenRouter still records request metadata, may categorize prompts anonymously, and a host may cache prompt text in memory. This routing is not anonymity. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser. [S9, S16, S17]
 
-Display the age/availability condition alongside this notice. Keep exact disclosure copy in one shared module used by the UI and `/privacy` page. Changes in provider or data policy require a new notice version and fresh acknowledgement.
+The age and availability condition is displayed with this notice: "For adults only.
+Live generation is currently limited to approved regions and is intended as a writing
+experiment." Keep exact disclosure copy in one shared module (`src/lib/notice.ts`) used
+by the UI and `/privacy` page. Changes in provider or data policy require a new notice
+version and fresh acknowledgement. The previous Google notice (`google-unpaid-v1`) is
+historical only.
 
 ### Demo and disabled modes
 
@@ -567,7 +624,7 @@ Do not ship an in-memory JavaScript map as the production rate limiter. A local 
 | Hosting | Eligible Vercel Hobby use within its included allowances; no paid upgrade by default. [S5] |
 | Database | None. |
 | Domain | Use the assigned deployment subdomain; no domain purchase required. |
-| Model | Dedicated Google project/key with verified unpaid access and available quota. [S1, S2] |
+| Model | Dedicated OpenRouter inference key with a verified spending limit and an eligible ZDR endpoint. Account eligibility and enforcement are unverified until the owner checks them. [S14, S16] |
 | Analytics, queues, storage services | None. |
 | Paid model alternative | Only after approval; proposed initial experiment budget is $5, not an assumed recurring commitment. |
 
@@ -584,9 +641,9 @@ Estimated cost =
 
 Do not assume visible output text accounts for every billable token. Use actual provider usage when available. No paid capacity, auto top-up, automatic billing upgrade, or paid fallback is authorized by this spec.
 
-A future OpenRouter deployment must use a dedicated inference key and a verified
-spending limit, not only email alerts. Check account eligibility and enforcement
-before activation; workspace budgets are not assumed to be included in a free
+The OpenRouter deployment must use a dedicated inference key and a verified
+spending limit, not only email alerts, before any live activation. Check account
+eligibility and enforcement first; workspace budgets are not assumed to be included in a free
 account. No key-management automation is required in this application. [S14]
 
 ### Emergency stop
@@ -666,7 +723,9 @@ Use TypeScript strict mode, Vitest for unit/integration tests, React Testing Lib
 **Route/provider integration coverage:** validation prevents model calls; secrets
 and model configuration stay server-side; the adapter uses the committed model
 and matching settings; no model environment override is consulted; demo/build
-paths require no credential; `store: false` is sent; tools are absent; only one
+paths require no credential; the OpenRouter request sends `zdr: true`,
+`data_collection: "deny"`, and no tools or plugins (historical Gemini tests also
+checked `store: false`); only one
 provider request is made; blocked/empty/length finishes are not success; abort and
 timeout clean up; emitted output is bounded; disallowed/unknown regions fail;
 malformed and non-JSON errors are safe. Mock the external boundary, not the
@@ -717,7 +776,7 @@ mimus/
     server/
       config.ts             # Environment validation; contains no secret literals
       model-config.ts       # Versioned model ID and matching parameters
-      gemini.ts             # Provider adapter and cleanup
+      openrouter.ts          # Provider adapter and cleanup
       policy.ts
       errors.ts
   tests/
@@ -726,6 +785,7 @@ mimus/
     cases.jsonl
     README.md
     results/summary.md
+    results/glm-development.md
   scripts/evaluate.ts
   docs/decisions.md
   docs/deployment.md
@@ -747,10 +807,12 @@ Start `.env.example` with placeholders and safe defaults:
 ```dotenv
 # Copy to .env.local only if it does not already exist; keep real credentials there.
 # Server-only variables. Never prefix credentials with NEXT_PUBLIC_.
-GEMINI_API_KEY=
+OPENROUTER_API_KEY=
 
-# Model ID and generation settings live in src/lib/server/model-config.ts.
-# There is intentionally no model-selection environment variable.
+# Model ID, reasoning effort, output cap, and privacy routing live in
+# src/lib/server/model-config.ts. There is intentionally no model-selection
+# environment variable; leftover GEMINI_API_KEY, GEMINI_MODEL, and
+# OPENROUTER_MODEL are ignored.
 
 # demo | live | disabled. Default: demo; no model calls or key required.
 MIMUS_MODE=demo
@@ -758,7 +820,7 @@ MIMUS_MODE=demo
 # Exact trusted browser origin for this environment, without a trailing slash.
 APP_ORIGIN=http://localhost:3000
 
-# Conservative unpaid-Google region policy; review before live deployment.
+# Visitor region allowlist for live mode; a visitor restriction, not data residency.
 # Use uppercase country codes.
 MIMUS_LIVE_COUNTRIES=US
 
@@ -786,10 +848,10 @@ the actual trusted deployment origin if that origin changes.
 | Mode, exact origin, approved country allowlist | Server environment | Configure per deployment; changes do not authorize a new data-use policy. |
 | Local-live bypass | Local environment only | Require loopback development, never a deployed host. |
 
-Do not accept `GEMINI_MODEL` or equivalent model overrides in application
+Do not accept `OPENROUTER_MODEL`, `GEMINI_MODEL`, or equivalent model overrides in application
 configuration. Existing unused environment entries must not change inference.
 Keep the API client credential explicit and the chosen model configuration
-imported from code. The active provider is Google; no unused provider credentials
+imported from code. The active provider is OpenRouter; no unused provider credentials
 or provider catalog are required.
 
 Default to demo when the mode is unset. Live mode requires a nonempty key, valid
@@ -824,7 +886,7 @@ A release candidate is ready when:
 - Mobile and keyboard interactions are usable, and accessibility checks have been performed.
 - Preferences work; local history is bounded, opt-in, clearable, and resilient to storage errors.
 - Credentials remain server-only; application logs and URLs do not contain submitted/generated text.
-- Provider interaction storage is disabled, and the visible notice matches actual processing.
+- OpenRouter requests use ZDR endpoint routing and `data_collection: "deny"`, with no tools or plugins; account-level prompt logging is confirmed by the owner, because the app does not enforce it. The visible notice matches actual processing. (Historical: the Gemini release used `store: false`; that behavior is not the active storage control.)
 - The released model ID and model-specific settings are committed in code and match the evaluated configuration.
 - Public-launch audience, region, billing, and hosting conditions have been reviewed and recorded.
 - Production WAF enforcement, request caps, mode switch, and upstream quota errors are verified.
@@ -846,6 +908,8 @@ The case study should explain scope, the style/meaning tradeoff, one observed fa
 
 Reference baseline: **October 6, 2026**. Current account access and deployment behavior remain unverified. These support external service facts, not claims that the app has been built or tested. Recheck terms, model access, limits, prices, SDK behavior, and dashboard settings before deployment. Project-owned defaults in this spec remain deliberate choices rather than provider guarantees.
 
+*Historical references [S1]–[S4], [S11]–[S12], and [S15] support the superseded Gemini provider; they are kept for the historical record.*
+
 - **[S1]** Google: [Gemini Developer API pricing](https://ai.google.dev/gemini-api/docs/pricing). Initial model candidate and published free-tier availability; not a quota guarantee.
 - **[S2]** Google: [Gemini API rate limits](https://ai.google.dev/gemini-api/docs/rate-limits). Project-scoped quotas and account-specific active limits.
 - **[S3]** Google: [Text generation](https://ai.google.dev/gemini-api/docs/text-generation). Official JavaScript SDK, system instructions, and streaming.
@@ -862,3 +926,5 @@ Reference baseline: **October 6, 2026**. Current account access and deployment b
 - **[S14]** OpenRouter: [Spend controls](https://openrouter.ai/docs/guides/best-practices/spend-controls). Budget and guardrail concepts for a future paid deployment.
 
 - **[S15]** Google: [Gemini thinking](https://ai.google.dev/gemini-api/docs/thinking). Model-specific thinking levels and current configuration guidance.
+- **[S16]** OpenRouter: [Terms of service](https://openrouter.ai/terms). Terms for the active provider; downstream model-host terms vary and are not pinned.
+- **[S17]** OpenRouter: [Privacy policy](https://openrouter.ai/privacy). Account, request metadata, and routing privacy terms for the active provider.

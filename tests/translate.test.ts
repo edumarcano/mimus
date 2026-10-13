@@ -3,14 +3,14 @@ import { ERROR_STATUS } from "@/lib/server/errors";
 import { NOTICE_VERSION } from "@/lib/notice";
 import { MAX_OUTPUT_CODE_POINTS } from "@/lib/limits";
 import type { ServerConfig } from "@/lib/server/config";
-import type { ModelEvent } from "@/lib/server/gemini";
+import type { ModelEvent } from "@/lib/server/openrouter";
 import { AppError } from "@/lib/server/errors";
 import { createTranslateHandler } from "@/lib/server/translate";
 import { SseStreamParser } from "@/lib/stream";
 
 const ENV_KEYS = [
   "MIMUS_MODE",
-  "GEMINI_API_KEY",
+  "OPENROUTER_API_KEY",
   "APP_ORIGIN",
   "MIMUS_LIVE_COUNTRIES",
   "MIMUS_DEV_ALLOW_LOCAL_LIVE",
@@ -30,7 +30,7 @@ const liveConfig: ServerConfig = {
   mode: "live",
   isLive: true,
   configError: false,
-  geminiApiKey: "key",
+  openrouterApiKey: "key",
   appOrigin: "http://localhost:3000",
   liveCountries: ["US"],
   devAllowLocalLive: true,

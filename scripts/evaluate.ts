@@ -3,7 +3,7 @@ import path from "node:path";
 import { execSync } from "node:child_process";
 
 import { buildRewritePrompt, PROMPT_VERSION } from "../src/lib/prompts";
-import { streamRewrite } from "../src/lib/server/gemini";
+import { streamRewrite } from "../src/lib/server/openrouter";
 import { MODEL_CONFIG } from "../src/lib/server/model-config";
 import { effectiveIntensity } from "../src/lib/styles";
 import { REQUEST_DEADLINE_MS } from "../src/lib/limits";
@@ -26,16 +26,17 @@ import {
 const NO_LIVE_MESSAGE =
   "Evaluation skipped: pass --live to opt in to provider calls. No provider call was made.";
 
-// Reported free-tier limit is 15 requests per minute (2026-10-07).
-// Spacing sequential requests ~4.2s apart keeps runs below that limit.
+// Space sequential live requests ~4.2s apart to stay under typical provider RPM limits.
 export const REQUEST_INTERVAL_MS = 4200;
+
+const DEFAULT_EVAL_TRANSPORT = "openrouter-chat-completions";
 
 export type EvalRunDeps = {
   streamRewrite?: typeof streamRewrite;
   now?: () => number;
   gitRevision?: () => string;
   gitPorcelain?: () => string;
-  readGenaiVersion?: () => string;
+  readTransport?: () => string;
   writeRaw?: (filePath: string, line: string) => void;
   sleep?: (ms: number) => Promise<void>;
 };
@@ -56,20 +57,8 @@ function defaultGitPorcelain(): string {
   }
 }
 
-function defaultGenaiVersion(): string {
-  try {
-    const pkgPath = path.join(
-      process.cwd(),
-      "node_modules",
-      "@google",
-      "genai",
-      "package.json",
-    );
-    const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version?: string };
-    return pkg.version ?? "unknown";
-  } catch {
-    return "unknown";
-  }
+function defaultTransport(): string {
+  return DEFAULT_EVAL_TRANSPORT;
 }
 
 function loadCases(): EvalCase[] {
@@ -113,7 +102,7 @@ export async function runEvaluation(
 
   if (requiresCleanTreeForHoldout(args) && dirty) {
     console.error(
-      "Release-candidate run requires a clean tree for prompts, styles, model-config, and gemini adapter. Dirty:",
+      "Release-candidate run requires a clean tree for prompts, styles, model-config, and openrouter adapter. Dirty:",
       dirtyFiles.join(", "),
     );
     return 1;
@@ -123,7 +112,7 @@ export async function runEvaluation(
   const now = deps.now ?? (() => Date.now());
   const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
   const gitRevision = (deps.gitRevision ?? defaultGitRevision)();
-  const genaiVersion = (deps.readGenaiVersion ?? defaultGenaiVersion)();
+  const transport = (deps.readTransport ?? defaultTransport)();
 
   const allCases = loadCases();
   const filtered = applyLimit(
@@ -192,7 +181,7 @@ export async function runEvaluation(
         streamResult,
         intensityEffective,
         gitRevision,
-        genaiVersion,
+        transport,
         dirty,
         dirtyFiles,
         started,
@@ -214,7 +203,7 @@ export async function runEvaluation(
       streamResult,
       intensityEffective,
       gitRevision,
-      genaiVersion,
+      transport,
       dirty,
       dirtyFiles,
       started,
@@ -233,7 +222,7 @@ function buildRecord(options: {
   streamResult: Awaited<ReturnType<typeof consumeAdapterStream>>;
   intensityEffective: string;
   gitRevision: string;
-  genaiVersion: string;
+  transport: string;
   dirty: boolean;
   dirtyFiles: string[];
   started: number;
@@ -245,7 +234,7 @@ function buildRecord(options: {
     streamResult,
     intensityEffective,
     gitRevision,
-    genaiVersion,
+    transport,
     dirty,
     dirtyFiles,
     started,
@@ -268,7 +257,7 @@ function buildRecord(options: {
     modelId: MODEL_CONFIG.model,
     effectiveSettings: effectiveModelSettings(),
     promptVersion: PROMPT_VERSION,
-    genaiSdkVersion: genaiVersion,
+    transport,
     gitRevision,
     dirty,
     dirtyFiles,

@@ -1,10 +1,10 @@
-export const NOTICE_VERSION = "google-unpaid-v1";
+export const NOTICE_VERSION = "openrouter-zdr-v1";
 
 export const NOTICE_TEXT =
-  "Text is sent to Google to generate a rewrite. Google may use input and output to improve its products, and human reviewers may review it. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser.";
+  "Text is sent to OpenRouter to generate a rewrite. OpenRouter routes each request to a third-party model host that it classifies as not storing prompts and not using them for training. OpenRouter still records request metadata, may categorize prompts anonymously, and a host may cache prompt text in memory. This routing is not anonymity. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser.";
 
 export const NOTICE_AVAILABILITY =
-  "For adults only. Live generation is currently limited to approved regions and is intended for professional writing experiments.";
+  "For adults only. Live generation is currently limited to approved regions and is intended as a writing experiment.";
 
 export const NOTICE_FULL = `${NOTICE_TEXT} ${NOTICE_AVAILABILITY}`;
 
@@ -14,8 +14,12 @@ export const NOTICE_DEMO =
 export const NOTICE_ACK_LABEL =
   "I am an adult, I understand this notice, and I won't submit personal or confidential text.";
 
-export const GOOGLE_TERMS_URL =
-  "https://ai.google.dev/gemini-api/terms";
+export const OPENROUTER_TERMS_URL = "https://openrouter.ai/terms";
+
+export const OPENROUTER_PRIVACY_URL = "https://openrouter.ai/privacy";
+
+export const OPENROUTER_ZDR_URL =
+  "https://openrouter.ai/docs/guides/features/zdr";
 
 export type PrivacySection = {
   id: string;
@@ -25,11 +29,12 @@ export type PrivacySection = {
 
 export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
   {
-    id: "google-live",
-    title: "What live mode sends to Google",
+    id: "live-routing",
+    title: "What live mode sends to OpenRouter",
     paragraphs: [
       NOTICE_TEXT,
-      "This project uses Google's unpaid Gemini Developer API terms. Google may use submitted content to improve its products, and human reviewers may review it. Do not submit personal, sensitive, or confidential information.",
+      "Live generation uses the OpenRouter API with provider preferences that require zero data retention endpoints and deny data collection. Mimus does not pin a single model host, so the terms of the host that serves a given request can vary. OpenRouter's terms and privacy policy, and its description of zero data retention routing, apply to that request.",
+      "Zero data retention routing describes how eligible endpoints handle prompts. It is not anonymity, and it does not mean that nobody can see the text. Do not submit personal, sensitive, or confidential information.",
     ],
   },
   {

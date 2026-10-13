@@ -16,7 +16,7 @@ function liveConfig(): ServerConfig {
     mode: "live",
     isLive: true,
     configError: false,
-    geminiApiKey: "key",
+    openrouterApiKey: "key",
     appOrigin: "http://localhost:3000",
     liveCountries: ["US"],
     devAllowLocalLive: true,

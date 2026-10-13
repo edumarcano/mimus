@@ -1,5 +1,5 @@
 import { countCodePoints, MAX_OUTPUT_CODE_POINTS } from "../src/lib/limits";
-import type { ModelEvent } from "../src/lib/server/gemini";
+import type { ModelEvent } from "../src/lib/server/openrouter";
 import { AppError } from "../src/lib/server/errors";
 
 export type NormalizedCompletion =

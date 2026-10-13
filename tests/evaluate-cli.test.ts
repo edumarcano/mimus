@@ -4,7 +4,7 @@ import {
   parseEvalArgs,
   providerCallRefusal,
 } from "../scripts/evaluate-cli";
-import type { ModelEvent } from "@/lib/server/gemini";
+import type { ModelEvent } from "@/lib/server/openrouter";
 import { REQUEST_INTERVAL_MS, runEvaluation } from "../scripts/evaluate";
 
 describe("evaluate CLI helpers", () => {
@@ -95,7 +95,7 @@ describe("evaluate CLI helpers", () => {
         streamRewrite,
         gitRevision: () => "test",
         gitPorcelain: () => "",
-        readGenaiVersion: () => "test",
+        readTransport: () => "test-transport",
         writeRaw: (_filePath, line) => {
           writes.push(line);
         },
@@ -121,7 +121,7 @@ describe("evaluate CLI helpers", () => {
       },
       gitRevision: () => "test",
       gitPorcelain: () => "",
-      readGenaiVersion: () => "test",
+      readTransport: () => "test-transport",
       writeRaw: () => {},
     });
     expect(code).toBe(0);

@@ -544,3 +544,123 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
 - **Contrast fix:** `--color-line` (about 1.6:1 on white) stays for decorative dividers and panel outlines. Interactive control borders (selects, textarea, secondary buttons, example chips, intensity options) use the new `--color-control-line` (`#748c83`, at least 3:1 on white, canvas, and accent-soft; WCAG 1.4.11), guarded by tests/theme-contrast.test.ts. This is a computed check; no new browser audit was run.
 - **Unchanged:** Translation behavior, model configuration, prompt v4, and evaluation evidence. Production stays examples-only; live inference is not enabled and no release has been published.
 - **Social metadata:** A read-only fetch of https://mimus-rewrite.vercel.app/ on 2026-10-12 showed `og:image` and `twitter:image` still pointing at the removed `parlance-tan.vercel.app` host (the deployed build predates this change). `metadataBase` is now set to the canonical origin in `src/app/layout.tsx` so image URLs resolve to the current host after the next production deploy; this is not verified on the deployed site until that deploy happens.
+
+## 2026-10-13: Approved OpenRouter migration (GLM 5.3 Flash) and development evidence
+
+- **Decision:** The active AI provider changes from Google Gemini to OpenRouter.
+  The committed configuration in `src/lib/server/model-config.ts` is
+  `z-ai/glm-5.3-flash`, `reasoningEffort: "low"`, `maxOutputTokens: 2048`,
+  `dataCollection: "deny"`, and `zdr: true`. The public label is "GLM 5.3 Flash".
+  Prompt v4 is unchanged. The server calls OpenRouter with native `fetch`; the
+  `OPENROUTER_API_KEY` environment variable is server-only.
+- **Notice:** `NOTICE_VERSION` changes from `google-unpaid-v1` to
+  `openrouter-zdr-v1`. The shared notice in `src/lib/notice.ts` states that
+  OpenRouter routes to a third-party model host, that OpenRouter still records
+  request metadata and may categorize prompts anonymously, that a host may cache
+  prompt text in memory, and that this routing is not anonymity. Because the
+  version changed, an older acknowledgement of `google-unpaid-v1` fails the
+  existing notice-version check in the translate handler and must be
+  acknowledged again.
+- **Scope of this entry:** this change includes the OpenRouter adapter, the
+  model configuration, the environment example, the notice, the privacy page,
+  tests, and documentation. The only live call in this entry is the local smoke
+  below. No Preview or Production live mode was enabled.
+- **Local smoke (2026-10-13): technical PASS.** One synthetic request,
+  `dev-short-01` (input "No.", Human to Corporate, subtle), through the
+  production `streamRewrite` adapter and prompt v4. The OpenRouter account was
+  already limited to ZDR providers. The owner stated that prompt and completion
+  logging was not intentionally enabled, and OpenRouter disables content
+  logging by default. The application still sent `data_collection: "deny"`,
+  `zdr: true`, and `provider.require_parameters: true`. No production or
+  Preview setting was changed. Prompt v4 and the GLM settings were not changed.
+  - Six text deltas (5, 5, 9, 22, 16, and 11 characters) arrived between 1.5 s
+    and 1.6 s. The adapter forwarded only content deltas.
+  - Finish reason `complete`. Reported usage: 368 input tokens and 24 output
+    tokens. The stream did not include a dollar amount. Elapsed time about 1.6 s.
+  - Exact output: "Thank you, but I am unable to accommodate that request at this time."
+  - **Semantic limitation:** the negative response is preserved in a Corporate
+    register, and the output adds unsupported request and temporal context
+    ("that request", "at this time"). This is not conclusively a model-level
+    refusal or an adapter failure. It is not a release score.
+- **Protected Preview (2026-10-13): verified, not merged.** Deployment
+  `dpl_NSCVeG4BfC1TLU9ejCWxotfc6uCR` on branch `feat/openrouter-glm-migration`.
+  The stable origin is
+  `https://mimus-git-feat-openrouter-gl-c33962-edumarcano30-5426s-projects.vercel.app`.
+  The unique deployment hostname is rejected with `REQUEST_NOT_ALLOWED`, so
+  `APP_ORIGIN` is that stable origin. Production was not switched to live mode.
+  - Unauthenticated `POST /api/translate` on the Preview host returned `401`.
+  - Authenticated `GET /` rendered mode `live`, `liveAvailability: "available"`,
+    notice version `openrouter-zdr-v1`, the OpenRouter notice, and the adult
+    acknowledgement checkbox.
+  - `eligibilityConfirmed: false` returned `403` `REQUEST_NOT_ALLOWED` with no
+    token counts.
+  - One synthetic translate ("The fictional meeting is at noon.", Human to
+    Corporate, subtle) returned `200` `text/event-stream` with `event: meta`,
+    three `delta` events (13, 25, and 6 characters), and `event: done`
+    (`finishReason: "complete"`, 373 input tokens, 10 output tokens, 609 ms).
+    The rewrite was "The fictional meeting is scheduled for noon."
+  - A second request with a longer synthetic paragraph was cut locally after
+    12 `delta` events and before a local `done` line. The function log for
+    that request is still `200` with 399 input tokens and 50 output tokens.
+    Provider cancellation was **not** demonstrated.
+  - A resubmit of the short sentence then completed: two deltas and `done`
+    (`7323c202-14d8-4438-8c9d-505544e1350e`, 373 input tokens, 21 output tokens).
+  - Preview function logs for these calls contain request id, model
+    `z-ai/glm-5.3-flash`, prompt version, style ids, duration, status, and
+    token counts. They do not contain the submitted sentences, the rewrites,
+    or the API key.
+  - Allowed-region access is the observed `liveAvailability: "available"`
+    result. Rejection of a non-US region was not tested, because that would
+    require spoofing `x-vercel-ip-country`.
+- **Production demo and WAF (2026-10-13):** `POST
+  https://mimus-rewrite.vercel.app/api/translate` returned `503`
+  `SERVICE_UNAVAILABLE`. A rapid burst from the same client then returned
+  `503` for the first requests and `429` with `X-Vercel-Mitigated: deny` once
+  the five-request window was exceeded. The same window also returned `429`
+  on the Preview host. Production live mode was not enabled.
+- **Production:** remains in demo mode. No production `OPENROUTER_API_KEY` is set
+  or added by this change. Production stays demo until the owner explicitly
+  authorizes live activation.
+
+### Local development run (not release acceptance)
+
+These facts were verified in a local run. Raw run files stay gitignored and are
+not copied into the repository.
+
+- **Date and revision:** 2026-10-13, git revision `955b8f468b1301519761fee9456caf2802f3b3c0`.
+- **Configuration:** prompt version 4, model `z-ai/glm-5.3-flash`, reasoning
+  effort `low`, `max_tokens` 2048, provider routing `data_collection: "deny"` and
+  `zdr: true`.
+- **Cohort:** 40 development-split cases: the 30 `dev-*` cases plus the 10
+  consumed `holdout-*` cases. The 10 `holdout2-*` cases were not run and remain
+  unspent.
+- **This cohort is not the release-candidate denominator** in
+  `evals/results/summary.md`, which uses 30 `dev-*` cases plus the 10 fresh
+  `holdout2-*` cases on the Gemini configuration.
+- **Transport and cost:** 40 of 40 requests completed with 0 errors and 0
+  timeouts. The billed run cost was about $0.0014.
+- **Responding providers:** InferenceNet 33, Together 3, Parasail 2, Morph 1,
+  Relace 1.
+- **Deterministic checks:** 39 of 40 passed the nonempty, output-cap,
+  completion, and exact-token checks. The only failure was `preserveTokensOk` on
+  `holdout-numbers-01`.
+- **Meaning and style:** manual meaning and style scores were not recorded in the
+  repository, so no numeric meaning tally is published. The approved migration
+  decision is that these development results **did not meet the original
+  meaning-preservation target**. The release target was not passed.
+- **Harness:** the local harness was separate from the application adapter and
+  was non-streaming. This is development evidence only, not deployed
+  verification and not v1 acceptance.
+
+### Limitations
+
+- Hosts are not pinned, so behavior can vary between requests and providers.
+- Low reasoning and a 2048-token cap do not prove meaning preservation. The cap
+  includes reasoning tokens.
+- The fresh `holdout2-*` split was not used for this run.
+- Account-level OpenRouter prompt logging is not enforced by the app and must be
+  confirmed by the owner.
+- The US allowlist is a visitor restriction, not data residency.
+- The Gemini release-candidate summary in `evals/results/summary.md` is historical
+  and is unchanged. The GLM development evidence is recorded separately in
+  `evals/results/glm-development.md`.

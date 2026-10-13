@@ -27,8 +27,8 @@ environments. Never commit credentials or real user text.
 
 | Variable | Role |
 | --- | --- |
-| `GEMINI_API_KEY` | Server-only Google Gemini Developer API key |
-| `MIMUS_MODE` | `demo`, `live`, or `disabled` |
+| `OPENROUTER_API_KEY` | Server-only OpenRouter API key (dedicated inference key) |
+| `MIMUS_MODE` | `demo`, `live`, or `disabled`; unset or invalid values default to demo or fail closed |
 | `APP_ORIGIN` | Exact browser origin (no trailing slash) |
 | `MIMUS_LIVE_COUNTRIES` | Uppercase allowlist (initial policy: `US`) |
 | `MIMUS_DEV_ALLOW_LOCAL_LIVE` | Loopback-only bypass; must be `false` on Vercel |
@@ -39,12 +39,28 @@ The mode, region, and local-bypass variables are `MIMUS_MODE`,
 ignored, so a deployment that still uses the old names fails closed to demo
 mode. Deployments must set the `MIMUS_*` names.
 
-The model id, output cap, and thinking level live in
+The active model, reasoning effort, output cap, and privacy routing live in
 [`src/lib/server/model-config.ts`](../src/lib/server/model-config.ts), not in
-environment variables. There is no `GEMINI_MODEL` override. The frozen
-release-candidate configuration (`gemini-3.5-flash-lite`, `maxOutputTokens:
-2048`, `thinkingLevel: "high"`, prompt v4) is the same committed configuration
-that was evaluated; see [`evals/results/summary.md`](../evals/results/summary.md).
+environment variables: `z-ai/glm-5.3-flash`, `reasoningEffort: "low"`,
+`maxOutputTokens: 2048`, `dataCollection: "deny"`, and `zdr: true`. Prompt v4 is
+unchanged. There is no model override variable.
+
+**Leftover legacy variables are ignored.** `GEMINI_API_KEY`, `GEMINI_MODEL`, and
+`OPENROUTER_MODEL` do not change inference. A deployment that still has only
+`GEMINI_*` set runs in demo mode or fails closed; it does not call a provider.
+
+**Demo by default.** When `MIMUS_MODE` is unset, the app runs in demo mode and
+needs no key. Live mode requires a nonempty `OPENROUTER_API_KEY`, a valid
+`APP_ORIGIN`, and a valid `MIMUS_LIVE_COUNTRIES` list.
+
+**Production stays demo.** This migration adds no production `OPENROUTER_API_KEY`
+and does not change production mode. Production stays demo until the owner
+explicitly authorizes live activation.
+
+**Historical:** the frozen Gemini release-candidate configuration (`gemini-3.5-flash-lite`,
+`maxOutputTokens: 2048`, `thinkingLevel: "high"`, prompt v4) is recorded in
+[`evals/results/summary.md`](../evals/results/summary.md) and is no longer the
+active configuration.
 
 Changing environment variables may require a redeploy; they are **not** an
 instant kill switch for in-flight requests.
@@ -60,19 +76,25 @@ blockers in [`docs/decisions.md`](decisions.md)).
 
 ## Secrets, quota, and billing
 
-Rotate or revoke the API key in Google AI Studio / Cloud console if the key is
-exposed. **Reported 2026-10-07:** the AI Studio project is on the free
-tier with no paid billing, and the relevant limit is 15 requests per minute.
-Free-tier limits can change; re-verify against the provider dashboard before
-launch. The evaluation runner paces sequential requests to stay under this
-limit; ~250 provider requests were used during evaluation with no quota
-errors.
+Rotate or revoke the **OpenRouter** API key in the OpenRouter dashboard if it is
+exposed. Use a dedicated inference key, and confirm a spending limit and the
+account's prompt-logging setting before any live activation. The app does not
+enforce either setting. The spend-control and ZDR references are in
+[`docs/product-spec.md`](product-spec.md) (sections 8, 12, and 13).
+
+**Historical (Gemini, reported 2026-10-07):** the former AI Studio project was on
+the free tier with no paid billing, and the relevant limit was 15 requests per
+minute. That project is no longer the active provider, and those observations are
+not evidence about OpenRouter.
 
 ## Region policy
 
 Live requests are allowed only when `x-vercel-ip-country` matches the
 configured allowlist (intended: `US`). Unknown or disallowed regions fail
-closed with `REGION_UNAVAILABLE`.
+closed with `REGION_UNAVAILABLE`. The allowlist is a visitor restriction. It is
+**not data residency**: requests go to OpenRouter and then to third-party model
+hosts whose locations are not pinned, so this document does not claim that
+inference stays in the US.
 
 **Not yet verified:** region behavior on a deployed host. The application
 logic is covered by local tests, but no live-mode deployment exists yet, and
@@ -120,6 +142,82 @@ serves on Node 24.x per the Vercel project listing.
   (the 45 s application deadline fires first by design; local tests cover
   deadline/abort behavior with mocks).
 
+## OpenRouter migration status (2026-10-13)
+
+- **Local smoke:** technical pass, recorded in
+  [`docs/decisions.md`](decisions.md). One synthetic `dev-short-01` request
+  streamed six content deltas and finished `complete`. The output preserved a
+  negative response and added unsupported request and temporal context. That
+  limitation is not an adapter failure and is not release acceptance.
+- **Preview live verification (2026-10-13):** recorded in
+  [`docs/decisions.md`](decisions.md). Authenticated access, the privacy
+  acknowledgement, real SSE streaming, a completed resubmit, production demo
+  `503`, and WAF `429` were observed. Client disconnect did not produce an
+  aborted function log; the in-flight request still logged `200`. Non-US
+  region rejection was not tested. The 60-second route limit under a long
+  stream was not tested. Production live mode was not enabled.
+- **Production:** demo only; no production key was added. Do not set
+  `MIMUS_MODE=live` or `OPENROUTER_API_KEY` on Production for this migration.
+- **Observed development run:** local only, see
+  [`docs/decisions.md`](decisions.md) and
+  [`evals/results/glm-development.md`](../evals/results/glm-development.md). It did
+  not meet the original meaning-preservation target and is not deployment evidence.
+
+## Prepared Preview live verification
+
+The owner applied this configuration on 2026-10-13 and the checks below were
+run. Results are in [`docs/decisions.md`](decisions.md). Do not reuse the
+local evaluation key, and do not copy these variables onto Production.
+
+**Branch scope.** Set the variables below on Vercel Preview for git branch
+`feat/openrouter-glm-migration` only. Do not set them for all Preview
+deployments, and do not set them on Production.
+
+| Variable | Branch Preview value |
+| --- | --- |
+| `OPENROUTER_API_KEY` | A new key, separate from the local evaluation key, with a hard spending cap of $5 or less and auto-recharge off |
+| `MIMUS_MODE` | `live` |
+| `APP_ORIGIN` | The exact Preview origin, no trailing slash and no path |
+| `MIMUS_LIVE_COUNTRIES` | `US` |
+| `MIMUS_DEV_ALLOW_LOCAL_LIVE` | `false` |
+
+`APP_ORIGIN` is unknown until the branch has a deployment URL. First deploy
+the branch with Preview left in demo (no live key and `MIMUS_MODE` unset or
+`demo`). Copy that deployment's origin, set `APP_ORIGIN` to it, then set the
+key and `MIMUS_MODE=live`, then redeploy that branch. A mismatched origin
+fails closed with `REQUEST_NOT_ALLOWED`.
+
+**Access protection.** Turn on Vercel Authentication (or the project's
+Deployment Protection) for Preview so the URL is not public. Browser checks
+must be performed while authenticated. An unauthenticated request should be
+rejected by the platform before the app runs. Protection does not replace the
+origin check, the region allowlist, or the WAF rate limit.
+
+**Production, unchanged.** Production `MIMUS_MODE` is not `live`, and
+Production has no `OPENROUTER_API_KEY`. Confirm that before any Preview live
+variable is saved.
+
+**Checks to run only after the owner approves this configuration.** Use a
+short synthetic sentence, not real user text.
+
+- Authenticated `GET /` shows the live availability notice and
+  `openrouter-zdr-v1`.
+- One allowed-region translate streams more than one SSE `delta` and ends
+  `done`. Stop during a second request, then submit again.
+- `POST /api/translate` from a disallowed or unknown region returns
+  `REGION_UNAVAILABLE` without a model call. If the tester's exit is in the
+  US, Vercel will not honor a spoofed `x-vercel-ip-country`, so this check
+  may stay blocked and must be recorded as blocked.
+- Six rapid synthetic `POST`s to `/api/translate`: the sixth should be the
+  WAF `429` if the rate-limit rule is still enforcing.
+- Function logs for the live request contain the request id, model id, and
+  token counts, and do not contain the submitted sentence or the rewrite.
+- `https://mimus-rewrite.vercel.app/api/translate` still returns
+  `503` `SERVICE_UNAVAILABLE`.
+
+Record the results in [`docs/decisions.md`](decisions.md). Until then, this
+section is a plan, not evidence.
+
 ## Smoke checks
 
 Local checks without secrets: `npm run lint`, `npm run typecheck`, `npm test`,
@@ -133,35 +231,33 @@ WAF 429 sequence above.
 
 ## Owner-controlled checks before release
 
-These are owner actions. None has been completed or verified by this document,
-and none should be read as done.
+These are owner actions. An item is done only when this document says so.
 
 - [ ] **Production environment variables:** in Vercel Production, `MIMUS_MODE`
-  is not `live` and `GEMINI_API_KEY` is not set while production is
+  is not `live` and `OPENROUTER_API_KEY` is not set while production is
   examples-only.
-- [ ] **Preview environment variables:** Preview does not inherit the production
-  `GEMINI_API_KEY`, and `MIMUS_DEV_ALLOW_LOCAL_LIVE` is `false` in Production and
+- [ ] **Preview environment variables:** Preview does not inherit a production
+  `OPENROUTER_API_KEY`, and `MIMUS_DEV_ALLOW_LOCAL_LIVE` is `false` in Production and
   Preview.
+- [ ] **Leftover legacy variables:** remove any `GEMINI_*` settings from Vercel
+  if they are no longer needed. They are ignored, but removing them avoids confusion.
 - [ ] **Origin, if live is configured:** `APP_ORIGIN` is exactly
   `https://mimus-rewrite.vercel.app`, with no trailing slash.
 - [ ] **Git integration:** the Vercel project `mimus` deploys from
   `edumarcano/mimus`, with `main` as the production branch.
-- [ ] **WAF rate limit:** the "Rate limit translate API" rule is still present
-  and enforcing on the current project. Re-run the six-POST sequence in
-  [WAF rate limiting](#waf-rate-limiting) against
-  `https://mimus-rewrite.vercel.app/api/translate`, and record the result in
+- [x] **WAF rate limit (2026-10-13):** a rapid burst of `POST /api/translate`
+  against `https://mimus-rewrite.vercel.app` returned application `503`
+  responses, then `429` with `X-Vercel-Mitigated: deny`. The same client also
+  received `429` on the Preview host during that window. See
   [`docs/decisions.md`](decisions.md).
-- [ ] **Google account:** confirm the Google AI Studio / Cloud billing and quota
-  state against the provider dashboard, and resolve the unpaid-Google terms
-  review recorded in [`docs/decisions.md`](decisions.md). Public live inference
-  stays blocked until those questions are resolved.
+- [ ] **OpenRouter account:** confirm the dedicated inference key, the spending
+  limit, the account's prompt-logging setting, and that a ZDR, data-collection-denied
+  endpoint is available for `z-ai/glm-5.3-flash`. Also confirm the OpenRouter terms
+  and privacy policy. Public live inference stays blocked until the owner records
+  these checks and the audience review in [`docs/decisions.md`](decisions.md).
 - [ ] **Launch decision:** decide whether and when live mode is enabled on
   production. Until then, production remains examples-only.
-- [ ] **Optional protected-preview live verification:** only with a separate
-  preview-scoped key and explicit owner approval. Enable live mode on a
-  protected preview, check allowed-region streaming, Stop/abort behavior, and
-  region rejection, then record the results (or leave them explicitly blocked)
-  in [`docs/decisions.md`](decisions.md).
+- [x] **Protected Preview live verification (2026-10-13):** streaming, acknowledgement, production `503`, and log contents were checked. Client cancel did not show an aborted function log, and non-US rejection was not tested. Details are in [`docs/decisions.md`](decisions.md). Production stays demo.
 
 ## Shutdown / recovery
 
@@ -171,7 +267,7 @@ To stop live inference:
 2. Deny traffic at the WAF (the control surface observed on the former host: the
    published rule above can be tightened or a deny rule added via
    `vercel firewall`), **or**
-3. Revoke or rotate the Gemini API key.
+3. Revoke or rotate the OpenRouter API key (`OPENROUTER_API_KEY`).
 
 Redeploy or platform propagation delay means traffic may not stop immediately.
 Review [`docs/decisions.md`](decisions.md) before re-enabling public live access.

@@ -20,7 +20,7 @@ import {
   ERROR_STATUS,
   errorJsonResponse,
 } from "./errors";
-import type { ModelEvent, ModelRequest } from "./gemini";
+import type { ModelEvent, ModelRequest } from "./openrouter";
 import { MODEL_CONFIG } from "./model-config";
 import { checkRegion, isAllowedOrigin } from "./policy";
 

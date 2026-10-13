@@ -38,7 +38,7 @@ export default defineConfig({
       url: liveOrigin,
       env: {
         MIMUS_MODE: "live",
-        GEMINI_API_KEY: "e2e-placeholder",
+        OPENROUTER_API_KEY: "e2e-placeholder",
         APP_ORIGIN: liveOrigin,
         MIMUS_LIVE_COUNTRIES: "US",
         MIMUS_DEV_ALLOW_LOCAL_LIVE: "false",

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import {
-  GOOGLE_TERMS_URL,
   NOTICE_VERSION,
+  OPENROUTER_PRIVACY_URL,
+  OPENROUTER_TERMS_URL,
+  OPENROUTER_ZDR_URL,
   PRIVACY_SECTIONS,
 } from "@/lib/notice";
 
@@ -43,19 +45,34 @@ export default function PrivacyPage() {
           </section>
         ))}
 
-        <section aria-labelledby="google-terms-h">
-          <h2 id="google-terms-h" className="text-lg font-semibold text-ink">
-            Google API terms
+        <section aria-labelledby="openrouter-terms-h">
+          <h2 id="openrouter-terms-h" className="text-lg font-semibold text-ink">
+            OpenRouter terms and policies
           </h2>
           <p className="mt-2 text-ink-soft">
-            Live generation uses Google&apos;s Gemini Developer API. See{" "}
+            Live generation uses the OpenRouter API. Read{" "}
             <a
-              href={GOOGLE_TERMS_URL}
+              href={OPENROUTER_TERMS_URL}
               className="font-medium text-accent-strong underline underline-offset-4"
             >
-              Google&apos;s Gemini API terms
+              OpenRouter&apos;s terms
             </a>
-            .
+            {", "}
+            <a
+              href={OPENROUTER_PRIVACY_URL}
+              className="font-medium text-accent-strong underline underline-offset-4"
+            >
+              OpenRouter&apos;s privacy policy
+            </a>
+            {", and its "}
+            <a
+              href={OPENROUTER_ZDR_URL}
+              className="font-medium text-accent-strong underline underline-offset-4"
+            >
+              zero data retention documentation
+            </a>.{" "}
+            Downstream model-host terms vary because Mimus does not pin a
+            single host.
           </p>
         </section>
       </main>

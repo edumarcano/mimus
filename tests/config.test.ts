@@ -1,13 +1,16 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { getPublicConfig, getServerConfig } from "@/lib/server/config";
+import { MODEL_PUBLIC_LABEL } from "@/lib/server/model-config";
 
 const ENV_KEYS = [
   "MIMUS_MODE",
+  "OPENROUTER_API_KEY",
   "GEMINI_API_KEY",
   "APP_ORIGIN",
   "MIMUS_LIVE_COUNTRIES",
   "MIMUS_DEV_ALLOW_LOCAL_LIVE",
   "GEMINI_MODEL",
+  "OPENROUTER_MODEL",
   "PARLANCE_MODE",
   "PARLANCE_LIVE_COUNTRIES",
   "PARLANCE_DEV_ALLOW_LOCAL_LIVE",
@@ -57,33 +60,44 @@ describe("getServerConfig", () => {
     expect(config.configError).toBe(true);
   });
 
-  it("requires key, origin, and countries for live", () => {
+  it("requires OPENROUTER_API_KEY, origin, and countries for live", () => {
     resetEnv({ MIMUS_MODE: "live" });
     expect(getServerConfig().isLive).toBe(false);
 
     resetEnv({
       MIMUS_MODE: "live",
-      GEMINI_API_KEY: "test-key",
+      OPENROUTER_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
     });
     expect(getServerConfig().isLive).toBe(false);
 
     resetEnv({
       MIMUS_MODE: "live",
-      GEMINI_API_KEY: "test-key",
+      OPENROUTER_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
       MIMUS_LIVE_COUNTRIES: "US",
     });
     expect(getServerConfig().isLive).toBe(true);
   });
 
-  it("ignores GEMINI_MODEL env", () => {
+  it("does not enable live from GEMINI_API_KEY alone", () => {
     resetEnv({
       MIMUS_MODE: "live",
-      GEMINI_API_KEY: "test-key",
+      GEMINI_API_KEY: "legacy-key",
+      APP_ORIGIN: "http://localhost:3000",
+      MIMUS_LIVE_COUNTRIES: "US",
+    });
+    expect(getServerConfig().isLive).toBe(false);
+  });
+
+  it("ignores GEMINI_MODEL and OPENROUTER_MODEL env", () => {
+    resetEnv({
+      MIMUS_MODE: "live",
+      OPENROUTER_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
       MIMUS_LIVE_COUNTRIES: "US",
       GEMINI_MODEL: "some-other-model",
+      OPENROUTER_MODEL: "another-model",
     });
     expect(getServerConfig().isLive).toBe(true);
   });
@@ -91,7 +105,7 @@ describe("getServerConfig", () => {
   it("does not enable live from legacy PARLANCE_MODE alone", () => {
     resetEnv({
       PARLANCE_MODE: "live",
-      GEMINI_API_KEY: "test-key",
+      OPENROUTER_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
       PARLANCE_LIVE_COUNTRIES: "US",
     });
@@ -105,7 +119,7 @@ describe("getServerConfig", () => {
   it("ignores legacy PARLANCE_LIVE_COUNTRIES and PARLANCE_DEV_ALLOW_LOCAL_LIVE", () => {
     resetEnv({
       MIMUS_MODE: "live",
-      GEMINI_API_KEY: "test-key",
+      OPENROUTER_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
       PARLANCE_LIVE_COUNTRIES: "US",
       PARLANCE_DEV_ALLOW_LOCAL_LIVE: "true",
@@ -121,7 +135,7 @@ describe("getPublicConfig", () => {
   it("projects liveAvailability from region headers", () => {
     resetEnv({
       MIMUS_MODE: "live",
-      GEMINI_API_KEY: "test-key",
+      OPENROUTER_API_KEY: "test-key",
       APP_ORIGIN: "http://localhost:3000",
       MIMUS_LIVE_COUNTRIES: "US",
     });
@@ -140,7 +154,7 @@ describe("getPublicConfig", () => {
   it("never exposes secrets or origin", () => {
     resetEnv({
       MIMUS_MODE: "live",
-      GEMINI_API_KEY: "secret-key",
+      OPENROUTER_API_KEY: "secret-key",
       APP_ORIGIN: "http://localhost:3000",
       MIMUS_LIVE_COUNTRIES: "US",
     });
@@ -148,6 +162,6 @@ describe("getPublicConfig", () => {
     expect(JSON.stringify(pub)).not.toContain("secret-key");
     expect(JSON.stringify(pub)).not.toContain("localhost");
     expect(pub.limits.maxInputCodePoints).toBe(3000);
-    expect(pub.modelLabel).toBeTruthy();
+    expect(pub.modelLabel).toBe(MODEL_PUBLIC_LABEL);
   });
 });

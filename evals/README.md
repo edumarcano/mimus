@@ -8,7 +8,7 @@ held-out split for release-candidate checks.
 
 ## Opt in to live API use
 
-Ordinary CI does **not** call Google. To run inference locally:
+Ordinary CI does **not** call OpenRouter or any other provider. To run inference locally:
 
 ```bash
 npm run eval -- --live --limit 5
@@ -20,14 +20,14 @@ with code 1.
 Development runs default to `split=development` (40 cases). Holdout or all
 splits require `--include-holdout`. A release-candidate run that includes
 holdout also requires a clean git tree for the committed prompt, styles,
-model-config, and Gemini adapter files.
+model-config, and the OpenRouter adapter (`src/lib/server/openrouter.ts`) files.
 
-The runner spaces sequential provider requests ~4.2 seconds apart, below the
-reported free-tier limit of 15 requests per minute. A full run
-therefore takes a few minutes of wall time. If a request still hits a quota
-error, the run stops and records it instead of retrying.
+The runner spaces sequential provider requests ~4.2 seconds apart. This is a
+conservative pacing interval for the development runner, not a provider requirement
+under OpenRouter, so a full run takes a few minutes of wall time. If a request still
+hits a rate or quota error, the run stops and records it instead of retrying.
 
-The runner loads `GEMINI_API_KEY` from `.env.local` when that file exists
+The runner loads `OPENROUTER_API_KEY` from `.env.local` when that file exists
 (via Node's `--env-file-if-exists`). Otherwise export the variable in your
 shell; the runner does not read the key from anywhere else.
 
@@ -52,13 +52,20 @@ review. The runner records deterministic checks only (nonempty output, size
 cap, completion status, optional `preserveTokens`). It does not assign
 meaning or style scores.
 
-The release-target denominator is the **40-case release-candidate cohort**
-defined in [`evals/results/summary.md`](results/summary.md): the 30 `dev-*`
-cases plus the 10 fresh `holdout2-*` cases, evaluated on the frozen
-configuration. The consumed `holdout-*` cases are supplemental development
-evidence and do not count toward targets.
+The release-target denominator in the **historical Gemini release-candidate
+summary** is the 40-case cohort defined in [`evals/results/summary.md`](results/summary.md):
+the 30 `dev-*` cases plus the 10 fresh `holdout2-*` cases, evaluated on the frozen
+Gemini configuration. The consumed `holdout-*` cases are supplemental development
+evidence and do not count toward those targets.
 
-Release targets from the product spec, with the recorded revision:
+**Historical record:** `evals/results/summary.md` is the Gemini release-candidate
+record and is unchanged by the OpenRouter migration. The GLM development evidence
+(2026-10-13) is separate, is recorded in
+[`evals/results/glm-development.md`](results/glm-development.md), uses a different
+cohort, and did not meet the release targets below.
+
+Release targets from the product spec, as recorded for the historical Gemini
+release candidate (revision and cohort in `summary.md`):
 
 - Meaning score 2 on at least 36/40 cases — **met (36/40)**
 - Style score 2 on at least 32/40 cases — **met (40/40)**

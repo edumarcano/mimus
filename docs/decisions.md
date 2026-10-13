@@ -544,3 +544,73 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
 - **Contrast fix:** `--color-line` (about 1.6:1 on white) stays for decorative dividers and panel outlines. Interactive control borders (selects, textarea, secondary buttons, example chips, intensity options) use the new `--color-control-line` (`#748c83`, at least 3:1 on white, canvas, and accent-soft; WCAG 1.4.11), guarded by tests/theme-contrast.test.ts. This is a computed check; no new browser audit was run.
 - **Unchanged:** Translation behavior, model configuration, prompt v4, and evaluation evidence. Production stays examples-only; live inference is not enabled and no release has been published.
 - **Social metadata:** A read-only fetch of https://mimus-rewrite.vercel.app/ on 2026-10-12 showed `og:image` and `twitter:image` still pointing at the removed `parlance-tan.vercel.app` host (the deployed build predates this change). `metadataBase` is now set to the canonical origin in `src/app/layout.tsx` so image URLs resolve to the current host after the next production deploy; this is not verified on the deployed site until that deploy happens.
+
+## 2026-10-13: Approved OpenRouter migration (GLM 5.3 Flash) and development evidence
+
+- **Decision:** The active AI provider changes from Google Gemini to OpenRouter.
+  The committed configuration in `src/lib/server/model-config.ts` is
+  `z-ai/glm-5.3-flash`, `reasoningEffort: "low"`, `maxOutputTokens: 2048`,
+  `dataCollection: "deny"`, and `zdr: true`. The public label is "GLM 5.3 Flash".
+  Prompt v4 is unchanged. The server calls OpenRouter with native `fetch`; the
+  `OPENROUTER_API_KEY` environment variable is server-only.
+- **Notice:** `NOTICE_VERSION` changes from `google-unpaid-v1` to
+  `openrouter-zdr-v1`. The shared notice in `src/lib/notice.ts` states that
+  OpenRouter routes to a third-party model host, that OpenRouter still records
+  request metadata and may categorize prompts anonymously, that a host may cache
+  prompt text in memory, and that this routing is not anonymity. Because the
+  version changed, an older acknowledgement of `google-unpaid-v1` fails the
+  existing notice-version check in the translate handler and must be
+  acknowledged again.
+- **Scope of this entry:** this change includes the OpenRouter adapter, the
+  model configuration, the environment example, the notice, the privacy page,
+  tests, and documentation. It made no live API calls.
+- **Not performed:** Phase 4 (local live smoke test) and Phase 5 (protected
+  preview live verification) were **not performed**. Deployed live streaming,
+  allowed-region behavior, abort propagation, and the WAF rule on the current
+  host remain unverified.
+- **Production:** remains in demo mode. No production `OPENROUTER_API_KEY` is set
+  or added by this change. Production stays demo until the owner explicitly
+  authorizes live activation.
+
+### Local development run (not release acceptance)
+
+These facts were verified in a local run. Raw run files stay gitignored and are
+not copied into the repository.
+
+- **Date and revision:** 2026-10-13, git revision `955b8f468b1301519761fee9456caf2802f3b3c0`.
+- **Configuration:** prompt version 4, model `z-ai/glm-5.3-flash`, reasoning
+  effort `low`, `max_tokens` 2048, provider routing `data_collection: "deny"` and
+  `zdr: true`.
+- **Cohort:** 40 development-split cases: the 30 `dev-*` cases plus the 10
+  consumed `holdout-*` cases. The 10 `holdout2-*` cases were not run and remain
+  unspent.
+- **This cohort is not the release-candidate denominator** in
+  `evals/results/summary.md`, which uses 30 `dev-*` cases plus the 10 fresh
+  `holdout2-*` cases on the Gemini configuration.
+- **Transport and cost:** 40 of 40 requests completed with 0 errors and 0
+  timeouts. The billed run cost was about $0.0014.
+- **Responding providers:** InferenceNet 33, Together 3, Parasail 2, Morph 1,
+  Relace 1.
+- **Deterministic checks:** 39 of 40 passed the nonempty, output-cap,
+  completion, and exact-token checks. The only failure was `preserveTokensOk` on
+  `holdout-numbers-01`.
+- **Meaning and style:** manual meaning and style scores were not recorded in the
+  repository, so no numeric meaning tally is published. The approved migration
+  decision is that these development results **did not meet the original
+  meaning-preservation target**. The release target was not passed.
+- **Harness:** the local harness was separate from the application adapter and
+  was non-streaming. This is development evidence only, not deployed
+  verification and not v1 acceptance.
+
+### Limitations
+
+- Hosts are not pinned, so behavior can vary between requests and providers.
+- Low reasoning and a 2048-token cap do not prove meaning preservation. The cap
+  includes reasoning tokens.
+- The fresh `holdout2-*` split was not used for this run.
+- Account-level OpenRouter prompt logging is not enforced by the app and must be
+  confirmed by the owner.
+- The US allowlist is a visitor restriction, not data residency.
+- The Gemini release-candidate summary in `evals/results/summary.md` is historical
+  and is unchanged. The GLM development evidence is recorded separately in
+  `evals/results/glm-development.md`.

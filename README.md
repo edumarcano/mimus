@@ -29,11 +29,17 @@ history, and local preferences.
 - Milestone 3 browser checks (layout, reduced motion, target sizes, contrast)
 are recorded in [docs/decisions.md](docs/decisions.md), including what remains
 unverified.
-- The release-candidate configuration (`gemini-3.5-flash-lite`, prompt v4, high
-thinking) was evaluated and reviewed. The Milestone 4 evaluation was run before
-the rename and has not been re-run; the model configuration and prompt are
-unchanged. See [evals/results/summary.md](evals/results/summary.md) for scores,
-revised targets, and documented limitations.
+- The current integration is server-side OpenRouter with `z-ai/glm-5.3-flash`
+(low reasoning, 2,048-token output cap, ZDR and data-collection-deny routing). Prompt v4
+is unchanged. Live generation is not enabled in production, and deployed live
+streaming is still unverified.
+- The Gemini release-candidate evaluation is historical. It was run before the
+provider change, and its scores, revised targets, and limitations are recorded in
+[evals/results/summary.md](evals/results/summary.md). That summary is unchanged.
+- GLM development evidence (2026-10-13, local, non-streaming) did not meet the
+original meaning-preservation target. See
+[evals/results/glm-development.md](evals/results/glm-development.md). No release
+target is claimed as passed.
 - The WAF rate-limit rule and demo-mode 503 behavior were verified on the former
 production host, `parlance-tan.vercel.app`, on 2026-10-07. That host has been
 removed. These behaviors have not been re-verified on the current production
@@ -44,8 +50,9 @@ URL. Deployed live streaming, abort, and region checks remain pending. See
 
 ## Technical direction
 
-Next.js, TypeScript, and Tailwind CSS, with one server-side Gemini integration.
-No application database, cloud text history, or analytics service is planned.
+Next.js, TypeScript, and Tailwind CSS, with one server-side OpenRouter integration
+(`z-ai/glm-5.3-flash`). No application database, cloud text history, or analytics
+service is planned.
 Model selection and generation settings are versioned in code; credentials stay
 in server environment configuration.
 

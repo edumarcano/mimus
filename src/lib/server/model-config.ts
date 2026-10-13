@@ -1,13 +1,15 @@
 import "server-only";
 
-// Release-candidate configuration; approved on 2026-10-07 after
-// the evaluation recorded in evals/results/summary.md. Any change requires a
-// new evaluation on a fresh independent holdout.
+// Selected OpenRouter migration configuration (z-ai/glm-5.3-flash); not a claim
+// that release acceptance passed. Prompt v4 is unchanged. Any production release
+// still requires a new evaluation on a fresh independent holdout.
 export const MODEL_CONFIG = {
-  provider: "google",
-  model: "gemini-3.5-flash-lite",
+  provider: "openrouter",
   maxOutputTokens: 2_048,
-  thinkingLevel: "high",
+  model: "z-ai/glm-5.3-flash",
+  reasoningEffort: "low",
+  dataCollection: "deny",
+  zdr: true,
 } as const;
 
-export const MODEL_PUBLIC_LABEL = "Gemini 3.5 Flash-Lite";
+export const MODEL_PUBLIC_LABEL = "GLM 5.3 Flash";

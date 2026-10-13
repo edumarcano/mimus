@@ -129,7 +129,7 @@ export const RELEASE_CANDIDATE_TRACKED_FILES = [
   "src/lib/prompts.ts",
   "src/lib/styles.ts",
   "src/lib/server/model-config.ts",
-  "src/lib/server/gemini.ts",
+  "src/lib/server/openrouter.ts",
 ] as const;
 
 export function parseDirtyTrackedFiles(porcelain: string): string[] {

@@ -12,7 +12,7 @@ export type ServerConfig = {
   mode: MimusMode;
   isLive: boolean;
   configError: boolean;
-  geminiApiKey: string | undefined;
+  openrouterApiKey: string | undefined;
   appOrigin: string | undefined;
   liveCountries: readonly string[];
   devAllowLocalLive: boolean;
@@ -63,11 +63,13 @@ function parseCountries(raw: string | undefined): readonly string[] {
 }
 
 export function getServerConfig(): ServerConfig {
-  // Intentionally ignore GEMINI_MODEL and any model override env vars.
+  // Intentionally ignore legacy provider keys and model override env vars.
+  void process.env.GEMINI_API_KEY;
   void process.env.GEMINI_MODEL;
+  void process.env.OPENROUTER_MODEL;
 
   const { mode, invalid } = parseMode(process.env.MIMUS_MODE);
-  const geminiApiKey = process.env.GEMINI_API_KEY?.trim() || undefined;
+  const openrouterApiKey = process.env.OPENROUTER_API_KEY?.trim() || undefined;
   const appOrigin = parseOrigin(process.env.APP_ORIGIN);
   const parsedCountries = parseCountries(process.env.MIMUS_LIVE_COUNTRIES);
   const countriesInvalid =
@@ -79,7 +81,7 @@ export function getServerConfig(): ServerConfig {
 
   const liveReady =
     mode === "live" &&
-    Boolean(geminiApiKey) &&
+    Boolean(openrouterApiKey) &&
     Boolean(appOrigin) &&
     parsedCountries.length > 0 &&
     !countriesInvalid;
@@ -90,7 +92,7 @@ export function getServerConfig(): ServerConfig {
     mode: configError && mode === "live" ? "disabled" : mode,
     isLive: liveReady,
     configError,
-    geminiApiKey,
+    openrouterApiKey,
     appOrigin,
     liveCountries: parsedCountries,
     devAllowLocalLive,

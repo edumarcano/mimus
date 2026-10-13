@@ -1,5 +1,5 @@
 import { createTranslateHandler } from "@/lib/server/translate";
-import { streamRewrite } from "@/lib/server/gemini";
+import { streamRewrite } from "@/lib/server/openrouter";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;

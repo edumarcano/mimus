@@ -149,11 +149,13 @@ serves on Node 24.x per the Vercel project listing.
   streamed six content deltas and finished `complete`. The output preserved a
   negative response and added unsupported request and temporal context. That
   limitation is not an adapter failure and is not release acceptance.
-- **Not performed:** protected Preview live verification. No deployed live check
-  for OpenRouter exists.
-- **Not verified on any host:** genuine streaming through Vercel with OpenRouter,
-  allowed-region live success, Stop/abort propagation to OpenRouter, and the
-  60-second route limit under a real stream.
+- **Preview live verification (2026-10-13):** recorded in
+  [`docs/decisions.md`](decisions.md). Authenticated access, the privacy
+  acknowledgement, real SSE streaming, a completed resubmit, production demo
+  `503`, and WAF `429` were observed. Client disconnect did not produce an
+  aborted function log; the in-flight request still logged `200`. Non-US
+  region rejection was not tested. The 60-second route limit under a long
+  stream was not tested. Production live mode was not enabled.
 - **Production:** demo only; no production key was added. Do not set
   `MIMUS_MODE=live` or `OPENROUTER_API_KEY` on Production for this migration.
 - **Observed development run:** local only, see
@@ -161,11 +163,11 @@ serves on Node 24.x per the Vercel project listing.
   [`evals/results/glm-development.md`](../evals/results/glm-development.md). It did
   not meet the original meaning-preservation target and is not deployment evidence.
 
-## Prepared Preview live verification (not active)
+## Prepared Preview live verification
 
-This configuration is written so it can be applied later. It has not been
-applied, and Preview live mode must stay off until the owner approves it.
-Do not reuse the local evaluation key.
+The owner applied this configuration on 2026-10-13 and the checks below were
+run. Results are in [`docs/decisions.md`](decisions.md). Do not reuse the
+local evaluation key, and do not copy these variables onto Production.
 
 **Branch scope.** Set the variables below on Vercel Preview for git branch
 `feat/openrouter-glm-migration` only. Do not set them for all Preview
@@ -229,8 +231,7 @@ WAF 429 sequence above.
 
 ## Owner-controlled checks before release
 
-These are owner actions. None has been completed or verified by this document,
-and none should be read as done.
+These are owner actions. An item is done only when this document says so.
 
 - [ ] **Production environment variables:** in Vercel Production, `MIMUS_MODE`
   is not `live` and `OPENROUTER_API_KEY` is not set while production is
@@ -244,10 +245,10 @@ and none should be read as done.
   `https://mimus-rewrite.vercel.app`, with no trailing slash.
 - [ ] **Git integration:** the Vercel project `mimus` deploys from
   `edumarcano/mimus`, with `main` as the production branch.
-- [ ] **WAF rate limit:** the "Rate limit translate API" rule is still present
-  and enforcing on the current project. Re-run the six-POST sequence in
-  [WAF rate limiting](#waf-rate-limiting) against
-  `https://mimus-rewrite.vercel.app/api/translate`, and record the result in
+- [x] **WAF rate limit (2026-10-13):** a rapid burst of `POST /api/translate`
+  against `https://mimus-rewrite.vercel.app` returned application `503`
+  responses, then `429` with `X-Vercel-Mitigated: deny`. The same client also
+  received `429` on the Preview host during that window. See
   [`docs/decisions.md`](decisions.md).
 - [ ] **OpenRouter account:** confirm the dedicated inference key, the spending
   limit, the account's prompt-logging setting, and that a ZDR, data-collection-denied
@@ -256,11 +257,7 @@ and none should be read as done.
   these checks and the audience review in [`docs/decisions.md`](decisions.md).
 - [ ] **Launch decision:** decide whether and when live mode is enabled on
   production. Until then, production remains examples-only.
-- [ ] **Protected Preview live verification:** not started. The exact
-  branch-scoped variables, separate capped key, access protection, and checks
-  are in [Prepared Preview live verification](#prepared-preview-live-verification-not-active).
-  Do not enable them until the owner approves that configuration. Production
-  stays demo.
+- [x] **Protected Preview live verification (2026-10-13):** streaming, acknowledgement, production `503`, and log contents were checked. Client cancel did not show an aborted function log, and non-US rejection was not tested. Details are in [`docs/decisions.md`](decisions.md). Production stays demo.
 
 ## Shutdown / recovery
 

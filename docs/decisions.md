@@ -582,10 +582,42 @@ LinkedIn across all three intensities. Three cases were LinkedIn to Human.
     register, and the output adds unsupported request and temporal context
     ("that request", "at this time"). This is not conclusively a model-level
     refusal or an adapter failure. It is not a release score.
-- **Not performed:** protected Preview live verification was **not performed**.
-  Deployed live streaming, allowed-region behavior, abort propagation, and the
-  WAF rule on the current host remain unverified. The prepared Preview
-  configuration is in [`docs/deployment.md`](deployment.md) and is not active.
+- **Protected Preview (2026-10-13): verified, not merged.** Deployment
+  `dpl_NSCVeG4BfC1TLU9ejCWxotfc6uCR` on branch `feat/openrouter-glm-migration`.
+  The stable origin is
+  `https://mimus-git-feat-openrouter-gl-c33962-edumarcano30-5426s-projects.vercel.app`.
+  The unique deployment hostname is rejected with `REQUEST_NOT_ALLOWED`, so
+  `APP_ORIGIN` is that stable origin. Production was not switched to live mode.
+  - Unauthenticated `POST /api/translate` on the Preview host returned `401`.
+  - Authenticated `GET /` rendered mode `live`, `liveAvailability: "available"`,
+    notice version `openrouter-zdr-v1`, the OpenRouter notice, and the adult
+    acknowledgement checkbox.
+  - `eligibilityConfirmed: false` returned `403` `REQUEST_NOT_ALLOWED` with no
+    token counts.
+  - One synthetic translate ("The fictional meeting is at noon.", Human to
+    Corporate, subtle) returned `200` `text/event-stream` with `event: meta`,
+    three `delta` events (13, 25, and 6 characters), and `event: done`
+    (`finishReason: "complete"`, 373 input tokens, 10 output tokens, 609 ms).
+    The rewrite was "The fictional meeting is scheduled for noon."
+  - A second request with a longer synthetic paragraph was cut locally after
+    12 `delta` events and before a local `done` line. The function log for
+    that request is still `200` with 399 input tokens and 50 output tokens.
+    Provider cancellation was **not** demonstrated.
+  - A resubmit of the short sentence then completed: two deltas and `done`
+    (`7323c202-14d8-4438-8c9d-505544e1350e`, 373 input tokens, 21 output tokens).
+  - Preview function logs for these calls contain request id, model
+    `z-ai/glm-5.3-flash`, prompt version, style ids, duration, status, and
+    token counts. They do not contain the submitted sentences, the rewrites,
+    or the API key.
+  - Allowed-region access is the observed `liveAvailability: "available"`
+    result. Rejection of a non-US region was not tested, because that would
+    require spoofing `x-vercel-ip-country`.
+- **Production demo and WAF (2026-10-13):** `POST
+  https://mimus-rewrite.vercel.app/api/translate` returned `503`
+  `SERVICE_UNAVAILABLE`. A rapid burst from the same client then returned
+  `503` for the first requests and `429` with `X-Vercel-Mitigated: deny` once
+  the five-request window was exceeded. The same window also returned `429`
+  on the Preview host. Production live mode was not enabled.
 - **Production:** remains in demo mode. No production `OPENROUTER_API_KEY` is set
   or added by this change. Production stays demo until the owner explicitly
   authorizes live activation.

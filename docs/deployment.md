@@ -1,273 +1,180 @@
-# Deployment notes
+# Deployment and operations
 
-This document describes the production configuration for Mimus. Items are
-separated into **verified** (observed on 2026-10-07 against the former
-production host `parlance-tan.vercel.app`, since removed; see
-[Production domain](#production-domain)) and **not yet verified** (requires
-actions or access described below). No item is claimed verified without the
-evidence shown here. Verified items are historical evidence unless they say
-otherwise.
+This is the operating reference for the Mimus deployment on Vercel. The history
+and reasoning behind it are in [`decisions.md`](decisions.md). Nothing here
+authorizes a change: enabling live inference on Production needs the owner's
+explicit approval and the gates in [Public live checklist](#public-live-checklist).
 
-## Production domain
+## Current state
 
-The canonical production URL is **https://mimus-rewrite.vercel.app**, served by
-the Vercel project `mimus` from the GitHub repository `edumarcano/mimus`.
+| Item | State |
+| --- | --- |
+| Production URL | `https://mimus-rewrite.vercel.app` (Vercel project `mimus`, repository `edumarcano/mimus`, branch `main`) |
+| Production mode | Examples-only demo. No environment variables are set in any environment. |
+| Live inference | Implemented and verified on a protected Preview. Not enabled publicly. |
+| Plan | Vercel Hobby (personal, non-commercial use) |
 
-The former production host, `parlance-tan.vercel.app`, has been removed. The
-observations dated 2026-10-07 in this document were made on that former host.
-They are kept as historical evidence and are not evidence about the current
-host. WAF rate-limit and demo-mode behavior have not been re-verified on
-`https://mimus-rewrite.vercel.app` in this document.
+**Verified evidence** (details in [`decisions.md`](decisions.md)):
 
-## Environment setup
+| Check | Date | Result |
+| --- | --- | --- |
+| Production smoke: metadata, assets, `/privacy`, demo UI, one `POST` | 2026-10-14 | 503 `SERVICE_UNAVAILABLE` with `no-store`; branding and notice correct |
+| No environment variables in any environment (`vercel env ls`) | 2026-10-14 | none |
+| WAF rate-limit rule present (`vercel firewall rules inspect`) | 2026-10-14 | `POST /api/translate`, per IP, 5 per 60 s, enabled |
+| WAF enforcement on Production | 2026-10-13 | 503 for the first requests, then 429 with `X-Vercel-Mitigated: deny` |
+| Protected Preview live streaming | 2026-10-13 | SSE stream, `done`, logs without text or key |
 
-Copy [`.env.example`](../.env.example) to `.env.local` for local work. Use host
-secret settings (for example Vercel project environment variables) for deployed
-environments. Never commit credentials or real user text.
+**Not verified:** deployed non-US region rejection, whether Vercel delivers a
+client disconnect to the function, whether the provider stops billing after an
+abort, and quota exhaustion on the host. See
+[Cancellation](decisions.md#cancellation-what-is-and-is-not-known) and
+[Spend exposure](decisions.md#spend-exposure).
+
+## Configuration
+
+Copy [`.env.example`](../.env.example) to `.env.local` for local work. Use Vercel
+project environment variables for deployed environments. Never commit credentials
+or real user text.
 
 | Variable | Role |
 | --- | --- |
-| `OPENROUTER_API_KEY` | Server-only OpenRouter API key (dedicated inference key) |
-| `MIMUS_MODE` | `demo`, `live`, or `disabled`; unset or invalid values default to demo or fail closed |
-| `APP_ORIGIN` | Exact browser origin (no trailing slash) |
-| `MIMUS_LIVE_COUNTRIES` | Uppercase allowlist (initial policy: `US`) |
-| `MIMUS_DEV_ALLOW_LOCAL_LIVE` | Loopback-only bypass; must be `false` on Vercel |
+| `OPENROUTER_API_KEY` | Server-only OpenRouter key. Use a dedicated key. |
+| `MIMUS_MODE` | `demo` (default when unset), `live`, or `disabled`. An invalid value fails closed to `disabled`. |
+| `APP_ORIGIN` | Exact trusted origin, no trailing slash and no path. A different host, including a unique deployment hostname, is rejected with `REQUEST_NOT_ALLOWED`. |
+| `MIMUS_LIVE_COUNTRIES` | Uppercase allowlist of visitor countries (initial policy: `US`). A visitor restriction, not data residency. |
+| `MIMUS_DEV_ALLOW_LOCAL_LIVE` | Loopback development only. Keep `false` on Vercel. |
 
-The mode, region, and local-bypass variables are `MIMUS_MODE`,
-`MIMUS_LIVE_COUNTRIES`, and `MIMUS_DEV_ALLOW_LOCAL_LIVE`. They replace the former
-`PARLANCE_*` names with no legacy fallback. A leftover `PARLANCE_*` variable is
-ignored, so a deployment that still uses the old names fails closed to demo
-mode. Deployments must set the `MIMUS_*` names.
-
-The active model, reasoning effort, output cap, and privacy routing live in
-[`src/lib/server/model-config.ts`](../src/lib/server/model-config.ts), not in
-environment variables: `z-ai/glm-5.3-flash`, `reasoningEffort: "low"`,
-`maxOutputTokens: 2048`, `dataCollection: "deny"`, and `zdr: true`. Prompt v4 is
-unchanged. There is no model override variable.
-
-**Leftover legacy variables are ignored.** `GEMINI_API_KEY`, `GEMINI_MODEL`, and
-`OPENROUTER_MODEL` do not change inference. A deployment that still has only
-`GEMINI_*` set runs in demo mode or fails closed; it does not call a provider.
-
-**Demo by default.** When `MIMUS_MODE` is unset, the app runs in demo mode and
-needs no key. Live mode requires a nonempty `OPENROUTER_API_KEY`, a valid
-`APP_ORIGIN`, and a valid `MIMUS_LIVE_COUNTRIES` list.
-
-**Production stays demo.** This migration adds no production `OPENROUTER_API_KEY`
-and does not change production mode. Production stays demo until the owner
-explicitly authorizes live activation.
-
-**Historical:** the frozen Gemini release-candidate configuration (`gemini-3.5-flash-lite`,
-`maxOutputTokens: 2048`, `thinkingLevel: "high"`, prompt v4) is recorded in
-[`evals/results/summary.md`](../evals/results/summary.md) and is no longer the
-active configuration.
-
-Changing environment variables may require a redeploy; they are **not** an
-instant kill switch for in-flight requests.
-
-**Verified 2026-10-07 (historical, former host `parlance-tan.vercel.app`):**
-that project had **no environment variables configured**, so it defaulted to
-demo mode. The current production project's variables have not been verified
-in this document (see
-[Owner-controlled checks before release](#owner-controlled-checks-before-release)).
-Enabling live mode on any deployment requires adding
-the variables above (and, for public traffic, to resolve the launch-policy
-blockers in [`docs/decisions.md`](decisions.md)).
-
-## Secrets, quota, and billing
-
-Rotate or revoke the **OpenRouter** API key in the OpenRouter dashboard if it is
-exposed. Use a dedicated inference key, and confirm a spending limit and the
-account's prompt-logging setting before any live activation. The app does not
-enforce either setting. The spend-control and ZDR references are in
-[`docs/product-spec.md`](product-spec.md) (sections 8, 12, and 13).
-
-**Historical (Gemini, reported 2026-10-07):** the former AI Studio project was on
-the free tier with no paid billing, and the relevant limit was 15 requests per
-minute. That project is no longer the active provider, and those observations are
-not evidence about OpenRouter.
+- Live mode needs a nonempty key, a valid `APP_ORIGIN`, and a valid country
+  list. If any is missing, the app reports `disabled` and never calls the
+  provider.
+- The model, reasoning effort, output cap, and privacy routing are committed in
+  [`src/lib/server/model-config.ts`](../src/lib/server/model-config.ts). There is
+  no model override variable, and leftover `GEMINI_*` or `OPENROUTER_MODEL`
+  settings are ignored.
+- **Scoping:** set live variables on **Production only**. Preview deployments
+  default to demo and must not inherit the key.
+- Environment changes apply only to new deployments, never to existing ones.
 
 ## Region policy
 
-Live requests are allowed only when `x-vercel-ip-country` matches the
-configured allowlist (intended: `US`). Unknown or disallowed regions fail
-closed with `REGION_UNAVAILABLE`. The allowlist is a visitor restriction. It is
-**not data residency**: requests go to OpenRouter and then to third-party model
-hosts whose locations are not pinned, so this document does not claim that
-inference stays in the US.
+Live requests are allowed only when Vercel's `x-vercel-ip-country` header matches
+`MIMUS_LIVE_COUNTRIES`. Missing, unknown, or disallowed countries fail closed with
+`REGION_UNAVAILABLE` before any provider call; this logic is unit-tested. The
+allowlist does not mean inference stays in the US, because OpenRouter routes to
+unpinned third-party hosts. Deployed rejection of a non-US request has not been
+observed, since it cannot be produced from a US network.
 
-**Not yet verified:** region behavior on a deployed host. The application
-logic is covered by local tests, but no live-mode deployment exists yet, and
-a non-US `x-vercel-ip-country` result cannot be produced by spoofing the
-header from a US exit.
+## WAF rate limit
 
-## WAF rate limiting
+One enforcing custom rule, "Rate limit translate API" (`POST`, path starts with
+`/api/translate`, per IP, fixed 60-second window, limit 5, rate limit action).
+Counters are regional and per IP, so the rule slows one client but does not stop
+distributed abuse and is not a budget control. Hobby allows up to three custom
+rules.
 
-**Verified 2026-10-07 on the former production host (historical):** one
-enforcing Hobby rate-limit rule is published
-(`rule_rate_limit_translate_api_jRmBat`, name "Rate limit translate API"):
+## Public live checklist
 
-- Match: `POST` with path prefix `/api/translate`
-- Scope: client IP, fixed window 60 seconds, limit 5 requests
-- Exceeded action: rate limit (HTTP 429), not log-only
+Every item needs the owner. Do not proceed to activation until all are recorded in
+[`decisions.md`](decisions.md).
 
-Observed against the former host, `https://parlance-tan.vercel.app/api/translate`,
-with six rapid synthetic POSTs: requests 1-5 returned the application's 503
-`SERVICE_UNAVAILABLE` envelope (demo mode), and request 6 returned
-`HTTP/1.1 429 Too Many Requests` with `X-Vercel-Mitigated: deny` and a
-WAF-generated JSON body. The firewall traffic log recorded the rate-limit
-action. Counters are regional per Vercel's documented behavior.
+- [ ] **Provider policy:** the recommendation in
+  [`decisions.md`](decisions.md#provider-policy-recommendation-owner-approval-required)
+  is reviewed and the public-live conditions are approved, including whether
+  OpenRouter's prior written approval is required for the injection evaluation cases
+  (and obtained if so).
+- [ ] **Account settings:** OpenRouter prompt logging is off, ZDR is enforced, and an
+  eligible endpoint exists for `z-ai/glm-5.3-flash`. The app cannot enforce these.
+- [ ] **Spend controls:** a dedicated Production key with a hard credit limit, prepaid
+  credit with auto top-up off, and a plan for reviewing OpenRouter activity.
+- [ ] **Quality gate:** after the provider-policy approval question is settled, the GLM
+  release evaluation is run, scored, and either meets the targets or has an
+  owner-recorded revision ([`decisions.md`](decisions.md#glm-quality-gate-active)).
+- [ ] **Shutdown rehearsal:** the [rehearsal](#rehearsal-no-key-no-model-calls) is run
+  and its timings are recorded.
+- [ ] **Risk acceptance:** the owner accepts, in writing, the unverified items listed
+  above (Vercel disconnect delivery, upstream termination after Stop, deployed region
+  rejection) or has tested them.
+- [ ] **Release posture:** the owner decides live v1.0.0 versus an examples-only
+  release.
 
-**Not re-verified:** the same sequence has not been run against
-`https://mimus-rewrite.vercel.app/api/translate`. Confirming that the rule
-exists and enforces on the current project is an owner check (see
-[Owner-controlled checks before release](#owner-controlled-checks-before-release)).
+## Activation
 
-## Deployed behavior
+1. In OpenRouter, create the dedicated key, set its credit limit, keep auto top-up
+   off, and confirm the account settings above. `GET https://openrouter.ai/api/v1/key`
+   with the key reports `limit` and `limit_remaining`.
+2. Confirm the current Production deployment is the demo build. After activation, it
+   is the only rollback target on Hobby (see [Rollback](#rollback)).
+3. Add the variables to **Production only**: `OPENROUTER_API_KEY`, `MIMUS_MODE=live`,
+   `APP_ORIGIN=https://mimus-rewrite.vercel.app`, `MIMUS_LIVE_COUNTRIES=US`, and
+   `MIMUS_DEV_ALLOW_LOCAL_LIVE=false` (`vercel env add <NAME> production`).
+4. Redeploy Production once, so a new deployment carries the variables.
+5. Run the [smoke test](#post-activation-smoke-test), then monitor.
 
-**Verified 2026-10-07 (historical; former production host
-`parlance-tan.vercel.app`; demo/disabled path):** `GET /` returns 200;
-`POST /api/translate` in demo mode returns 503 `SERVICE_UNAVAILABLE` with the
-application JSON envelope (example observed:
-`{"error":{"code":"SERVICE_UNAVAILABLE","message":"Live generation is
-unavailable right now.","requestId":"..."}}`). The deployment builds and
-serves on Node 24.x per the Vercel project listing.
+## Post-activation smoke test
 
-**Not yet verified (requires a live-mode deployment; see the actions below):**
-- genuine SSE streaming through Vercel (verified only locally; see
-  [`evals/results/summary.md`](../evals/results/summary.md));
-- allowed-region live success and `x-vercel-ip-country` handling;
-- client disconnect / Stop propagation to the provider on the host;
-- that the platform honors `maxDuration = 60` under a real long stream
-  (the 45 s application deadline fires first by design; local tests cover
-  deadline/abort behavior with mocks).
+Use short synthetic text only. Hobby keeps runtime logs for **one hour**, so inspect
+logs promptly.
 
-## OpenRouter migration status (2026-10-13)
+- `GET /` shows live mode, `openrouter-zdr-v1`, and the adult acknowledgement.
+- One allowed-region translate streams more than one `delta` and ends with `done`.
+- Stop a second, longer request and resubmit. Record what the function log and the
+  OpenRouter activity entry show for each, without concluding that the provider
+  stopped generating from a log code alone.
+- Function logs contain request ID, model, prompt version, style IDs, duration,
+  status, and token counts, and no submitted or generated text.
+- Six rapid `POST`s to `/api/translate` return the WAF 429 on the sixth.
+- If a non-US network is available, a request returns `REGION_UNAVAILABLE`.
 
-- **Local smoke:** technical pass, recorded in
-  [`docs/decisions.md`](decisions.md). One synthetic `dev-short-01` request
-  streamed six content deltas and finished `complete`. The output preserved a
-  negative response and added unsupported request and temporal context. That
-  limitation is not an adapter failure and is not release acceptance.
-- **Preview live verification (2026-10-13):** recorded in
-  [`docs/decisions.md`](decisions.md). Authenticated access, the privacy
-  acknowledgement, real SSE streaming, a completed resubmit, production demo
-  `503`, and WAF `429` were observed. Client disconnect did not produce an
-  aborted function log; the in-flight request still logged `200`. Non-US
-  region rejection was not tested. The 60-second route limit under a long
-  stream was not tested. Production live mode was not enabled.
-- **Production:** demo only; no production key was added. Do not set
-  `MIMUS_MODE=live` or `OPENROUTER_API_KEY` on Production for this migration.
-- **Observed development run:** local only, see
-  [`docs/decisions.md`](decisions.md) and
-  [`evals/results/glm-development.md`](../evals/results/glm-development.md). It did
-  not meet the original meaning-preservation target and is not deployment evidence.
+## Monitoring
 
-## Prepared Preview live verification
+Review OpenRouter activity and the key's `limit_remaining` regularly after
+activation, and the Vercel firewall overview for WAF activity. Spend limits and
+review, not the WAF, are the budget safeguards.
 
-The owner applied this configuration on 2026-10-13 and the checks below were
-run. Results are in [`docs/decisions.md`](decisions.md). Do not reuse the
-local evaluation key, and do not copy these variables onto Production.
+## Emergency shutdown
 
-**Branch scope.** Set the variables below on Vercel Preview for git branch
-`feat/openrouter-glm-migration` only. Do not set them for all Preview
-deployments, and do not set them on Production.
+Do these in order. Each step has a different limit, so do not stop after one.
 
-| Variable | Branch Preview value |
-| --- | --- |
-| `OPENROUTER_API_KEY` | A new key, separate from the local evaluation key, with a hard spending cap of $5 or less and auto-recharge off |
-| `MIMUS_MODE` | `live` |
-| `APP_ORIGIN` | The exact Preview origin, no trailing slash and no path |
-| `MIMUS_LIVE_COUNTRIES` | `US` |
-| `MIMUS_DEV_ALLOW_LOCAL_LIVE` | `false` |
+1. **Block new traffic at the edge.** Add a custom WAF rule that denies
+   `/api/translate` and publish it (`vercel firewall rules add ...`, then
+   `vercel firewall publish`). Rule changes take effect immediately, with no
+   redeploy. Move it ahead of the rate-limit rule.
+2. **Stop provider spend.** In OpenRouter, revoke the key or set its limit to zero.
+   This does **not** change the deployed application, which still reports live mode:
+   new provider calls fail as `SERVICE_UNAVAILABLE` (401) or
+   `SERVICE_QUOTA_EXHAUSTED` (402), and requests already in flight may continue
+   until they complete, reach the 45-second deadline, or reach the 60-second
+   function limit.
+3. **Make the stop durable.** Set Production `MIMUS_MODE=disabled` (or remove the live
+   variables) and redeploy. A new deployment is required; changing a variable does
+   nothing to the running one.
+4. **Verify.** A `POST` returns the WAF block or 503, `GET /` shows the disabled
+   notice, and about a minute after step 2 no new OpenRouter activity appears.
+5. **Clean up.** Remove the temporary deny rule only after step 4 passes.
 
-`APP_ORIGIN` is unknown until the branch has a deployment URL. First deploy
-the branch with Preview left in demo (no live key and `MIMUS_MODE` unset or
-`demo`). Copy that deployment's origin, set `APP_ORIGIN` to it, then set the
-key and `MIMUS_MODE=live`, then redeploy that branch. A mismatched origin
-fails closed with `REQUEST_NOT_ALLOWED`.
+## Rollback
 
-**Access protection.** Turn on Vercel Authentication (or the project's
-Deployment Protection) for Preview so the URL is not public. Browser checks
-must be performed while authenticated. An unauthenticated request should be
-rejected by the platform before the app runs. Protection does not replace the
-origin check, the region allowlist, or the WAF rate limit.
+On Hobby, Instant Rollback can only return to the **immediately previous**
+Production deployment, and only deployments that were aliased to Production are
+eligible. Vercel's documentation describes the environment behavior of a
+rolled-back deployment inconsistently, so do not rely on it to remove live
+configuration. Use rollback only as a fallback, and only while the previous
+deployment is the known demo build: any later Production deployment replaces that
+target. After a rollback, auto-assignment of new pushes stays off until a
+deployment is promoted (`vercel promote <deployment>`).
 
-**Production, unchanged.** Production `MIMUS_MODE` is not `live`, and
-Production has no `OPENROUTER_API_KEY`. Confirm that before any Preview live
-variable is saved.
+## Rehearsal (no key, no model calls)
 
-**Checks to run only after the owner approves this configuration.** Use a
-short synthetic sentence, not real user text.
+Owner-run, before activation, with no live variables and no provider cost:
 
-- Authenticated `GET /` shows the live availability notice and
-  `openrouter-zdr-v1`.
-- One allowed-region translate streams more than one SSE `delta` and ends
-  `done`. Stop during a second request, then submit again.
-- `POST /api/translate` from a disallowed or unknown region returns
-  `REGION_UNAVAILABLE` without a model call. If the tester's exit is in the
-  US, Vercel will not honor a spoofed `x-vercel-ip-country`, so this check
-  may stay blocked and must be recorded as blocked.
-- Six rapid synthetic `POST`s to `/api/translate`: the sixth should be the
-  WAF `429` if the rate-limit rule is still enforcing.
-- Function logs for the live request contain the request id, model id, and
-  token counts, and do not contain the submitted sentence or the rewrite.
-- `https://mimus-rewrite.vercel.app/api/translate` still returns
-  `503` `SERVICE_UNAVAILABLE`.
+1. With Production in demo mode, add the deny rule, confirm `POST /api/translate`
+   is blocked, then remove it. Record the time from publish to effect.
+2. On a branch-scoped Preview, set `MIMUS_MODE=disabled`, redeploy, and confirm the
+   disabled notice and the 503. Remove the Preview variable afterwards.
 
-Record the results in [`docs/decisions.md`](decisions.md). Until then, this
-section is a plan, not evidence.
+## Local checks
 
-## Smoke checks
-
-Local checks without secrets: `npm run lint`, `npm run typecheck`, `npm test`,
-`npm run build`, `npm run test:e2e` (mocked provider). CI runs the same
-except e2e is a separate job. Live evaluation is manual and opt-in
-([`evals/README.md`](../evals/README.md)).
-
-Deployed checks after enabling live mode: allowed-region translate with
-genuine streaming, Stop/abort behavior, region rejection, and a re-run of the
-WAF 429 sequence above.
-
-## Owner-controlled checks before release
-
-These are owner actions. An item is done only when this document says so.
-
-- [ ] **Production environment variables:** in Vercel Production, `MIMUS_MODE`
-  is not `live` and `OPENROUTER_API_KEY` is not set while production is
-  examples-only.
-- [ ] **Preview environment variables:** Preview does not inherit a production
-  `OPENROUTER_API_KEY`, and `MIMUS_DEV_ALLOW_LOCAL_LIVE` is `false` in Production and
-  Preview.
-- [ ] **Leftover legacy variables:** remove any `GEMINI_*` settings from Vercel
-  if they are no longer needed. They are ignored, but removing them avoids confusion.
-- [ ] **Origin, if live is configured:** `APP_ORIGIN` is exactly
-  `https://mimus-rewrite.vercel.app`, with no trailing slash.
-- [ ] **Git integration:** the Vercel project `mimus` deploys from
-  `edumarcano/mimus`, with `main` as the production branch.
-- [x] **WAF rate limit (2026-10-13):** a rapid burst of `POST /api/translate`
-  against `https://mimus-rewrite.vercel.app` returned application `503`
-  responses, then `429` with `X-Vercel-Mitigated: deny`. The same client also
-  received `429` on the Preview host during that window. See
-  [`docs/decisions.md`](decisions.md).
-- [ ] **OpenRouter account:** confirm the dedicated inference key, the spending
-  limit, the account's prompt-logging setting, and that a ZDR, data-collection-denied
-  endpoint is available for `z-ai/glm-5.3-flash`. Also confirm the OpenRouter terms
-  and privacy policy. Public live inference stays blocked until the owner records
-  these checks and the audience review in [`docs/decisions.md`](decisions.md).
-- [ ] **Launch decision:** decide whether and when live mode is enabled on
-  production. Until then, production remains examples-only.
-- [x] **Protected Preview live verification (2026-10-13):** streaming, acknowledgement, production `503`, and log contents were checked. Client cancel did not show an aborted function log, and non-US rejection was not tested. Details are in [`docs/decisions.md`](decisions.md). Production stays demo.
-
-## Shutdown / recovery
-
-To stop live inference:
-
-1. Set `MIMUS_MODE=disabled` and redeploy, **or**
-2. Deny traffic at the WAF (the control surface observed on the former host: the
-   published rule above can be tightened or a deny rule added via
-   `vercel firewall`), **or**
-3. Revoke or rotate the OpenRouter API key (`OPENROUTER_API_KEY`).
-
-Redeploy or platform propagation delay means traffic may not stop immediately.
-Review [`docs/decisions.md`](decisions.md) before re-enabling public live access.
+`npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and
+`npm run test:e2e` (mocked provider; the build step runs in demo mode). CI runs the
+same, with the end-to-end suite as a separate job. Live evaluation is manual and
+opt-in; see [`evals/README.md`](../evals/README.md).

@@ -1,5 +1,7 @@
 # Mimus evaluation summary (release candidate)
 
+> **Historical record (superseded provider).** This is the Gemini release-candidate evaluation. The active provider is now OpenRouter with `z-ai/glm-5.3-flash`, and these results do not apply to it; see [`glm-development.md`](glm-development.md) and the quality gate in [`docs/decisions.md`](../../docs/decisions.md#glm-quality-gate-active). The Gemini adapter (`src/lib/server/gemini.ts`) and its SDK dependency were removed in the migration (PR #8) and are available in Git history at commit `955b8f4`.
+>
 > **Provenance:** This evaluation was run before the product was renamed from Parlance to Mimus. The rename changed branding, environment-variable names, and storage keys only; the model configuration, prompts, and style semantics evaluated here are unchanged, so these results were not re-run.
 
 **Status:** reviewed. This is the sanitized, reviewed summary of the

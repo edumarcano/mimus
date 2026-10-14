@@ -237,8 +237,9 @@ describe("streamRewrite", () => {
     }
   });
 
-  it("maps HTTP 404 and 500 to SERVICE_UNAVAILABLE", async () => {
-    for (const status of [404, 500]) {
+  it("maps HTTP 401, 403, 404, and 500 to SERVICE_UNAVAILABLE", async () => {
+    // 401: revoked or invalid key. 403: provider or budget block. All fail closed.
+    for (const status of [401, 403, 404, 500]) {
       fetchMock.mockReset();
       mockFetchResponse({ status });
       await expect(collectEvents()).rejects.toMatchObject({

@@ -1,66 +1,100 @@
-# Mimus
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mimus-logo-dark.png">
+    <img src="docs/assets/mimus-logo.png" width="280" alt="Mimus">
+  </picture>
+</h1>
 
-Translate meaning, not just words.
+<p align="center"><strong>Translate meaning, not just words.</strong></p>
 
-Mimus rewrites text between recognizable writing styles: plain English into
-LinkedIn speak, corporate phrasing back into ordinary language, and more.
-The goal is to change the expression without inventing facts or losing the point.
+Mimus rewrites English text between recognizable writing styles: plain English
+into LinkedIn speak, corporate phrasing back into ordinary language, and more. It
+is a rewrite between writing registers, not a translator between languages, and it
+aims to change the expression without inventing facts or losing the point.
 
-## Intended experience
+[**Try the examples**](https://mimus-rewrite.vercel.app) ·
+[Case study](docs/case-study.md) · [Product specification](docs/product-spec.md) ·
+[Evaluation](evals/README.md)
 
-Choose a source and target style, adjust the intensity, and generate a rewrite in
-a two-panel interface. The initial styles are **Human, LinkedIn, Corporate,
-Startup Founder, and Academic**, with Human to LinkedIn as the default.
-
-The interface provides streaming output, reverse/swap, copy, regenerate, and
-stop controls. No account or conversation setup is required. Optional history
-stays in the browser and is off by default.
+![Mimus translator showing a Human to LinkedIn example](docs/assets/screenshots/desktop-1440.png)
 
 ## Status
 
-Mimus has not been released. The first release is planned as **v1.0.0**, and no
-release or release tag exists yet.
+Mimus is being prepared for its first release, **v1.0.0**. No release or tag
+exists yet.
 
-- **Production** at [https://mimus-rewrite.vercel.app](https://mimus-rewrite.vercel.app) runs in examples-only demo
-mode. Live inference is not enabled there, so no model is called.
-- The translator supports all five styles and their directions at three
-intensities in demo and live modes, with a /privacy page, opt-in local
-history, and local preferences.
-- Milestone 3 browser checks (layout, reduced motion, target sizes, contrast)
-are recorded in [docs/decisions.md](docs/decisions.md), including what remains
-unverified.
-- The current integration is server-side OpenRouter with `z-ai/glm-5.3-flash`
-(low reasoning, 2,048-token output cap, ZDR and data-collection-deny routing). Prompt v4
-is unchanged. Live generation is not enabled in production, and deployed live
-streaming is still unverified.
-- The Gemini release-candidate evaluation is historical. It was run before the
-provider change, and its scores, revised targets, and limitations are recorded in
-[evals/results/summary.md](evals/results/summary.md). That summary is unchanged.
-- GLM development evidence (2026-10-13, local, non-streaming) did not meet the
-original meaning-preservation target. See
-[evals/results/glm-development.md](evals/results/glm-development.md). No release
-target is claimed as passed.
-- The WAF rate-limit rule and demo-mode 503 behavior were verified on the former
-production host, `parlance-tan.vercel.app`, on 2026-10-07. That host has been
-removed. These behaviors have not been re-verified on the current production
-URL. Deployed live streaming, abort, and region checks remain pending. See
-[docs/deployment.md](docs/deployment.md).
+- **The public site is examples-only.** It shows prewritten, labeled examples and
+  makes no model calls.
+- **Live generation is implemented and has been verified on a protected
+  preview** (streaming, privacy acknowledgement, origin check, an allowed-region
+  request, logs without text), but it is not enabled publicly. Enabling it depends on owner
+  decisions about provider policy, spend controls, and quality acceptance. You can
+  run it locally with your own OpenRouter key.
+- **Quality acceptance for the current model is open.** The earlier Gemini
+  evaluation does not transfer, and the GLM development run did not meet the
+  original meaning target. See [Evaluation](#evaluation).
 
+## Features
 
+- Five styles (Human, LinkedIn, Corporate, Startup Founder, Academic), all 20
+  directions, and three intensities (Subtle, Balanced, Maximum).
+- Streamed output with Stop, Copy result, Copy both, Regenerate, and Swap. The
+  original input stays available and stale results are labeled.
+- A credential-free demo mode, mobile layout, keyboard shortcut, and local-only
+  preferences. Optional history of up to 10 completed results is off by default and
+  stays in the browser.
+- Data-use notice next to Translate, a `/privacy` page, and no accounts, application
+  database, or analytics.
 
-## Technical direction
+## How it works
 
-Next.js, TypeScript, and Tailwind CSS, with one server-side OpenRouter integration
-(`z-ai/glm-5.3-flash`). No application database, cloud text history, or analytics
-service is planned.
-Model selection and generation settings are versioned in code; credentials stay
-in server environment configuration.
+```mermaid
+flowchart LR
+  Browser -->|"1. text and styles"| Route["Next.js route: checks, then prompt"]
+  Route -->|"2. provider request"| Adapter["OpenRouter adapter"]
+  Adapter -->|"3. chat completion, ZDR routing"| OpenRouter["OpenRouter"]
+  OpenRouter -->|"routes to"| Host["Model host"]
+  Host -->|"generated output"| OpenRouter
+  OpenRouter -->|"provider stream"| Adapter
+  Adapter -->|"4. normalized events"| Route
+  Route -->|"5. SSE events to browser"| Browser
+```
 
-Live generation sends text to the configured provider. The product specification
-defines the required disclosure, data handling, and launch restrictions. A
-credential-free example mode is available for development and preview deployments.
-Generated text must be reviewed rather than treated as guaranteed faithful to the
-original.
+One Next.js (App Router, TypeScript, Tailwind) deployment with a single Node.js
+route. Trusted instructions and submitted text are kept separate, validation runs
+before any model call, and the model, reasoning effort, output cap, and privacy
+routing are committed together in
+[`src/lib/server/model-config.ts`](src/lib/server/model-config.ts), not read from
+the environment or the browser.
+
+## Model and privacy
+
+Live mode calls OpenRouter with `z-ai/glm-5.3-flash` (low reasoning, 2,048-token
+output cap) and requests zero-data-retention endpoints with data collection
+denied. Hosts are not pinned, so behavior can vary between requests. The choice
+and its trade-offs are explained in the [case study](docs/case-study.md).
+
+Live text is sent to OpenRouter and then to a third-party model host. Mimus has no
+application database and does not intentionally persist submitted or generated text
+on its servers, in logs, or in URLs. Zero data retention is an endpoint routing
+policy, not anonymity: the hosting platform and OpenRouter still process request
+metadata, and a host may cache prompts in memory. Use fictional text. The full notice
+is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
+
+## Evaluation
+
+Quality is measured on 50 synthetic cases with deterministic checks and manual
+meaning and style scoring.
+
+- The **Gemini** release-candidate evaluation is complete and historical:
+  [`evals/results/summary.md`](evals/results/summary.md).
+- The **GLM** development run completed 40 of 40 requests but recorded no scores and
+  did not meet the original meaning target:
+  [`evals/results/glm-development.md`](evals/results/glm-development.md).
+- A GLM release evaluation is defined but not run; see
+  [`docs/decisions.md`](docs/decisions.md#glm-quality-gate-active).
+
+Meaning preservation is a goal, not a guarantee for any individual result.
 
 ## Run locally
 
@@ -71,19 +105,27 @@ npm ci
 npm run dev
 ```
 
-Without any environment configuration the app runs in demo mode: examples are
-shown, no model is called, and no API key is needed. Live generation requires
-the server settings described in `[.env.example](.env.example)`.
+With no configuration the app runs in demo mode: examples are shown, no model is
+called, and no key is needed. For live generation on your machine, copy
+[`.env.example`](.env.example) to `.env.local`, add your own `OPENROUTER_API_KEY`,
+and set `MIMUS_MODE=live` and `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` (loopback
+development only). Live requests cost money on your OpenRouter account.
 
-Checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`.
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+npm run test:e2e   # Playwright, mocked provider
+```
 
 ## Documentation
 
-The [product specification](docs/product-spec.md) defines behavior, architecture,
-privacy boundaries, evaluation, and release acceptance.
-[Repository instructions](AGENTS.md) cover development conventions.
+- [Product specification](docs/product-spec.md): the behavioral contract.
+- [Case study](docs/case-study.md): design, evaluation, and lessons.
+- [Deployment and operations](docs/deployment.md): configuration, activation,
+  shutdown, and rollback.
+- [Decisions and evidence](docs/decisions.md) and [CHANGELOG](CHANGELOG.md).
+- [Repository instructions](AGENTS.md): development conventions.
 
 ## License
 
-[MIT](LICENSE). Mimus is an independent project, not affiliated with or endorsed
-by LinkedIn. Third-party services have their own terms.
+[MIT](LICENSE). Mimus is an independent project, not affiliated with or endorsed by
+LinkedIn. Third-party services have their own terms.

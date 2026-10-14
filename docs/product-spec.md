@@ -2,7 +2,7 @@
 
 **Translate meaning, not just words.**
 
-Target release: **v1.0.0** | Updated: October 13, 2026
+Target release: **v1.0.0** | Updated: October 14, 2026
 
 Status: specification. The target version does not imply that the application
 has shipped or that release checks have passed.
@@ -62,7 +62,7 @@ Mimus is a standalone application. Its scope emphasizes a complete, approachable
 | Backend | One Next.js Node.js route: `POST /api/translate`. |
 | Active AI provider | OpenRouter, called server-side with a server-only `OPENROUTER_API_KEY`. Requests use zero data retention (`zdr: true`) and data-collection denial (`data_collection: "deny"`) routing. [S9, S10] |
 | Active model | `z-ai/glm-5.3-flash`, reasoning effort `low`, 2,048-token output cap, committed in `src/lib/server/model-config.ts`. Access, price, and endpoint eligibility are verified per deployment, not assumed. [S9, S10] |
-| Superseded provider | Google Gemini Developer API with `gemini-3.5-flash-lite` and an AI Studio-managed key. This was the provider for the earlier release-candidate evaluation; that record is historical and lives in `evals/results/summary.md`. Its privacy and storage requirements below are retained only where marked historical. [S1, S3, S4] |
+| Superseded provider | Google Gemini Developer API with `gemini-3.5-flash-lite` and an AI Studio-managed key. This was the provider for the earlier release-candidate evaluation; that record is historical and lives in `evals/results/summary.md` and `docs/decisions.md`. It does not govern the active system. [S1, S3, S4] |
 | Model configuration | Model ID and model-specific parameters are versioned together in server-side code, not environment variables. |
 | Provider portability | One small internal adapter boundary. Only OpenRouter is active. Changing provider requires a reviewed notice update first. |
 | Database and accounts | None. No authentication, user profiles, or application database. |
@@ -255,28 +255,15 @@ export const MODEL_CONFIG = {
 export const MODEL_PUBLIC_LABEL = "GLM 5.3 Flash";
 ```
 
-*Historical (superseded provider):* the earlier Google candidate was
-`gemini-3.5-flash-lite` with `thinkingLevel: "minimal"` and was later evaluated
-at `thinkingLevel: "high"`. The block below is retained only as that history:
-
-```ts
-// Historical Google configuration; not the active configuration.
-export const MODEL_CONFIG = {
-  provider: "google",
-  model: "gemini-3.5-flash-lite",
-  maxOutputTokens: 2_048,
-  thinkingLevel: "minimal",
-} as const;
-```
+*Superseded provider:* the earlier Google configuration (`gemini-3.5-flash-lite`,
+Interactions API, `store: false`) is recorded in `docs/decisions.md` and
+`evals/results/summary.md`. It does not apply to the active adapter.
 
 The OpenRouter adapter translates these fields into its chat-completions request
 (`reasoning.effort`, `max_tokens`, and `provider` routing preferences). The output
 cap counts reasoning tokens as well as visible text. Verify any change to the model
 or its supported parameters against the live endpoint; do not change only the model
-string. Leave sampling overrides unset unless evaluation supports a change. [S9, S10, S16]
-
-The Gemini settings above (`thinkingLevel`, Google's `generation_config`) are
-historical and do not apply to the active adapter. [S3, S15]
+ string. Leave sampling overrides unset unless evaluation supports a change. [S9, S10, S16]
 
 Do not read a model ID, thinking setting, or sampling setting from `.env.local`,
 deployment environment variables, or a browser request. Credentials, deployment
@@ -316,11 +303,6 @@ credential-free build or demo never requires a key or contacts the provider.
 
 Account-level access, price, and endpoint availability remain prerequisites to
 verify before live activation. [S16]
-
-*Historical (superseded Google adapter):* the earlier adapter used the official
-`@google/genai` SDK with a streamed Interactions request, `store: false`, no prior
-interaction ID, no background execution, and no tools. Disabling Interactions
-storage did not override Google's broader data-use terms. [S3, S4, S11]
 
 Use the configured 2,048-token output cap and the 45-second application deadline.
 Treat output-length exhaustion as incomplete, not successful. Do not assume the
@@ -577,11 +559,6 @@ limited to US traffic after owner review. The US allowlist is a visitor restrict
 in this app. It is not data residency, and the app does not claim that inference
 stays in the US. Production remains demo until the owner authorizes live activation.
 
-*Historical (superseded Google terms):* the earlier Google-backed release required
-Google's unpaid Gemini terms review, including adult use, professional/business
-purposes, EEA/Switzerland/UK paid-service limits, and the US-only region policy.
-That review is recorded in `docs/decisions.md` and is not the current policy. [S11, S12]
-
 Use Vercel's platform-supplied country information at the server boundary; reject unknown or non-allowlisted locations for live requests. Do not accept a country sent in the JSON body. Local development may use `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` only in a loopback development server with `NODE_ENV=development` and no Vercel deployment environment. Fail closed outside that context; never activate the bypass through a request parameter. Vercel documents the geolocation headers and their deployment/proxy limitations. [S13]
 
 Target adult professional audiences and require affirmative acknowledgement before the first live request. An age checkbox and IP location are not proof of eligibility or comprehensive compliance. Before public inference is enabled, the owner must review professional/business-purpose eligibility, the intended audience and distribution, actual project billing status, permitted regions, and displayed policy. Record that review in the launch checklist.
@@ -724,8 +701,7 @@ Use TypeScript strict mode, Vitest for unit/integration tests, React Testing Lib
 and model configuration stay server-side; the adapter uses the committed model
 and matching settings; no model environment override is consulted; demo/build
 paths require no credential; the OpenRouter request sends `zdr: true`,
-`data_collection: "deny"`, and no tools or plugins (historical Gemini tests also
-checked `store: false`); only one
+`data_collection: "deny"`, and no tools or plugins; only one
 provider request is made; blocked/empty/length finishes are not success; abort and
 timeout clean up; emitted output is bounded; disallowed/unknown regions fail;
 malformed and non-JSON errors are safe. Mock the external boundary, not the
@@ -829,13 +805,10 @@ MIMUS_LIVE_COUNTRIES=US
 MIMUS_DEV_ALLOW_LOCAL_LIVE=false
 ```
 
-These are the canonical v1.0.0 configuration names after the pre-release rename.
-Migrate the former `PARLANCE_MODE`, `PARLANCE_LIVE_COUNTRIES`, and
-`PARLANCE_DEV_ALLOW_LOCAL_LIVE` settings in code, tests, local ignored files,
-deployment environments, and documentation together. Do not retain a second
-legacy-name lookup in the released app. Renaming configuration must preserve
-demo-by-default and fail-closed location checks; update `APP_ORIGIN` to match
-the actual trusted deployment origin if that origin changes.
+These are the canonical v1.0.0 configuration names. The released app has no
+legacy-name lookup (the pre-release `PARLANCE_*` names are ignored), and the names
+preserve demo-by-default and fail-closed location checks. `APP_ORIGIN` must match
+the actual trusted deployment origin.
 
 ### Configuration ownership
 
@@ -886,7 +859,7 @@ A release candidate is ready when:
 - Mobile and keyboard interactions are usable, and accessibility checks have been performed.
 - Preferences work; local history is bounded, opt-in, clearable, and resilient to storage errors.
 - Credentials remain server-only; application logs and URLs do not contain submitted/generated text.
-- OpenRouter requests use ZDR endpoint routing and `data_collection: "deny"`, with no tools or plugins; account-level prompt logging is confirmed by the owner, because the app does not enforce it. The visible notice matches actual processing. (Historical: the Gemini release used `store: false`; that behavior is not the active storage control.)
+- OpenRouter requests use ZDR endpoint routing and `data_collection: "deny"`, with no tools or plugins; account-level prompt logging is confirmed by the owner, because the app does not enforce it. The visible notice matches actual processing.
 - The released model ID and model-specific settings are committed in code and match the evaluated configuration.
 - Public-launch audience, region, billing, and hosting conditions have been reviewed and recorded.
 - Production WAF enforcement, request caps, mode switch, and upstream quota errors are verified.

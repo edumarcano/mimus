@@ -27,7 +27,7 @@ are the owner's statements and were not independently verified.
 | Production page serves the live notice (read-only `GET /`) | 2026-10-14 | Observed: 200 with the `openrouter-zdr-v1` notice. No inference request was sent. |
 | WAF rate-limit rule present (`vercel firewall rules list`) | 2026-10-14 | Observed: "Rate limit translate API", enabled, 5 requests per 60 s |
 | WAF enforcement on Production | 2026-10-13 | 503 for the first requests, then 429 with `X-Vercel-Mitigated: deny` (observed while Production was demo) |
-| OpenRouter account settings | 2026-10-14 | Owner-confirmed, not verified: privacy and ZDR settings applied, the key capped at $1 per day, auto-recharge disabled |
+| OpenRouter account settings | 2026-10-14 | Owner-confirmed: a $1/month Production key limit, with auto-recharge disabled, and privacy and ZDR settings applied. Not independently verified. |
 | Protected Preview live streaming | 2026-10-13 | SSE stream, `done`, logs without text or key |
 
 **Not verified:** deployed non-US region rejection, whether Vercel delivers a
@@ -90,7 +90,7 @@ Status as of 2026-10-14. Entries marked owner-confirmed are the owner's statemen
 | **Release posture** | Owner decision: v1.0.0 ships with live generation on Production. |
 | **Quality gate** | The original GLM acceptance target was not demonstrated. The owner revised the release evidence requirement and accepted the limitations ([`decisions.md`](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active)). The pre-registered evaluation is deferred, not run. |
 | **Account settings** | Owner-confirmed: privacy and ZDR settings applied. The app cannot enforce them, and they were not independently verified. |
-| **Spend controls** | Owner-confirmed: dedicated key capped at $1 per day, auto-recharge disabled. Not independently verified. Reviewing OpenRouter activity remains an owner task. |
+| **Spend controls** | Owner-confirmed: a $1/month Production key limit, with auto-recharge disabled. Not independently verified. The monthly limit does not cap lifetime spend. Reviewing OpenRouter activity remains an owner task. |
 | **Provider policy** | The [recommendation](decisions.md#provider-policy-recommendation-owner-approval-required) stays the reference. Only the account settings above are recorded as confirmed; model-host terms and regional conditions are not separately recorded as reviewed. |
 | **Shutdown rehearsal** | **Not performed.** Command forms were checked against `--help` only. See [Shutdown readiness](#shutdown-readiness-review-2026-10-14). |
 | **Unverified runtime behavior** | Vercel disconnect delivery, upstream termination after Stop, and deployed region rejection remain untested. They are disclosed in the README and changelog, not accepted in a recorded test. |

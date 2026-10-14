@@ -690,7 +690,7 @@ Aim for meaning score 2 on at least 36/40 cases, style score 2 on at least 32/40
 
 Once held-out failures are used for tuning, those cases are no longer untouched holdout evidence. Say so; do not claim an independent improvement without fresh cases. These are small-sample release targets, not a statistical guarantee.
 
-**v1.0.0 release note.** The Gemini release candidate was scored against these targets and the owner revised the critical-case target for it. The shipped GLM configuration was not: its 40-case development run recorded no committed scores, and the meaning target was not demonstrated. For v1.0.0 the owner retained GLM and revised the release evidence requirement instead of requiring another evaluation, accepting the documented limitations. This is a recorded owner revision, not a pass, and it does not support a claim that GLM met these targets or outperformed Gemini. See [`decisions.md`](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
+**v1.0.0 release note.** The Gemini release candidate was formally scored against these targets, and the owner revised the critical-case target for it. The shipped GLM configuration was not scored against them: its 40-case development run completed with 39 of 40 deterministic checks passing, but formal meaning and style scores were not committed, and the original meaning target was not demonstrated. For v1.0.0 the owner retained GLM and revised the release evidence requirement, accepting the documented limitations instead of requiring another 50-case evaluation. The pre-registered GLM release evaluation is deferred, not completed. This is a recorded owner revision, not a pass, and it does not support a claim that GLM met these targets or outperformed Gemini. See [`decisions.md`](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
 
 ---
 
@@ -867,7 +867,7 @@ A release candidate is ready when:
 - Public-launch audience, region, billing, and hosting conditions have been reviewed and recorded.
 - Production WAF enforcement, request caps, mode switch, and upstream quota errors are verified.
 - Automated checks pass, or any unmet release gate is explicitly identified as blocking completion.
-- The synthetic evaluation has actually run, scores and failures are recorded, and release targets are met or revised transparently by the owner before release. (For the shipped GLM configuration, see the v1.0.0 release note in Section 14: the evidence requirement was revised, not met.)
+- The synthetic evaluation has been run, scores and failures are recorded, and release targets are met or revised transparently by the owner before release. For the Gemini release candidate, the critical-case target was revised by the owner. For the shipped GLM configuration, the release evaluation in Section 14 was not run; the owner revised the release evidence requirement and accepted the documented limitations, and the original meaning target was not demonstrated. See the v1.0.0 release note in Section 14.
 - The repository, README, permitted live deployment, screenshots, setup instructions, and engineering case study are ready for public use and match the verified implementation.
 - The Mimus name, logo/favicon assets, page metadata, privacy wording, active URLs, and release documentation are consistent; supplied PNGs have been checked for transparency, mark consistency, and legibility at their actual sizes.
 

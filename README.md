@@ -35,9 +35,11 @@ model output.</sub>
   documented quality limitations for a free, experimental portfolio app. The
   original meaning-preservation target was not demonstrated, and formal GLM scores
   were not committed. See [Evaluation](#evaluation).
-- **Spend is bounded by owner-confirmed account settings** (a key capped at $1 per
-  day, auto-recharge off, ZDR and privacy settings applied). These are the owner's
-  statements, not independently verified. The service can stop at any time.
+- **Spend controls are owner-confirmed, not independently verified:** a $1/month
+  Production key limit, with auto-recharge disabled, and ZDR and privacy settings
+  applied. A monthly limit caps spending within its monthly period, not lifetime
+  spend, and it does not guarantee zero additional charges. The service can stop at
+  any time.
 - **Without a key, the app runs in demo mode:** prewritten, labeled examples and no
   model calls. You can also run live mode locally with your own OpenRouter key.
 - **Known limits:** emergency shutdown has not been rehearsed end to end, and it is

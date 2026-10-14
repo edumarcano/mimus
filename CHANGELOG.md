@@ -57,7 +57,8 @@ approval; nothing has been tagged or published. Production at
   previous provider. It accepted one failing critical case.
 - Meaning preservation is a goal, not a guarantee for any individual result.
 - Account settings are owner-confirmed, not independently verified: ZDR and privacy
-  settings, a key capped at $1 per day, and auto-recharge off.
+  settings, a $1/month Production key limit, and auto-recharge disabled. The monthly
+  limit is not a lifetime ceiling and does not guarantee zero additional charges.
 - The emergency shutdown procedure has not been rehearsed end to end. Rollback is
   not a guaranteed way to disable inference.
 - Not verified on the deployed host: non-US region rejection, whether a client

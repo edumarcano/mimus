@@ -143,8 +143,8 @@ bar; see [decisions](decisions.md#2026-10-14-v100-release-decision-and-productio
 Hosting targets Vercel Hobby, and the model cost per request is small but not zero.
 The output cap and input limit bound a single request, not total spend; the key's
 credit limit and monitoring are the budget controls, and the WAF limit is per IP.
-The owner reports a Production key capped at $1 per day with auto-recharge off and
-ZDR and privacy settings applied; these are account settings the owner confirmed,
+Owner-confirmed: a $1/month Production key limit, with auto-recharge disabled, and
+ZDR and privacy settings applied. These are account settings the owner confirmed,
 not something the repository can check. The emergency shutdown runbook has been
 reviewed but not rehearsed end to end, and rollback is not treated as a way to
 disable inference.

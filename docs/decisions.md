@@ -336,8 +336,12 @@ section). It does not block public live access if the owner accepts it.
   million output tokens), so any dollar figure is illustrative.
 - The WAF limit of five requests per IP per 60 seconds slows one client. It is
   regional and per IP, so it does not stop distributed abuse and is not a budget.
-- The primary safeguards are a dedicated Production key with a hard credit limit,
+- The primary safeguards are a dedicated Production key with a spending limit,
   prepaid credit with auto top-up off, and regular review of OpenRouter activity.
+  The owner-confirmed Production key limit is $1 per month. It limits spending
+  within its applicable monthly accounting period, not cumulative lifetime
+  spending, and it does not guarantee zero additional charges. It does not replace
+  activity monitoring. The exact reset date is not recorded here.
   `GET /api/v1/key` reports the remaining key limit and usage. An exhausted limit
   returns 402, or 403 for budget blocks; the adapter maps 402 and 429 to
   `SERVICE_QUOTA_EXHAUSTED` and 401, 403, and other failures to
@@ -485,11 +489,13 @@ Production is no longer examples-only.
   a successful `done` event in about 724 ms. For short, fast responses the page may
   not look streamed.
 
-**Owner-confirmed account settings (not independently verified):** the OpenRouter
-privacy and ZDR settings are applied, the Production key is capped at $1 per day,
-and auto-recharge is disabled. The app cannot enforce them. The earlier
-[spend analysis](#spend-exposure) still applies: a per-key cap bounds total spend,
-and the per-request limits and the WAF do not.
+**Owner-confirmed account settings (not independently verified):** a $1/month
+Production key limit, with auto-recharge disabled, and the OpenRouter privacy and
+ZDR settings applied. The app cannot enforce them. The earlier
+[spend analysis](#spend-exposure) still applies: the monthly key limit caps spending
+within its monthly accounting period, not cumulative lifetime spending, and it does
+not replace activity monitoring. The per-request limits and the WAF are not budget
+controls.
 
 **Not verified:** function-log contents for live Production requests (Hobby keeps
 logs for one hour and they were not inspected), non-US region rejection, whether

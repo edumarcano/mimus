@@ -114,13 +114,13 @@ meaning target was not demonstrated. The Gemini results do not transfer to it, a
 nothing here claims GLM matches or beats Gemini on meaning.
 
 For a while that kept the public site examples-only, with a pre-registered 50-case
-protocol waiting to close the gate. For v1.0.0 the owner made a different call:
-revise the release evidence requirement, keep `z-ai/glm-5.3-flash` with low
-reasoning and prompt v4, and accept the documented limitations for a free,
-experimental portfolio app rather than spend another evaluation. The protocol is
-deferred, not completed. Production went live on 2026-10-14. The honest summary is
-that the live model is accepted with known limits, not shown to meet the original
-bar; see [decisions](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
+protocol waiting to close the gate. For v1.0.0 I made a different call. I revised
+the release evidence requirement, kept `z-ai/glm-5.3-flash` with low reasoning and
+prompt v4, and accepted the documented limitations for a free, experimental
+portfolio app rather than spend another evaluation. The protocol is deferred, not
+completed. Production went live on 2026-10-14. In short, the live model is accepted
+with known limits. It has not been shown to meet the original bar. See the
+[decision log](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
 
 ## Testing and verification
 
@@ -132,10 +132,9 @@ bar; see [decisions](decisions.md#2026-10-14-v100-release-decision-and-productio
 - **In the browser:** layout at 360 and 1440 px, target sizes, computed contrast,
   reduced motion, and focus behavior.
 - **On the deployment:** a protected Preview streamed real output, and the WAF rate
-  limit was observed enforcing. On live Production, the owner observed a correct
-  Human to Corporate rewrite and, in Chrome DevTools, a `meta` event, 13 `delta`
-  events, and `done` in about 724 ms. Short, fast responses can look unstreamed in the
-  page. The screenshots in this repository were taken in demo mode and are not
+  limit was observed enforcing. On live Production, I checked a Human to Corporate
+  rewrite by hand, and Chrome DevTools showed a `meta` event, 13 `delta` events, and
+  `done` in about 724 ms. Short, fast responses can look unstreamed in the page. The screenshots in this repository were taken in demo mode and are not
   evidence of live inference. Mocks were never counted as deployment verification.
 
 ## Limits and costs
@@ -143,9 +142,9 @@ bar; see [decisions](decisions.md#2026-10-14-v100-release-decision-and-productio
 Hosting targets Vercel Hobby, and the model cost per request is small but not zero.
 The output cap and input limit bound a single request, not total spend; the key's
 credit limit and monitoring are the budget controls, and the WAF limit is per IP.
-Owner-confirmed: a $1/month Production key limit, with auto-recharge disabled, and
-ZDR and privacy settings applied. These are account settings the owner confirmed,
-not something the repository can check. The emergency shutdown runbook has been
+Confirmed in the account settings (not independently verified): a $1/month Production
+key limit, with auto-recharge disabled, and ZDR and privacy settings applied. The
+repository cannot check these. The emergency shutdown runbook has been
 reviewed but not rehearsed end to end, and rollback is not treated as a way to
 disable inference.
 
@@ -161,16 +160,15 @@ development requests, do not support stream cancellation. See
 The project was built with AI coding agents under written rules: a repository
 instruction file, reusable planning, implementation, regression, and review skills,
 and separate worker roles for engineering and for interface and documentation work.
-The specification was the contract, and planning, scope, integration, and review
-stayed with the owner. The agents wrote a lot of the code; the evidence in this
-repository (tests, evaluation records, dated deployment observations) is what the
-claims rest on.
+The specification was the contract, and I kept planning, scope, integration, and
+review. The agents wrote much of the code. The evidence in this repository (tests,
+evaluation records, dated deployment observations) is what the claims rest on.
 
 ## Lessons
 
-- Write status honestly. Several documents here distinguish "verified",
-  "owner-stated", "unverified", and "accepted limitation", and that discipline
-  caught more than one overstated claim.
+- Label every status claim. The documents here separate "verified", "reported",
+  "account setting", "unverified", and "accepted limitation". That caught more than
+  one overstated claim.
 - Decide holdout rules first, and say when they are broken.
 - Read provider terms before the last milestone. They changed the architecture.
 - Do not read a log code as proof of what happened upstream.

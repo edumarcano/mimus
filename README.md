@@ -26,16 +26,16 @@ model output.</sub>
 **v1.0.0 is prepared and awaiting final approval.** No release or tag exists yet.
 
 - **Live rewriting is on at the Production site.** It uses `z-ai/glm-5.3-flash`
-  through OpenRouter, for visitors in approved regions after they acknowledge the
-  data-use notice. The owner observed a successful Human to Corporate rewrite that
-  kept the meeting-reschedule facts, and real streaming in Chrome DevTools (a `meta`
-  event, 13 `delta` events, and `done` in about 724 ms). Very short responses can
-  look like they arrive at once.
-- **Quality is accepted with limits, not proven.** The owner chose to ship GLM with
-  documented quality limitations for a free, experimental portfolio app. The
-  original meaning-preservation target was not demonstrated, and formal GLM scores
-  were not committed. See [Evaluation](#evaluation).
-- **Spend controls are owner-confirmed, not independently verified:** a $1/month
+  through OpenRouter, for visitors in approved regions who acknowledge the
+  data-use notice. A Human to Corporate rewrite kept the meeting-reschedule facts,
+  and streaming was confirmed in Chrome DevTools (a `meta` event, 13 `delta`
+  events, and `done` in about 724 ms). Very short responses can look like they
+  arrive all at once.
+- **Quality is accepted with limits, not proven.** GLM is shipped for a free,
+  experimental portfolio app with documented quality limitations. The original
+  meaning-preservation target was not demonstrated, and formal GLM scores were not
+  committed. See [Evaluation](#evaluation).
+- **Spend controls are account settings, not independently verified:** a $1/month
   Production key limit, with auto-recharge disabled, and ZDR and privacy settings
   applied. A monthly limit caps spending within its monthly period, not lifetime
   spend, and it does not guarantee zero additional charges. The service can stop at
@@ -105,7 +105,7 @@ meaning and style scoring.
   deterministic checks. Formal meaning and style scores were not committed, and the
   original meaning target was not demonstrated:
   [`evals/results/glm-development.md`](evals/results/glm-development.md).
-- For v1.0.0 the owner revised the release evidence requirement and accepted these
+- For v1.0.0, the release evidence requirement was revised to accept these
   limitations instead of requiring another 50-case run. GLM is not claimed to have
   passed the original benchmark or to preserve meaning better than Gemini. The
   pre-registered GLM evaluation is deferred, not completed; see

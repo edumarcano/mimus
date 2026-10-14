@@ -16,10 +16,13 @@ guarantee for any individual result.
 | Record | What it is | Status |
 | --- | --- | --- |
 | [`results/summary.md`](results/summary.md) | Gemini release-candidate evaluation (`gemini-3.5-flash-lite`, prompt v4) | Historical; unchanged |
-| [`results/glm-development.md`](results/glm-development.md) | GLM development run on 40 development-split cases | Development evidence; no recorded scores |
-| `results/glm-release.md` | GLM release evaluation | Not run. The protocol is pre-registered in [`docs/decisions.md`](../docs/decisions.md#glm-quality-gate-active) |
+| [`results/glm-development.md`](results/glm-development.md) | GLM development run on 40 development-split cases | Development evidence; 39/40 deterministic checks passed; no recorded scores |
+| `results/glm-release.md` | GLM release evaluation | Does not exist. The protocol is pre-registered but deferred, not run or approved ([`docs/decisions.md`](../docs/decisions.md#glm-quality-gate-superseded-protocol-deferred)) |
 
-The Gemini results do not transfer to the active GLM configuration.
+The Gemini results do not transfer to the active GLM configuration. For v1.0.0 the
+GLM was retained, and the release evidence requirement was revised instead of requiring
+the deferred evaluation; the original meaning target was not demonstrated for GLM
+([release decision](../docs/decisions.md#2026-10-14-v100-release-decision-and-production-activation-active)).
 
 ## Running the evaluation
 
@@ -68,7 +71,7 @@ manual review with the rubric in the
 - no meaning score 0 on the 10 critical cases.
 
 For the Gemini release candidate, meaning (36/40) and style (40/40) were met and the
-critical target was not (9/10); the owner revised it for that configuration. The
+critical target was not (9/10); the critical target was revised for that configuration. The
 release cohort is the 30 `dev-*` cases plus the 10 `holdout2-*` cases; the
 `holdout-*` cases are supplemental.
 

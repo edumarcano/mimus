@@ -3,8 +3,8 @@
 This log records Mimus engineering decisions, what was actually observed, and
 why the project ended up where it is. It is not the behavioral contract (that is
 [`product-spec.md`](product-spec.md)) and not the operations guide (that is
-[`deployment.md`](deployment.md)). Entries describe what was run; none of them
-is release acceptance unless it says so.
+[`deployment.md`](deployment.md)). Entries describe what was run. None of them is
+release acceptance unless it says so.
 
 Each entry is labeled **Active** (still governs the project), **Superseded**
 (replaced, with what replaced it), or **Historical evidence** (kept for
@@ -18,9 +18,10 @@ provenance). Early entries use the project's pre-release name, Parlance, and its
 | Provider and model | OpenRouter, `z-ai/glm-5.3-flash`, reasoning `low`, 2,048-token cap, ZDR and `data_collection: "deny"` routing | [OpenRouter migration](#2026-10-13-openrouter-and-glm-53-flash-migration-active) |
 | Prompt | Version 4, unchanged since the Gemini evaluation | [Prompt iteration](#2026-10-07-gemini-release-candidate-evaluation-historical-evidence) |
 | Notice | `openrouter-zdr-v1` | [OpenRouter migration](#2026-10-13-openrouter-and-glm-53-flash-migration-active) |
-| Production | Examples-only demo; live inference not enabled | [Release readiness](#2026-10-14-release-readiness) |
-| Public live access | Not authorized; gated on policy, quality, spend, and shutdown checks | [Release readiness](#2026-10-14-release-readiness) |
-| Quality acceptance | Open for GLM; protocol pre-registered | [Quality gate](#glm-quality-gate-active) |
+| Production | Live on `z-ai/glm-5.3-flash` since 2026-10-14 | [Release decision](#2026-10-14-v100-release-decision-and-production-activation-active) |
+| Release model | GLM, low reasoning, prompt v4, kept for v1.0.0. The original meaning target was not demonstrated. | [Release decision](#2026-10-14-v100-release-decision-and-production-activation-active) |
+| Release evidence | Revised: no further 50-case evaluation required. The GLM protocol is deferred, not run. | [Release decision](#2026-10-14-v100-release-decision-and-production-activation-active) |
+| Emergency shutdown | Runbook reviewed; full rehearsal not performed | [Shutdown readiness](#shutdown-readiness-not-rehearsed) |
 
 ## 2026-10-06: Candidate integration check (Superseded: Gemini)
 
@@ -81,8 +82,8 @@ Browser checks showed no horizontal overflow at 360 and 1440 px on `/` and
 with 720 and 640 px viewports; reduced motion disabled the busy animation; all
 controls measured at least 44 px; computed contrast was at least 4.5:1 for text.
 The browser tool's synthetic key events do not move native focus, so keyboard-only
-Tab traversal was not machine-verified. The owner reported normal keyboard, zoom,
-and live use.
+Tab traversal was not machine-verified. Keyboard, zoom, and live use were reported
+as normal.
 
 **Not verified then:** screen readers, Safari, Firefox, and real cancellation
 behavior. These remain unverified (see [Release readiness](#2026-10-14-release-readiness)).
@@ -139,9 +140,9 @@ the 10 `holdout2-*` cases. Meaning 0: `dev-pair-06` (fabricated "performance
 momentum" from vibe-only input) and `dev-inject-01`. Meaning 1: `dev-pair-18` and
 `holdout2-dates-beta` ("is set for" became "locked in"). The other 36 scored 2, and
 style scored 2 on all 40. Meaning 36/40 and style 40/40 were met, but
-"no meaning 0 on critical cases" was 9/10 and not met. The owner revised that
-target for v1 and accepted the `dev-inject-01` limitation, because further tuning
-showed diminishing returns and an overfitting risk and all four fresh critical
+"no meaning 0 on critical cases" was 9/10 and not met. The critical-case target was
+revised for v1, and the `dev-inject-01` limitation was accepted. Further tuning
+showed diminishing returns and an overfitting risk, and all four fresh critical
 `holdout2-*` cases passed. Meaning preservation is not guaranteed per result.
 
 **Operational notes.** Provider congestion on the free tier produced 45 s
@@ -222,8 +223,8 @@ deltas in about 1.6 s, finish `complete`, 368 input and 24 output tokens. The
 output ("Thank you, but I am unable to accommodate that request at this time.")
 kept the refusal but added unsupported context ("that request", "at this time").
 That is a semantic limitation, not an adapter failure, and not a release score.
-The account was already limited to ZDR providers, and the owner stated that prompt
-and completion logging was not intentionally enabled.
+The account was already limited to ZDR providers, and prompt and completion logging
+was reported as not intentionally enabled.
 
 **Protected Preview (verified, branch `feat/openrouter-glm-migration`).** The
 stable branch origin must be `APP_ORIGIN`; the unique deployment hostname is
@@ -248,8 +249,8 @@ the 10 consumed `holdout-*` cases) through a separate non-streaming harness.
 40 of 40 completed with 0 errors; 39 of 40 passed the deterministic checks (the
 exception was the brittle `holdout-numbers-01` token). Responding hosts:
 InferenceNet 33, Together 3, Parasail 2, Morph 1, Relace 1. No numeric manual scores
-were recorded, and the approved decision is that the run did not meet the original
-meaning target. This cohort is not the release-candidate denominator. See
+were recorded, and the run did not meet the original meaning target. This cohort is
+not the release-candidate denominator. See
 [`evals/results/glm-development.md`](../evals/results/glm-development.md).
 
 **Limitations.** Hosts are not pinned, so behavior can vary. Low reasoning and the
@@ -259,22 +260,25 @@ logging. The US allowlist is a visitor restriction, not data residency.
 ## 2026-10-14: Release readiness
 
 Evidence and decisions for the v1.0.0 milestone. Base: `main` at `4988df4`, whose
-Production deployment was Ready and whose GitHub CI passed.
+Production deployment was Ready and whose GitHub CI passed. This entry was written
+while Production was an examples-only demo. Its Production state is superseded by
+the [release decision](#2026-10-14-v100-release-decision-and-production-activation-active)
+below. The cancellation, spend, and provider-policy analysis still applies.
 
-### Post-merge cleanup (verified and stated)
+### Post-merge cleanup
 
 - The five branch-scoped Preview variables were deleted, and their absence was
-  independently verified. This is an observation.
-- The dedicated Preview OpenRouter key was revoked. This is the owner's statement;
-  it was not observed.
+  independently verified.
+- The dedicated Preview OpenRouter key was revoked. This is reported, not observed.
 - `vercel env ls` for the project returned no environment variables in any
-  environment (read-only check, 2026-10-14). Production therefore runs the demo
-  default, and it is intended to stay examples-only.
+  environment (read-only check, earlier on 2026-10-14). Production therefore ran
+  the demo default at that time. Later that day, the live variables were added
+  (see the release decision below).
 
-### Production smoke test (verified, Active)
+### Production smoke test (verified; demo build, superseded by activation)
 
 On 2026-10-14 against `https://mimus-rewrite.vercel.app` at `4988df4`, using `curl`
-and the Cursor browser:
+and the Cursor browser, while Production was in demo mode:
 
 - The page title is "Mimus" with the expected description. `og:image` and
   `twitter:image` resolve to the canonical origin, and `/favicon.ico`, `/icon.png`,
@@ -290,11 +294,12 @@ and the Cursor browser:
 A read-only `vercel firewall rules list` and `inspect` showed the custom rule
 "Rate limit translate API" enabled on the current project: `POST` to a path
 starting with `/api/translate`, keyed by IP, fixed 60-second window, limit 5, action
-rate limit. This confirms the rule exists and is configured as intended; its
+rate limit. This confirms the rule exists and is configured as intended. Its
 enforcement was observed on 2026-10-13 (above).
 
 **Access limitations.** Function logs were not inspected. The footer "Source on
-GitHub" link returns 404 while the repository is private.
+GitHub" link returns 404 while the repository is private (still true at the time of
+the release-finalization PR).
 
 ### Cancellation: what is and is not known
 
@@ -319,8 +324,8 @@ These are four separate questions, and only the first two have evidence.
    specific request cost after an abort; OpenRouter's own activity record could.
 
 **Impact.** Stop may not stop spend on some hosts. This is bounded per request by
-input size and the output cap, and in total only by the key's credit limit (next
-section). It does not block public live access if the owner accepts it.
+input size and the output cap, and in total only by the key's spending limit (next
+section). It does not block public live access if the risk is accepted.
 
 ### Spend exposure
 
@@ -330,30 +335,35 @@ section). It does not block public live access if the owner accepts it.
   million output tokens), so any dollar figure is illustrative.
 - The WAF limit of five requests per IP per 60 seconds slows one client. It is
   regional and per IP, so it does not stop distributed abuse and is not a budget.
-- The primary safeguards are a dedicated Production key with a hard credit limit,
+- The primary safeguards are a dedicated Production key with a spending limit,
   prepaid credit with auto top-up off, and regular review of OpenRouter activity.
-  `GET /api/v1/key` reports the remaining key limit and usage. An exhausted limit
-  returns 402, or 403 for budget blocks; the adapter maps 402 and 429 to
-  `SERVICE_QUOTA_EXHAUSTED` and 401, 403, and other failures to
+  The Production key limit is $1 per month, confirmed in the account settings and
+  not independently verified. The limit caps spending within its monthly
+  accounting period. It does not cap cumulative lifetime spending, does not
+  guarantee zero additional charges, and does not replace activity monitoring. The
+  exact reset date is not recorded here.
+- `GET /api/v1/key` reports the remaining key limit and usage. An exhausted limit
+  returns 402, or 403 for budget blocks. The adapter maps 402 and 429 to
+  `SERVICE_QUOTA_EXHAUSTED`, and 401, 403, and other failures to
   `SERVICE_UNAVAILABLE`. Both fail closed, and neither is a kill switch.
 - OpenRouter's terms make the account holder responsible for all charges on its
   keys, authorized or not.
 
-### Provider-policy recommendation (owner approval required)
+### Provider-policy recommendation (approval required)
 
 Researched 2026-10-14 from the sources below. This is a recommendation, not a legal
-conclusion; the owner reviews and approves the public-live conditions.
+conclusion. The public-live conditions need review and approval before activation.
 
 | Condition | Basis | Recommendation |
 | --- | --- | --- |
-| Audience 18+ | OpenRouter terms section 2 (18+ account holders); `NOTICE_AVAILABILITY` says adults only | Required for the account holder; keep the adult acknowledgement, and treat it as a notice, not verification |
-| Model-host terms | Terms 5.1-5.2 make the account holder responsible for complying with the applicable Model Terms and for ensuring customers do the same; hosts are not pinned | Owner review: read the terms of the hosts that actually served requests (observed: InferenceNet, Together, Parasail, Morph, Relace) and decide whether visitor acknowledgement is enough |
-| Regions | Terms 5.7 bar access to Restricted Models by region and bar VPN circumvention; terms 6.8 says country reporting can be inaccurate | Owner judgment: keep the US allowlist as conservative; it is not data residency |
-| Adversarial evaluation | Ordinary handling of user text is product behavior: the app accepts arbitrary input and treats it as untrusted task data. Deliberately running injection cases to test whether a model obeys them is adversarial evaluation. Research recorded on 2026-10-14 reads terms section 7 item 11 as prohibiting unapproved Red Teaming (prompt injection or jailbreaking) | **Owner determines** whether the planned GLM evaluation's injection cases require OpenRouter's prior written approval. If they do, obtain it before the first request. Owner risk acceptance does not substitute for that approval. No code change |
-| Retention settings | ZDR guide: `provider.zdr` is OR-ed with account settings, in-memory caching is allowed, endpoints with unclear policy are treated as retaining | Required: confirm the account is ZDR-only and prompt logging is off (the app cannot enforce it) and that an eligible endpoint exists for the model |
-| Data use | Terms 6.5: inputs are categorized in anonymized form; 6.2: opting into prompt logging grants OpenRouter broad rights | Keep logging off; the notice already discloses categorization |
-| Spend | Terms 3.2; limits documentation | Required: per-key credit limit, auto top-up off, activity monitoring |
-| Hosting | Vercel Hobby is limited to non-commercial personal use | Owner judgment: acceptable for a free portfolio demo; reassess if monetized |
+| Audience 18+ | OpenRouter terms section 2 (18+ account holders); `NOTICE_AVAILABILITY` says adults only | Required for the account holder. Keep the adult acknowledgement, and treat it as a notice, not verification. |
+| Model-host terms | Terms 5.1-5.2 make the account holder responsible for complying with the applicable Model Terms and for ensuring customers do the same. Hosts are not pinned. | Review needed: read the terms of the hosts that actually served requests (observed: InferenceNet, Together, Parasail, Morph, Relace), and decide whether visitor acknowledgement is enough |
+| Regions | Terms 5.7 bar access to Restricted Models by region and bar VPN circumvention; terms 6.8 says country reporting can be inaccurate | Judgment: keep the US allowlist as conservative. It is not data residency. |
+| Adversarial evaluation | Ordinary handling of user text is product behavior: the app accepts arbitrary input and treats it as untrusted task data. Deliberately running injection cases to test whether a model obeys them is adversarial evaluation. Research recorded on 2026-10-14 reads terms section 7 item 11 as prohibiting unapproved Red Teaming (prompt injection or jailbreaking). | **Decision needed:** whether the planned GLM evaluation's injection cases require OpenRouter's prior written approval. If they do, obtain it before the first request. Accepting the risk does not replace that approval. No code change. |
+| Retention settings | ZDR guide: `provider.zdr` is OR-ed with account settings, in-memory caching is allowed, endpoints with unclear policy are treated as retaining | Required: confirm the account is ZDR-only and prompt logging is off (the app cannot enforce it), and that an eligible endpoint exists for the model |
+| Data use | Terms 6.5: inputs are categorized in anonymized form; 6.2: opting into prompt logging grants OpenRouter broad rights | Keep logging off. The notice already discloses categorization. |
+| Spend | Terms 3.2; limits documentation | Required: per-key spending limit, auto top-up off, activity monitoring |
+| Hosting | Vercel Hobby is limited to non-commercial personal use | Judgment: acceptable for a free portfolio demo. Reassess if monetized. |
 
 Sources (accessed 2026-10-14): OpenRouter [Terms of Service](https://openrouter.ai/terms)
 (last updated August 31, 2026), [Privacy Policy](https://openrouter.ai/privacy),
@@ -365,24 +375,31 @@ and the [GLM 5.3 Flash listing](https://openrouter.ai/z-ai/glm-5.3-flash); Verce
 [Instant Rollback](https://vercel.com/docs/instant-rollback),
 [environment variables](https://vercel.com/docs/environment-variables), and
 [WAF custom rules](https://vercel.com/docs/vercel-firewall/vercel-waf/custom-rules).
-The listing does not show which endpoints are ZDR-eligible; the owner confirms that
-in the account. The terms wording was recorded during research and was not re-checked
-in the final review, so the owner confirms it against the current text before deciding.
+The listing does not show which endpoints are ZDR-eligible, so that has to be
+confirmed in the account. The terms wording was recorded during research and was
+not re-checked in the final review. Confirm it against the current text before
+deciding.
 
-### GLM quality gate (Active)
+### GLM quality gate (Superseded: protocol deferred)
+
+*Status update, 2026-10-14:* the release evidence requirement was revised, and this
+protocol was not run. See the
+[release decision](#2026-10-14-v100-release-decision-and-production-activation-active).
+The protocol below is kept as written. It is historical and deferred. It was not
+run, completed, or approved as a release gate, and it has not been shown to be
+satisfied.
 
 The spec requires an actual evaluation with recorded scores on the configuration
-that ships, with targets either met or transparently revised by the owner. For GLM
-that is not yet satisfied: the development run has no recorded scores, and the
-Gemini results do not transfer. Provisional scores from an owner handoff are not
-committed evidence. Model selection and prompt v4 are not reopened.
+that ships, with targets either met or transparently revised. For GLM that was not
+satisfied: the development run has no recorded scores, and the Gemini results do
+not transfer. Provisional scores from an informal handoff are not committed
+evidence. Model selection and prompt v4 are not reopened.
 
 **Protocol (pre-registered; nothing has been run).**
-- **Prerequisite:** the owner determines whether the injection cases require
-  OpenRouter's prior written approval (see
-  [provider policy](#provider-policy-recommendation-owner-approval-required)). If they
-  do, approval is obtained before the first request. Owner risk acceptance is not a
-  substitute.
+- **Prerequisite:** decide whether the injection cases require OpenRouter's prior
+  written approval (see
+  [provider policy](#provider-policy-recommendation-approval-required)). If they do,
+  obtain approval before the first request. Accepting the risk is not a substitute.
 - The committed GLM configuration and prompt v4, unchanged, on a clean tree, using
   the committed `npm run eval` runner, which consumes the same streaming adapter as
   production. The development run used a separate non-streaming harness and did not
@@ -390,24 +407,130 @@ committed evidence. Model selection and prompt v4 are not reopened.
 - Two runs, once each: `npm run eval -- --live` (40 development cases) and
   `npm run eval -- --live --split holdout --include-holdout` (the 10 `holdout2-*`
   cases), about 50 requests on a capped evaluation key. The earlier run's cost
-  (about $0.0014 for 40 cases) is illustrative, not a guarantee; the key limit is the
-  bound.
+  (about $0.0014 for 40 cases) is illustrative, not a guarantee. The key limit is
+  the bound.
 - At most one reported re-run per errored case with `--ids`. No tuning, no extra
   runs, no model or prompt change.
-- The owner assigns meaning and style scores with the spec rubric. The release
-  cohort is the 30 `dev-*` cases plus the 10 `holdout2-*` cases; the 10 `holdout-*`
-  cases are supplemental.
+- Meaning and style scores are assigned with the spec rubric. The release cohort is
+  the 30 `dev-*` cases plus the 10 `holdout2-*` cases. The 10 `holdout-*` cases are
+  supplemental.
 - The `holdout2-*` cases are labeled "not tuned on GLM; previously run and scored on
   Gemini", not as untouched independent evidence.
-- Results are published as a sanitized `evals/results/glm-release.md`; raw output
+- Results are published as a sanitized `evals/results/glm-release.md`. Raw output
   stays in the ignored `evals/results/raw/`.
 
-**Decision rule.** If the spec targets are met, the gate is cleared. If not, the
-owner either records a case-specific target revision with a rationale and the
-failures are disclosed, or live access stays off.
+**Decision rule.** If the spec targets are met, the gate is cleared. If not, either
+a case-specific target revision is recorded with a rationale and the failures are
+disclosed, or live access stays off.
 
 ### Documentation cleanup
 
 The README, deployment guide, evaluation docs, and specification were reconciled
-with the evidence above. Active documents describe the current system; provider
+with the evidence above. Active documents describe the current system. Provider
 history lives here and in `evals/results/`.
+
+## 2026-10-14: v1.0.0 release decision and Production activation (Active)
+
+Base: `main` at `27b9432`. This entry records a decision and the evidence behind the
+live deployment. It changes no model, prompt, or inference behavior, and no
+evaluation or provider call was made to write it.
+
+### Decision: retain GLM for v1.0.0
+
+I decided to retain `z-ai/glm-5.3-flash` with `low` reasoning and prompt v4 for
+v1.0.0, accepting its documented quality limitations for a free, experimental
+portfolio application.
+
+What the evidence does and does not show:
+
+- The Gemini evaluation was formally scored and remains historical evidence
+  ([`evals/results/summary.md`](../evals/results/summary.md)). It does not transfer
+  to GLM.
+- GLM completed its 40-case development run, and 39 of 40 cases passed the
+  deterministic checks (the exception was the brittle `holdout-numbers-01` token).
+  Formal meaning and style scores were **not committed**, so this record has no
+  meaning or style tally for GLM
+  ([`evals/results/glm-development.md`](../evals/results/glm-development.md)).
+- The original GLM meaning-preservation acceptance target was **not demonstrated**.
+  GLM did not pass the original benchmark, and nothing here claims it outperformed
+  Gemini on meaning preservation.
+- I **revised the release evidence requirement** and accepted these limitations,
+  instead of requiring another 50-case evaluation. This is a revision of the
+  evidence bar, not a pass.
+- Meaning preservation remains a product goal, not a guarantee for any result.
+- The pre-registered GLM evaluation protocol
+  ([above](#glm-quality-gate-superseded-protocol-deferred)) is historical and
+  deferred. It was not run, completed, or approved. No injection cases will be sent
+  for it, so the OpenRouter red-teaming approval question in the provider-policy
+  table does not arise for this release.
+- Model selection and prompt v4 are not reopened.
+
+### Production activation (2026-10-14)
+
+Production is no longer examples-only.
+
+**Verified in a read-only check during release finalization:**
+
+- `vercel env ls` lists exactly five variables: `OPENROUTER_API_KEY`, `MIMUS_MODE`,
+  `APP_ORIGIN`, `MIMUS_LIVE_COUNTRIES`, and `MIMUS_DEV_ALLOW_LOCAL_LIVE`. All are
+  scoped to Production only, and none exists in Preview or Development. Values are
+  hidden and were not inspected.
+- A `GET /` on `https://mimus-rewrite.vercel.app` returned 200 with the live-mode
+  notice (`openrouter-zdr-v1`). No inference request was sent.
+- `vercel firewall rules list` showed the "Rate limit translate API" rule enabled
+  (5 requests per 60 seconds) and no deny rule.
+
+**Reported (not independently verified):**
+
+- Live GLM rewriting works on `https://mimus-rewrite.vercel.app`. A Human to
+  Corporate, Balanced rewrite preserved the Friday meeting rescheduling and the
+  unfinished-report reason.
+- Chrome DevTools showed real SSE streaming: a `meta` event, 13 `delta` events, and
+  a successful `done` event in about 724 ms. For short, fast responses the page may
+  not look streamed.
+
+**Account settings (confirmed in the account, not independently verified):** a
+$1/month Production key limit, with auto-recharge disabled, and the OpenRouter
+privacy and ZDR settings applied. The app cannot enforce them. The
+[spend analysis](#spend-exposure) still applies: the monthly key limit caps spending
+within its monthly accounting period, not cumulative lifetime spending, and it does
+not replace activity monitoring. The per-request limits and the WAF are not budget
+controls.
+
+**Not verified:** function-log contents for live Production requests (Hobby keeps
+logs for one hour, and they were not inspected), non-US region rejection, whether
+Vercel delivers a client disconnect, and whether OpenRouter hosts stop billing after
+Stop. Other provider-policy conditions (model-host terms, regions, hosting) have not
+been separately reviewed. The
+[recommendation table](#provider-policy-recommendation-approval-required) remains
+the reference.
+
+**Screenshots.** The images in the README and `docs/assets/screenshots/` were
+captured in demo mode with prewritten examples. They are not evidence of live
+inference, and they are labeled that way.
+
+### Shutdown readiness (not rehearsed)
+
+Reviewed 2026-10-14 with read-only operations, without changing Production
+configuration, the WAF, the key, or any deployment:
+
+- The runbook's CLI command forms (`firewall rules add`, `reorder`, `remove`, `diff`,
+  `publish`, plus `promote` and `rollback`) exist in the installed Vercel CLI (62.5.0).
+  They were checked in `--help` output and not executed.
+- WAF rules apply to the whole project, so a Preview cannot isolate a deny-rule
+  rehearsal. A header-scoped rule on Production would exercise the publish mechanism
+  without affecting visitors, but it needs separate approval.
+- After the activation redeploy, the previous Production deployment may itself be a
+  live build. Rollback is therefore **not** a guaranteed way to disable inference,
+  and the runbook does not rely on it.
+- The emergency shutdown rehearsal has **not** been performed and is not verified.
+  Publish timing, key revocation effect, and a `disabled` redeploy on Vercel are all
+  unmeasured. The app's `disabled` mode is covered by tests, which is not a deployed
+  check.
+
+### Remaining accepted limitations
+
+Reasoning-effort `low` and unpinned hosts mean quality and latency can vary. The
+cancellation and billing behavior above is unverified. The US allowlist is a visitor
+restriction, not data residency. Hobby is for personal, non-commercial use, and
+Mimus is a free demo.

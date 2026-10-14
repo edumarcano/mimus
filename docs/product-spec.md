@@ -70,7 +70,7 @@ Mimus is a standalone application. Its scope emphasizes a complete, approachable
 | Sharing | Copy result or copy input/output pair. No permanent result links or generated images. |
 | Hosting | Vercel, initially on an eligible personal Hobby project. [S5] |
 | Abuse control | Vercel WAF rate limiting plus application request limits. No Redis. [S6] |
-| Budget | Target $0 recurring cost within eligible free allowances. No paid service activation without owner approval. |
+| Budget | Target $0 recurring cost within eligible free allowances. No paid service activation without explicit approval. |
 | Analytics | No analytics SDK or content-tracking service in v1. |
 | Design | Light theme, Mimus bird/wordmark identity, readable typography, playful copy, restrained motion. |
 | Evaluation | 40 synthetic cases, deterministic checks, and manual quality scoring. |
@@ -291,7 +291,7 @@ instruction and the submitted text as untrusted user content, the committed
 - `provider.data_collection: "deny"`, so endpoints that may collect data are excluded;
 - `provider.require_parameters: true`, so an endpoint that cannot honor the settings is not used;
 - no plugins and no tools. The app does not enforce account-level prompt logging;
-  the owner must confirm the OpenRouter account setting before live activation.
+  the OpenRouter account setting must be confirmed before live activation.
 
 If no eligible route exists, the request fails rather than relaxing privacy. The
 adapter does not pin a single model host; behavior can vary across the hosts that
@@ -364,7 +364,7 @@ generation parameters, and privacy-routing preferences are committed together in
 server-side code. Before live activation, verify the exact model ID, current price,
 supported parameters, streaming, and eligible endpoint. [S16]
 
-Send provider preferences including `zdr: true` and `data_collection: "deny"`; use no plugins or tools. Account-level prompt logging must be disabled by the owner; the app cannot enforce it. If no eligible route exists, fail rather than relax privacy. ZDR is an endpoint-routing policy, not a promise of anonymity or no operational metadata; OpenRouter also permits certain in-memory prompt caching under that policy. [S9, S10]
+Send provider preferences including `zdr: true` and `data_collection: "deny"`; use no plugins or tools. Account-level prompt logging must be disabled in the account; the app cannot enforce it. If no eligible route exists, fail rather than relax privacy. ZDR is an endpoint-routing policy, not a promise of anonymity or no operational metadata; OpenRouter also permits certain in-memory prompt caching under that policy. [S9, S10]
 
 Changing provider requires updating the visible privacy policy before traffic is sent. There is no automatic failover to Google or any other provider and no routing by visitor without a separate product decision. Reusing the same model across eligible OpenRouter endpoints is distinct from changing models; document any chosen routing behavior.
 
@@ -548,20 +548,21 @@ host terms vary because Mimus does not pin a single host. The app requests
 zero-data-retention endpoints and denies data-collection endpoints, but that routing
 is not anonymity and does not mean nobody can see the text. OpenRouter still records
 request metadata, may categorize prompts anonymously, and a host may cache prompt
-text in memory. The owner must confirm account-level prompt-logging settings, since the
+text in memory. Account-level prompt-logging settings must be confirmed, since the
 app cannot enforce them. [S9, S10, S16, S17]
 
-The owner must also review the adult, professional-use, and audience conditions before
+The adult, professional-use, and audience conditions must also be reviewed before
 public live activation. A privacy notice alone does not resolve them.
 
 **Conservative v1 deployment default:** Publicly viewable examples, with live requests
-limited to US traffic after owner review. The US allowlist is a visitor restriction
+limited to US traffic after review. The US allowlist is a visitor restriction
 in this app. It is not data residency, and the app does not claim that inference
-stays in the US. Production remains demo until the owner authorizes live activation.
+stays in the US. Production stays demo until live activation is approved.
+Live activation was approved and completed on 2026-10-14; see [`decisions.md`](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
 
 Use Vercel's platform-supplied country information at the server boundary; reject unknown or non-allowlisted locations for live requests. Do not accept a country sent in the JSON body. Local development may use `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` only in a loopback development server with `NODE_ENV=development` and no Vercel deployment environment. Fail closed outside that context; never activate the bypass through a request parameter. Vercel documents the geolocation headers and their deployment/proxy limitations. [S13]
 
-Target adult professional audiences and require affirmative acknowledgement before the first live request. An age checkbox and IP location are not proof of eligibility or comprehensive compliance. Before public inference is enabled, the owner must review professional/business-purpose eligibility, the intended audience and distribution, actual project billing status, permitted regions, and displayed policy. Record that review in the launch checklist.
+Target adult professional audiences and require affirmative acknowledgement before the first live request. An age checkbox and IP location are not proof of eligibility or comprehensive compliance. Before public inference is enabled, the following must be reviewed: professional/business-purpose eligibility, the intended audience and distribution, actual project billing status, permitted regions, and displayed policy. Record that review in the launch checklist.
 
 When those conditions cannot be met, keep live inference off and obtain approval for a suitable provider/deployment policy. Do not bypass restrictions or silently change providers.
 
@@ -601,7 +602,7 @@ Do not ship an in-memory JavaScript map as the production rate limiter. A local 
 | Hosting | Eligible Vercel Hobby use within its included allowances; no paid upgrade by default. [S5] |
 | Database | None. |
 | Domain | Use the assigned deployment subdomain; no domain purchase required. |
-| Model | Dedicated OpenRouter inference key with a verified spending limit and an eligible ZDR endpoint. Account eligibility and enforcement are unverified until the owner checks them. [S14, S16] |
+| Model | Dedicated OpenRouter inference key with a verified spending limit and an eligible ZDR endpoint. Account eligibility and enforcement are unverified until they are checked. [S14, S16] |
 | Analytics, queues, storage services | None. |
 | Paid model alternative | Only after approval; proposed initial experiment budget is $5, not an assumed recurring commitment. |
 
@@ -688,6 +689,8 @@ Deterministic checks cover nonempty output, size bounds, completion status, and 
 Aim for meaning score 2 on at least 36/40 cases, style score 2 on at least 32/40, and no major meaning failures on the 10 critical cases. Report development and holdout results separately, with failures and limitations. Include incomplete/error cases in the report rather than quietly dropping them.
 
 Once held-out failures are used for tuning, those cases are no longer untouched holdout evidence. Say so; do not claim an independent improvement without fresh cases. These are small-sample release targets, not a statistical guarantee.
+
+**v1.0.0 release note.** The Gemini release candidate was formally scored against these targets, and the critical-case target was revised for it. The shipped GLM configuration was not scored against them: its 40-case development run completed with 39 of 40 deterministic checks passing, but formal meaning and style scores were not committed, and the original meaning target was not demonstrated. For v1.0.0, GLM was retained, and the release evidence requirement was revised to accept the documented limitations instead of requiring another 50-case evaluation. The pre-registered GLM release evaluation is deferred, not completed. This is a recorded revision, not a pass, and it does not support a claim that GLM met these targets or outperformed Gemini. See [`decisions.md`](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
 
 ---
 
@@ -859,12 +862,12 @@ A release candidate is ready when:
 - Mobile and keyboard interactions are usable, and accessibility checks have been performed.
 - Preferences work; local history is bounded, opt-in, clearable, and resilient to storage errors.
 - Credentials remain server-only; application logs and URLs do not contain submitted/generated text.
-- OpenRouter requests use ZDR endpoint routing and `data_collection: "deny"`, with no tools or plugins; account-level prompt logging is confirmed by the owner, because the app does not enforce it. The visible notice matches actual processing.
+- OpenRouter requests use ZDR endpoint routing and `data_collection: "deny"`, with no tools or plugins; account-level prompt logging is confirmed in the account settings, because the app does not enforce it. The visible notice matches actual processing.
 - The released model ID and model-specific settings are committed in code and match the evaluated configuration.
 - Public-launch audience, region, billing, and hosting conditions have been reviewed and recorded.
 - Production WAF enforcement, request caps, mode switch, and upstream quota errors are verified.
 - Automated checks pass, or any unmet release gate is explicitly identified as blocking completion.
-- The synthetic evaluation has actually run, scores and failures are recorded, and release targets are met or revised transparently by the owner before release.
+- The synthetic evaluation has been run, scores and failures are recorded, and release targets are met or revised transparently before release. For the Gemini release candidate, the critical-case target was revised. For the shipped GLM configuration, the release evaluation in Section 14 was not run. The release evidence requirement was revised to accept the documented limitations, and the original meaning target was not demonstrated. See the v1.0.0 release note in Section 14.
 - The repository, README, permitted live deployment, screenshots, setup instructions, and engineering case study are ready for public use and match the verified implementation.
 - The Mimus name, logo/favicon assets, page metadata, privacy wording, active URLs, and release documentation are consistent; supplied PNGs have been checked for transparency, mark consistency, and legibility at their actual sizes.
 

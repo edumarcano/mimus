@@ -6,6 +6,12 @@ unchanged and remains historical. It is not release acceptance, not deployed
 verification, and not evidence that the release targets in the product
 specification were met.
 
+*Release status (2026-10-14):* this configuration was retained for v1.0.0, and the
+release evidence requirement was revised instead of requiring a further evaluation.
+That is an accepted-limitations decision, not a pass; see the
+[release decision](../../docs/decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
+The results below are unchanged.
+
 ## Run configuration
 
 | Item | Value |
@@ -59,5 +65,5 @@ the original meaning-preservation target**. The release target was not passed.
   release evidence.
 - This is a non-streaming local harness. It does not verify the deployed SSE path.
 - Account-level OpenRouter prompt logging is not enforced by the application and
-  must be confirmed by the owner.
+  must be confirmed in the account settings.
 - The US visitor allowlist is not data residency.

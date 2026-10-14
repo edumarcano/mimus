@@ -12,27 +12,37 @@ into LinkedIn speak, corporate phrasing back into ordinary language, and more. I
 is a rewrite between writing registers, not a translator between languages, and it
 aims to change the expression without inventing facts or losing the point.
 
-[**Try the examples**](https://mimus-rewrite.vercel.app) ·
+[**Try Mimus**](https://mimus-rewrite.vercel.app) ·
 [Case study](docs/case-study.md) · [Product specification](docs/product-spec.md) ·
 [Evaluation](evals/README.md)
 
-![Mimus translator showing a Human to LinkedIn example](docs/assets/screenshots/desktop-1440.png)
+![Mimus in demo mode showing a prewritten Human to LinkedIn example](docs/assets/screenshots/desktop-1440.png)
+
+<sub>Demo-mode screenshot: the result is a labeled, prewritten example, not live
+model output.</sub>
 
 ## Status
 
-Mimus is being prepared for its first release, **v1.0.0**. No release or tag
-exists yet.
+**v1.0.0 is prepared and awaiting final approval.** No release or tag exists yet.
 
-- **The public site is examples-only.** It shows prewritten, labeled examples and
-  makes no model calls.
-- **Live generation is implemented and has been verified on a protected
-  preview** (streaming, privacy acknowledgement, origin check, an allowed-region
-  request, logs without text), but it is not enabled publicly. Enabling it depends on owner
-  decisions about provider policy, spend controls, and quality acceptance. You can
-  run it locally with your own OpenRouter key.
-- **Quality acceptance for the current model is open.** The earlier Gemini
-  evaluation does not transfer, and the GLM development run did not meet the
-  original meaning target. See [Evaluation](#evaluation).
+- **Live rewriting is on at the Production site.** It uses `z-ai/glm-5.3-flash`
+  through OpenRouter, for visitors in approved regions after they acknowledge the
+  data-use notice. The owner observed a successful Human to Corporate rewrite that
+  kept the meeting-reschedule facts, and real streaming in Chrome DevTools (a `meta`
+  event, 13 `delta` events, and `done` in about 724 ms). Very short responses can
+  look like they arrive at once.
+- **Quality is accepted with limits, not proven.** The owner chose to ship GLM with
+  documented quality limitations for a free, experimental portfolio app. The
+  original meaning-preservation target was not demonstrated, and formal GLM scores
+  were not committed. See [Evaluation](#evaluation).
+- **Spend is bounded by owner-confirmed account settings** (a key capped at $1 per
+  day, auto-recharge off, ZDR and privacy settings applied). These are the owner's
+  statements, not independently verified. The service can stop at any time.
+- **Without a key, the app runs in demo mode:** prewritten, labeled examples and no
+  model calls. You can also run live mode locally with your own OpenRouter key.
+- **Known limits:** emergency shutdown has not been rehearsed end to end, and it is
+  not verified whether a Stop reaches the model host and stops billing. See
+  [`docs/deployment.md`](docs/deployment.md) and the [changelog](CHANGELOG.md).
 
 ## Features
 
@@ -86,13 +96,18 @@ is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
 Quality is measured on 50 synthetic cases with deterministic checks and manual
 meaning and style scoring.
 
-- The **Gemini** release-candidate evaluation is complete and historical:
+- The **Gemini** release-candidate evaluation was formally scored. It is historical
+  evidence for a previous provider and does not apply to GLM:
   [`evals/results/summary.md`](evals/results/summary.md).
-- The **GLM** development run completed 40 of 40 requests but recorded no scores and
-  did not meet the original meaning target:
+- The **GLM** development run completed 40 of 40 requests, and 39 of 40 passed the
+  deterministic checks. Formal meaning and style scores were not committed, and the
+  original meaning target was not demonstrated:
   [`evals/results/glm-development.md`](evals/results/glm-development.md).
-- A GLM release evaluation is defined but not run; see
-  [`docs/decisions.md`](docs/decisions.md#glm-quality-gate-active).
+- For v1.0.0 the owner revised the release evidence requirement and accepted these
+  limitations instead of requiring another 50-case run. GLM is not claimed to have
+  passed the original benchmark or to preserve meaning better than Gemini. The
+  pre-registered GLM evaluation is deferred, not completed; see
+  [`docs/decisions.md`](docs/decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
 
 Meaning preservation is a goal, not a guarantee for any individual result.
 

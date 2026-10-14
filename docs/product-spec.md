@@ -557,7 +557,8 @@ public live activation. A privacy notice alone does not resolve them.
 **Conservative v1 deployment default:** Publicly viewable examples, with live requests
 limited to US traffic after owner review. The US allowlist is a visitor restriction
 in this app. It is not data residency, and the app does not claim that inference
-stays in the US. Production remains demo until the owner authorizes live activation.
+stays in the US. Production stays demo until the owner authorizes live activation.
+The owner authorized it on 2026-10-14; see [`decisions.md`](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
 
 Use Vercel's platform-supplied country information at the server boundary; reject unknown or non-allowlisted locations for live requests. Do not accept a country sent in the JSON body. Local development may use `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` only in a loopback development server with `NODE_ENV=development` and no Vercel deployment environment. Fail closed outside that context; never activate the bypass through a request parameter. Vercel documents the geolocation headers and their deployment/proxy limitations. [S13]
 
@@ -688,6 +689,8 @@ Deterministic checks cover nonempty output, size bounds, completion status, and 
 Aim for meaning score 2 on at least 36/40 cases, style score 2 on at least 32/40, and no major meaning failures on the 10 critical cases. Report development and holdout results separately, with failures and limitations. Include incomplete/error cases in the report rather than quietly dropping them.
 
 Once held-out failures are used for tuning, those cases are no longer untouched holdout evidence. Say so; do not claim an independent improvement without fresh cases. These are small-sample release targets, not a statistical guarantee.
+
+**v1.0.0 release note.** The Gemini release candidate was scored against these targets and the owner revised the critical-case target for it. The shipped GLM configuration was not: its 40-case development run recorded no committed scores, and the meaning target was not demonstrated. For v1.0.0 the owner retained GLM and revised the release evidence requirement instead of requiring another evaluation, accepting the documented limitations. This is a recorded owner revision, not a pass, and it does not support a claim that GLM met these targets or outperformed Gemini. See [`decisions.md`](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
 
 ---
 
@@ -864,7 +867,7 @@ A release candidate is ready when:
 - Public-launch audience, region, billing, and hosting conditions have been reviewed and recorded.
 - Production WAF enforcement, request caps, mode switch, and upstream quota errors are verified.
 - Automated checks pass, or any unmet release gate is explicitly identified as blocking completion.
-- The synthetic evaluation has actually run, scores and failures are recorded, and release targets are met or revised transparently by the owner before release.
+- The synthetic evaluation has actually run, scores and failures are recorded, and release targets are met or revised transparently by the owner before release. (For the shipped GLM configuration, see the v1.0.0 release note in Section 14: the evidence requirement was revised, not met.)
 - The repository, README, permitted live deployment, screenshots, setup instructions, and engineering case study are ready for public use and match the verified implementation.
 - The Mimus name, logo/favicon assets, page metadata, privacy wording, active URLs, and release documentation are consistent; supplied PNGs have been checked for transparency, mark consistency, and legibility at their actual sizes.
 

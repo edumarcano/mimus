@@ -108,12 +108,19 @@ not pinned, and a host may cache prompts in memory, so the notice says so and as
 for fictional text. Changing provider required a new notice version and fresh
 acknowledgement.
 
-The GLM development run completed all 40 requests but recorded no manual scores
-and did not meet the original meaning target. The Gemini results do not transfer
-to it. For that reason the current status is explicit: live generation is
-implemented and verified on a protected preview, quality acceptance is open, and
-the public site is examples-only. The protocol for closing the gate is
-pre-registered in [decisions](decisions.md#glm-quality-gate-active).
+The GLM development run completed all 40 requests and 39 passed the deterministic
+checks, but formal meaning and style scores were not committed and the original
+meaning target was not demonstrated. The Gemini results do not transfer to it, and
+nothing here claims GLM matches or beats Gemini on meaning.
+
+For a while that kept the public site examples-only, with a pre-registered 50-case
+protocol waiting to close the gate. For v1.0.0 the owner made a different call:
+revise the release evidence requirement, keep `z-ai/glm-5.3-flash` with low
+reasoning and prompt v4, and accept the documented limitations for a free,
+experimental portfolio app rather than spend another evaluation. The protocol is
+deferred, not completed. Production went live on 2026-10-14. The honest summary is
+that the live model is accepted with known limits, not shown to meet the original
+bar; see [decisions](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
 
 ## Testing and verification
 
@@ -124,15 +131,23 @@ pre-registered in [decisions](decisions.md#glm-quality-gate-active).
   build without secrets, with end-to-end as a separate job.
 - **In the browser:** layout at 360 and 1440 px, target sizes, computed contrast,
   reduced motion, and focus behavior.
-- **On the deployment:** a protected Preview streamed real output, and the
-  Production demo and WAF rate limit were observed. Mocks were never counted as
-  deployment verification.
+- **On the deployment:** a protected Preview streamed real output, and the WAF rate
+  limit was observed enforcing. On live Production, the owner observed a correct
+  Human to Corporate rewrite and, in Chrome DevTools, a `meta` event, 13 `delta`
+  events, and `done` in about 724 ms. Short, fast responses can look unstreamed in the
+  page. The screenshots in this repository were taken in demo mode and are not
+  evidence of live inference. Mocks were never counted as deployment verification.
 
 ## Limits and costs
 
 Hosting targets Vercel Hobby, and the model cost per request is small but not zero.
 The output cap and input limit bound a single request, not total spend; the key's
 credit limit and monitoring are the budget controls, and the WAF limit is per IP.
+The owner reports a Production key capped at $1 per day with auto-recharge off and
+ZDR and privacy settings applied; these are account settings the owner confirmed,
+not something the repository can check. The emergency shutdown runbook has been
+reviewed but not rehearsed end to end, and rollback is not treated as a way to
+disable inference.
 
 The most important unknown is cancellation. The application aborts the upstream
 request when a client stops, and mocked tests cover that. Whether Vercel delivers the
@@ -159,4 +174,5 @@ claims rest on.
 - Decide holdout rules first, and say when they are broken.
 - Read provider terms before the last milestone. They changed the architecture.
 - Do not read a log code as proof of what happened upstream.
+- When a release bar is revised, record who revised it and what stayed unproven.
 - A small, specific specification makes both agents and reviewers faster.

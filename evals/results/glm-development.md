@@ -6,6 +6,12 @@ unchanged and remains historical. It is not release acceptance, not deployed
 verification, and not evidence that the release targets in the product
 specification were met.
 
+*Release status (2026-10-14):* the owner retained this configuration for v1.0.0 and
+revised the release evidence requirement instead of requiring a further evaluation.
+That is an accepted-limitations decision, not a pass; see the
+[release decision](../../docs/decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
+The results below are unchanged.
+
 ## Run configuration
 
 | Item | Value |

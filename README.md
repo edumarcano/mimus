@@ -1,5 +1,8 @@
 <h1 align="center">
-  <img src="docs/assets/mimus-logo.png" width="280" alt="Mimus">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mimus-logo-dark.png">
+    <img src="docs/assets/mimus-logo.png" width="280" alt="Mimus">
+  </picture>
 </h1>
 
 <p align="center"><strong>Translate meaning, not just words.</strong></p>

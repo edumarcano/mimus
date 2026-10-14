@@ -349,7 +349,7 @@ conclusion; the owner reviews and approves the public-live conditions.
 | Audience 18+ | OpenRouter terms section 2 (18+ account holders); `NOTICE_AVAILABILITY` says adults only | Required for the account holder; keep the adult acknowledgement, and treat it as a notice, not verification |
 | Model-host terms | Terms 5.1-5.2 make the account holder responsible for complying with the applicable Model Terms and for ensuring customers do the same; hosts are not pinned | Owner review: read the terms of the hosts that actually served requests (observed: InferenceNet, Together, Parasail, Morph, Relace) and decide whether visitor acknowledgement is enough |
 | Regions | Terms 5.7 bar access to Restricted Models by region and bar VPN circumvention; terms 6.8 says country reporting can be inaccurate | Owner judgment: keep the US allowlist as conservative; it is not data residency |
-| Prompt injection | Terms section 7 item 11 prohibits unapproved Red Teaming (prompt injection or jailbreaking). The product accepts arbitrary text, and the evaluation set contains injection cases | Owner judgment: decide whether to request OpenRouter's approval or accept the risk; no code change |
+| Adversarial evaluation | Ordinary handling of user text is product behavior: the app accepts arbitrary input and treats it as untrusted task data. Deliberately running injection cases to test whether a model obeys them is adversarial evaluation. Research recorded on 2026-10-14 reads terms section 7 item 11 as prohibiting unapproved Red Teaming (prompt injection or jailbreaking) | **Owner determines** whether the planned GLM evaluation's injection cases require OpenRouter's prior written approval. If they do, obtain it before the first request. Owner risk acceptance does not substitute for that approval. No code change |
 | Retention settings | ZDR guide: `provider.zdr` is OR-ed with account settings, in-memory caching is allowed, endpoints with unclear policy are treated as retaining | Required: confirm the account is ZDR-only and prompt logging is off (the app cannot enforce it) and that an eligible endpoint exists for the model |
 | Data use | Terms 6.5: inputs are categorized in anonymized form; 6.2: opting into prompt logging grants OpenRouter broad rights | Keep logging off; the notice already discloses categorization |
 | Spend | Terms 3.2; limits documentation | Required: per-key credit limit, auto top-up off, activity monitoring |
@@ -366,7 +366,8 @@ and the [GLM 5.3 Flash listing](https://openrouter.ai/z-ai/glm-5.3-flash); Verce
 [environment variables](https://vercel.com/docs/environment-variables), and
 [WAF custom rules](https://vercel.com/docs/vercel-firewall/vercel-waf/custom-rules).
 The listing does not show which endpoints are ZDR-eligible; the owner confirms that
-in the account.
+in the account. The terms wording was recorded during research and was not re-checked
+in the final review, so the owner confirms it against the current text before deciding.
 
 ### GLM quality gate (Active)
 
@@ -377,8 +378,15 @@ Gemini results do not transfer. Provisional scores from an owner handoff are not
 committed evidence. Model selection and prompt v4 are not reopened.
 
 **Protocol (pre-registered; nothing has been run).**
+- **Prerequisite:** the owner determines whether the injection cases require
+  OpenRouter's prior written approval (see
+  [provider policy](#provider-policy-recommendation-owner-approval-required)). If they
+  do, approval is obtained before the first request. Owner risk acceptance is not a
+  substitute.
 - The committed GLM configuration and prompt v4, unchanged, on a clean tree, using
-  the committed streaming runner.
+  the committed `npm run eval` runner, which consumes the same streaming adapter as
+  production. The development run used a separate non-streaming harness and did not
+  verify the streaming path.
 - Two runs, once each: `npm run eval -- --live` (40 development cases) and
   `npm run eval -- --live --split holdout --include-holdout` (the 10 `holdout2-*`
   cases), about 50 requests on a capped evaluation key. The earlier run's cost

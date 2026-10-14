@@ -79,14 +79,16 @@ Every item needs the owner. Do not proceed to activation until all are recorded 
 
 - [ ] **Provider policy:** the recommendation in
   [`decisions.md`](decisions.md#provider-policy-recommendation-owner-approval-required)
-  is reviewed and the public-live conditions are approved.
+  is reviewed and the public-live conditions are approved, including whether
+  OpenRouter's prior written approval is required for the injection evaluation cases
+  (and obtained if so).
 - [ ] **Account settings:** OpenRouter prompt logging is off, ZDR is enforced, and an
   eligible endpoint exists for `z-ai/glm-5.3-flash`. The app cannot enforce these.
 - [ ] **Spend controls:** a dedicated Production key with a hard credit limit, prepaid
   credit with auto top-up off, and a plan for reviewing OpenRouter activity.
-- [ ] **Quality gate:** the GLM release evaluation is run, scored, and either meets the
-  targets or has an owner-recorded revision
-  ([`decisions.md`](decisions.md#glm-quality-gate-active)).
+- [ ] **Quality gate:** after the provider-policy approval question is settled, the GLM
+  release evaluation is run, scored, and either meets the targets or has an
+  owner-recorded revision ([`decisions.md`](decisions.md#glm-quality-gate-active)).
 - [ ] **Shutdown rehearsal:** the [rehearsal](#rehearsal-no-key-no-model-calls) is run
   and its timings are recorded.
 - [ ] **Risk acceptance:** the owner accepts, in writing, the unverified items listed

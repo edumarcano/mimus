@@ -1,6 +1,8 @@
-# Mimus
+<h1 align="center">
+  <img src="docs/assets/mimus-logo.png" width="280" alt="Mimus">
+</h1>
 
-**Translate meaning, not just words.**
+<p align="center"><strong>Translate meaning, not just words.</strong></p>
 
 Mimus rewrites English text between recognizable writing styles: plain English
 into LinkedIn speak, corporate phrasing back into ordinary language, and more. It
@@ -38,19 +40,21 @@ exists yet.
 - A credential-free demo mode, mobile layout, keyboard shortcut, and local-only
   preferences. Optional history of up to 10 completed results is off by default and
   stays in the browser.
-- Data-use notice next to Translate, a `/privacy` page, and no accounts, database,
-  or analytics.
+- Data-use notice next to Translate, a `/privacy` page, and no accounts, application
+  database, or analytics.
 
 ## How it works
 
 ```mermaid
 flowchart LR
-  Browser -->|"POST text and styles"| WAF["Vercel WAF rate limit"]
-  WAF --> Route["Next.js /api/translate"]
-  Route -->|"origin, mode, region, schema, notice checks"| Prompt["Prompt builder (v4)"]
-  Prompt --> Adapter["OpenRouter adapter"]
-  Adapter -->|"ZDR routing, no tools"| Host["Third-party model host"]
-  Adapter -->|"normalized events as SSE"| Browser
+  Browser -->|"1. text and styles"| Route["Next.js route: checks, then prompt"]
+  Route -->|"2. provider request"| Adapter["OpenRouter adapter"]
+  Adapter -->|"3. chat completion, ZDR routing"| OpenRouter["OpenRouter"]
+  OpenRouter -->|"routes to"| Host["Model host"]
+  Host -->|"generated output"| OpenRouter
+  OpenRouter -->|"provider stream"| Adapter
+  Adapter -->|"4. normalized events"| Route
+  Route -->|"5. SSE events to browser"| Browser
 ```
 
 One Next.js (App Router, TypeScript, Tailwind) deployment with a single Node.js
@@ -67,11 +71,12 @@ output cap) and requests zero-data-retention endpoints with data collection
 denied. Hosts are not pinned, so behavior can vary between requests. The choice
 and its trade-offs are explained in the [case study](docs/case-study.md).
 
-Live text is sent to OpenRouter and then to a third-party host. Zero data
-retention is an endpoint routing policy, not anonymity: OpenRouter still records
-request metadata and a host may cache prompts in memory. Mimus does not store
-submitted or generated text on its servers or in its logs. Use fictional text. The
-full notice is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
+Live text is sent to OpenRouter and then to a third-party model host. Mimus has no
+application database and does not intentionally persist submitted or generated text
+on its servers, in logs, or in URLs. Zero data retention is an endpoint routing
+policy, not anonymity: the hosting platform and OpenRouter still process request
+metadata, and a host may cache prompts in memory. Use fictional text. The full notice
+is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
 
 ## Evaluation
 

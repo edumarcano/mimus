@@ -56,6 +56,21 @@ describe("translatorReducer", () => {
     expect(state.output).toBe("part");
   });
 
+  it("late delta and done after stop cannot extend or complete the result", () => {
+    const stopped = reduce(
+      { ...INITIAL_TRANSLATOR_STATE, status: "generating", runId: 1, output: "part" },
+      { type: "stop", runId: 1 },
+    );
+    const late = reduce(
+      stopped,
+      { type: "delta", runId: 1, text: " late" },
+      { type: "done", runId: 1 },
+      { type: "streamError", runId: 1, code: "INCOMPLETE_OUTPUT", message: "x" },
+    );
+    expect(late.status).toBe("canceled");
+    expect(late.output).toBe("part");
+  });
+
   it("maps stream errors to blocked, truncated, and failed", () => {
     expect(
       reduce(

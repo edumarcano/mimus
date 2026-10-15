@@ -22,7 +22,17 @@ test.describe("demo mode", () => {
     await expect(page.getByTestId("status")).toContainText(
       "Example — not generated",
     );
-    await expect(page.getByTestId("output")).toHaveText(example.output);
+    await expect(page.getByTestId("output")).toHaveValue(example.output);
+    const rewrite = page.getByRole("textbox", { name: /rewrite$/ });
+    await expect(rewrite).not.toBeEditable();
+    await rewrite.focus();
+    await expect(rewrite).toBeFocused();
+    await rewrite.press("ControlOrMeta+A");
+    expect(
+      await rewrite.evaluate((element: HTMLTextAreaElement) =>
+        element.value.slice(element.selectionStart, element.selectionEnd),
+      ),
+    ).toBe(example.output);
 
     await expect(page.getByRole("button", { name: "Translate" })).toBeDisabled();
     await expect(page.getByText(/off in demo mode/)).toBeVisible();

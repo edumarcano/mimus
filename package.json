@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "eval": "tsx --env-file-if-exists=.env.local --conditions react-server scripts/evaluate.ts"
+    "eval": "tsx --env-file-if-exists=.env.local --conditions react-server scripts/evaluate.ts",
+    "benchmark": "tsx --env-file-if-exists=.env.local --conditions react-server scripts/benchmark.ts"
   },
   "dependencies": {
     "next": "16.4.0",

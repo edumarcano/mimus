@@ -56,6 +56,14 @@ describe("offline cascade simulation", () => {
     expect(() => run([item], [judgment("bad", "decision", { probabilities: { meaningPass: 1.1, stylePass: 1, seriousFailure: 0 } }), judgment("bad", "llm")])).toThrow(/Invalid meaningPass/);
   });
 
+  it("leaves threshold selection inconclusive when baseline labels are unresolved",()=>{
+    const cases = [generation("c"),generation("v","validation")];
+    const report = run(cases,[judgment("c","decision"),judgment("c","llm"),judgment("v","decision"),judgment("v","llm",{status:"unresolved",meaning:null,style:null})]);
+    expect(report.selectedThreshold).toBeNull();
+    expect(report.thresholds.find(r=>r.split === "validation")?.baselineUnresolved).toBe(1);
+    expect(report.thresholds.find(r=>r.split === "validation")?.estimatedDownstreamSavingsUsd).toBeNull();
+  });
+
   it("does not use a downstream LLM disagreement to route a confident pass", () => {
     const item = generation("missed");
     const report = run([item], [

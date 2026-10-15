@@ -101,3 +101,75 @@ selection rules are frozen.
 
 Published results are reviewed summaries. Benchmark examples are fictional
 synthetic text, never user input.
+
+## Benchmark tooling
+
+`npm run eval` remains the historical single-model runner. `npm run benchmark`
+adds manifest-driven experiments. All files written by the benchmark are under
+`evals/results/raw/benchmark/` and remain ignored until evidence is reviewed.
+
+Start without credentials or provider requests:
+
+```bash
+npm run benchmark -- preflight --manifest evals/experiments/effort.json
+npm run benchmark -- generate --manifest evals/experiments/effort.json --run fixture-demo --fixture --limit 2
+npm run benchmark -- judge --manifest evals/experiments/effort.json --run fixture-demo --fixture --evaluator judge-luna
+npm run benchmark -- report --run fixture-demo --evaluator judge-luna
+```
+
+Open `evals/results/raw/benchmark/fixture-demo/report.html`. Fixture outputs are
+labeled and never qualify as release evidence. To compare prompt runs, pass a
+second run ID to `report --input OTHER_RUN` (not a file path).
+
+Before any separately approved paid run, use `preflight --refresh-catalog` to
+check current public metadata and prices. That command makes catalog GETs only.
+Paid `generate` and `judge` require `--live` and a catalog snapshot less than 24
+hours old. They read the server-only `OPENROUTER_API_KEY` from the environment or
+ignored `.env.local`; application live mode is not required. Never use a
+Production key for development experiments. Provider privacy-routing failures
+are recorded and never bypassed.
+
+`prompt-v4.json` and `prompt-candidate.json` compare one shared prompt candidate.
+`effort.json` contains the twelve supported generator configurations on the fixed
+screening subset. `evaluators.json` contains the constructed challenge and five
+evaluators; run each explicitly with `judge --evaluator ID`. The development and
+release manifests ending in `-template` are starting configurations, not model
+selection decisions. Copy and commit a named finalist manifest after reviewing
+development evidence. Release generation refuses a template ID, a dirty tree,
+a case limit, or a missing `--include-holdout` flag.
+
+Pass `generate --reuse-from SCREEN_RUN` when expanding a screen to development.
+Only successful observations with identical prompt contents, case, configuration,
+repetition, and transport are reused. Provenance links identify the original
+attempt; its usage and observed cost remain the model-performance measurement,
+while the shared ledger incurs no new charge. Fresh release runs refuse reuse.
+For consistency checks, copy a selected development manifest, choose ten cases,
+set `stage` to `repeat` and `repetitions` to 3, then reuse the first attempts.
+
+Export and import a blind review, then rebuild reports:
+
+```bash
+npm run benchmark -- review-export --manifest evals/experiments/evaluators.json --run evaluator-calibration --review-set calibration --split calibration --count 12
+npm run benchmark -- review-import --run evaluator-calibration --review-set calibration --input downloaded-scores.json
+```
+
+Keep the generated mapping JSON private until scoring is submitted. Download
+scores from the HTML form; import checks every blind ID, score, and tag before
+appending original labels. Duplicate imports are refused. The review budget is
+12 calibration examples, 8 final audits, and at most 5 disagreements per study.
+
+For a run containing independent decision and LLM judgments, use
+`cascade --run RUN --decision-evaluator decision-jev --llm-evaluator judge-luna`.
+Its JSON compares thresholds using calibration observations and reports
+validation observations separately. Savings are estimates; disagreement with an
+LLM is not independently established human error.
+
+The budget ledger is cumulative across run IDs: changing a run ID does not reset
+spending. Unreported costs keep their conservative reservation; missing usage is
+never charged as zero. A software estimate cannot guarantee a provider's final
+bill, so use a separate capped key. Do not delete the ledger to resume a study.
+Interrupted dispatches are visible as reservations and are not retried silently.
+If the process crashes, inspect the PID in `.lock` and confirm it is no longer
+running before removing that lock alone. Resume with the same manifest, dataset,
+code revision, and transport; changes require a new run with its prior attempts
+retained. Unknown billing may require manual reconciliation before continuing.

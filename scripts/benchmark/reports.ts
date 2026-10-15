@@ -22,6 +22,8 @@ export type EvaluatorValidationSummary = {
 
 export type GroupSummary = {
   configId: string;
+  model: string;
+  reasoning: string;
   configHash: string;
   promptVersion: string;
   split: string;
@@ -44,9 +46,11 @@ export type GroupSummary = {
   judgingCostUsd: number | null;
   humanReviews: number;
   fixtureRecords: number;
+  reusedObservations: number;
 };
 
-export type BenchmarkSummary = { groups: GroupSummary[]; evaluatorValidation: EvaluatorValidationSummary[] };
+export type HumanAgreement = { evaluatorId:string; reviewSetId:string; split:string; reviewed:number; resolved:number; unresolved:number; meaningAgreement:number; styleAgreement:number; seriousDenominator:number; seriousFalseAccepts:number };
+export type BenchmarkSummary = { groups: GroupSummary[]; evaluatorValidation: EvaluatorValidationSummary[]; humanAgreement:HumanAgreement[] };
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
@@ -144,6 +148,8 @@ function summarize(
     const directions = new Set(primary.map((record) => `${record.case.sourceStyle}->${record.case.targetStyle}`));
     groups.push({
       configId: first.configId,
+      model: first.config.model,
+      reasoning: JSON.stringify(first.config.reasoning),
       configHash: configHash(first),
       promptVersion: first.promptVersion,
       split: first.case.split,
@@ -157,7 +163,7 @@ function summarize(
       style2: scoreable.filter((record) => record.style === 2).length,
       criticalMeaning0: criticalJudgments.filter((record) => record?.status === "complete" && record.meaning === 0).length,
       criticalUnresolved: criticalJudgments.filter((record) => !record || record.status !== "complete" || record.meaning == null).length,
-      eligibleReleaseEvidence: release && first.repetition === 0 && fixtureRecords.length === 0 && uniqueReleaseCases === 40 && directions.size === 20 && critical.length === 10 &&
+      eligibleReleaseEvidence: release && first.repetition === 0 && fixtureRecords.length === 0 && primaryJudgments.length === primary.length && primaryJudgments.every(j=>j.evaluator.role === "llm" && j.status === "complete" && j.meaning !== null && j.style !== null) && primary.every(r=>r.transport === "openrouter" && r.normalizedCompletion === "complete" && !r.errorCode) && uniqueReleaseCases === 40 && directions.size === 20 && critical.length === 10 &&
         scoreable.filter((record) => record.meaning === 2).length >= 36 &&
         scoreable.filter((record) => record.style === 2).length >= 32 &&
         criticalJudgments.every((record) => record?.status === "complete" && record.meaning !== 0 && record.meaning != null),
@@ -169,6 +175,7 @@ function summarize(
       judgingCostUsd: sumKnown(primaryJudgments.map((record) => record.costUsd)),
       humanReviews: bucket.reviews.filter((record) => primaryIds.has(record.generationId)).length,
       fixtureRecords: fixtureRecords.length,
+      reusedObservations: primary.filter(record=>record.reusedFrom).length,
     });
   }
   groups.sort((a, b) => a.configId.localeCompare(b.configId) || a.promptVersion.localeCompare(b.promptVersion) || a.split.localeCompare(b.split) || a.repetition - b.repetition);
@@ -244,7 +251,25 @@ function summarize(
     }
   }
   const evaluatorValidation = [...validationByKey.values()].sort((a, b) => a.scorer.localeCompare(b.scorer) || a.scorerId.localeCompare(b.scorerId) || a.split.localeCompare(b.split));
-  return { groups, evaluatorValidation };
+  const agreement = new Map<string,HumanAgreement>();
+  for (const review of uniqueReviews.values()) {
+    const generation = generationById.get(review.generationId);
+    if (!generation) continue;
+    for (const judgment of uniqueJudgments.values()) {
+      if (judgment.generationId !== review.generationId) continue;
+      const id = JSON.stringify([judgment.evaluatorId,review.reviewSetId,generation.case.split]);
+      const a = agreement.get(id) ?? {evaluatorId:judgment.evaluatorId,reviewSetId:review.reviewSetId,split:generation.case.split,reviewed:0,resolved:0,unresolved:0,meaningAgreement:0,styleAgreement:0,seriousDenominator:0,seriousFalseAccepts:0};
+      a.reviewed++;
+      if (judgment.status !== "complete" || judgment.meaning === null || judgment.style === null) a.unresolved++;
+      else {
+        a.resolved++; if (judgment.meaning === review.meaning) a.meaningAgreement++;
+        if (judgment.style === review.style) a.styleAgreement++;
+        if (review.meaning === 0) { a.seriousDenominator++; if (judgment.meaning === 2) a.seriousFalseAccepts++; }
+      }
+      agreement.set(id,a);
+    }
+  }
+  return { groups, evaluatorValidation, humanAgreement:[...agreement.values()] };
 }
 
 function csvCell(value: unknown): string {
@@ -262,7 +287,7 @@ export function buildReport(
   judgments: JudgmentRecord[],
   humanReviews: HumanReview[],
   evaluatorId?: string,
-): { markdown: string; csv: string; html: string; summary: BenchmarkSummary } {
+): { markdown: string; csv: string; casesCsv: string; html: string; summary: BenchmarkSummary } {
   const summary = summarize(generations, judgments, humanReviews, evaluatorId);
   const columns = Object.keys(summary.groups[0] ?? { configId: "" });
   const markdown = [
@@ -286,8 +311,9 @@ export function buildReport(
     "Unknown usage or cost is shown as unknown, not zero. Release eligibility is a mechanical check of case count, direction/critical coverage, scores, and unresolved critical judgments; it is not a statistical guarantee or release decision.",
   ].join("\n");
   const csv = [columns.map(csvCell).join(","), ...summary.groups.map((group) => columns.map((column) => csvCell(group[column as keyof GroupSummary])).join(","))].join("\n");
-  const rows = summary.groups.map((group) => `<tr>${columns.map((column) => `<td>${escapeHtml(group[column as keyof GroupSummary])}</td>`).join("")}</tr>`).join("");
-  const headers = columns.map((column) => `<th scope="col">${escapeHtml(column)}</th>`).join("");
+  const visibleColumns: Array<keyof GroupSummary> = ["configId","promptVersion","split","generated","meaning2","style2","unresolved","p50FirstContentMs","p50DurationMs","generationCostUsd","judgingCostUsd","eligibleReleaseEvidence"];
+  const rows = summary.groups.map((group) => `<tr>${visibleColumns.map((column) => `<td>${escapeHtml(group[column] ?? "unknown")}</td>`).join("")}</tr>`).join("");
+  const headers = visibleColumns.map((column) => `<th scope="col">${escapeHtml(column)}</th>`).join("");
   const selectedJudgments = new Map<string, JudgmentRecord[]>();
   for (const judgment of judgments) {
     if (evaluatorId && judgment.evaluatorId !== evaluatorId) continue;
@@ -304,5 +330,12 @@ export function buildReport(
   }).join("");
   const validationRows = summary.evaluatorValidation.map((item) => `<tr>${[item.scorer, item.scorerId, item.split, item.expectedExamples, item.resolved, item.unresolved, `${item.meaningAgreement}/${item.meaningDenominator}`, item.meaningUnresolved, `${item.styleAgreement}/${item.styleDenominator}`, item.styleUnresolved, `${item.seriousFalseAccepts}/${item.seriousDenominator}`, `${item.faithfulFalseRejects}/${item.faithfulDenominator}`].map((value) => `<td>${escapeHtml(value)}</td>`).join("")}</tr>`).join("");
   const html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Mimus benchmark report</title><style>body{font:16px system-ui,sans-serif;margin:2rem;color:#14323a}table{border-collapse:collapse;display:block;overflow:auto}th,td{border:1px solid #9ab;padding:.5rem;text-align:left}th{background:#f5fafb}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5fafb;padding:.75rem}details{border-top:1px solid #9ab;padding:.75rem}</style><h1>Mimus benchmark report</h1><p>Automated evaluation with limited human calibration and auditing. No weighted winner is declared. Human and automated scores remain separate. Constructed expected labels are comparison references, not human ground truth.</p><h2>Configuration summary</h2><table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table><p>Unknown usage or cost is shown as unknown, not zero. Release evidence eligibility is not a statistical guarantee or release decision. Repetition 0 is the primary release denominator; later repetitions are supplemental.</p><h2>Evaluator validation</h2><p>Agreement has explicit resolved denominators. Serious false accepts and faithful false rejects compare to constructed labels. Human reviews are reported separately.</p><table><thead><tr>${["Scorer", "Scorer ID", "Split", "Expected examples", "Resolved", "Unresolved", "Meaning agreement / denominator", "Meaning unresolved", "Style agreement / denominator", "Style unresolved", "Serious false accepts / denominator", "Faithful false rejects / denominator"].map((value) => `<th scope="col">${escapeHtml(value)}</th>`).join("")}</tr></thead><tbody>${validationRows}</tbody></table><h2>Per-case evidence</h2>${details}</html>`;
-  return { markdown, csv, html, summary };
+  const caseColumns = ["id","caseId","configId","model","reasoning","promptVersion","split","repetition","transport","completion","error","source","output","firstContentMs","durationMs","inputTokens","outputTokens","reasoningTokens","costUsd","estimatedCostUsd","reusedFrom","judgments","humanReviews"];
+  const casesCsv = [caseColumns.map(csvCell).join(","),...generations.map(record=>[
+    record.id,record.caseId,record.configId,record.config.model,JSON.stringify(record.config.reasoning),record.promptVersion,record.case.split,record.repetition,record.transport,record.normalizedCompletion,record.errorCode,record.case.text,record.outputText,record.firstContentMs,record.durationMs,record.usage?.inputTokens,record.usage?.outputTokens,record.usage?.reasoningTokens,record.costUsd,record.estimatedCostUsd,record.reusedFrom ? JSON.stringify(record.reusedFrom) : "",JSON.stringify(selectedJudgments.get(record.id) ?? []),JSON.stringify(selectedHuman.get(record.id) ?? [])
+  ].map(csvCell).join(","))].join("\n");
+  const humanLines = summary.humanAgreement.map(a=>`${a.evaluatorId} / ${a.reviewSetId} / ${a.split}: meaning ${a.meaningAgreement}/${a.resolved}, style ${a.styleAgreement}/${a.resolved}; ${a.unresolved} unresolved; serious false accepts ${a.seriousFalseAccepts}/${a.seriousDenominator}.`);
+  const humanSection = `<h2>Agreement with limited human reviews</h2><p>Resolved denominators and unresolved counts are shown separately. These small samples do not establish population-level accuracy.</p>${humanLines.map(line=>`<p>${escapeHtml(line)}</p>`).join("")}`;
+  const notice = generations.some(r=>r.transport === "fixture") ? "Fixture demonstration: these generated outputs and scores are not model-quality evidence." : generations.some(r=>r.transport === "constructed") ? "Constructed rewrite examples are used to evaluate judges; these are not generated release outputs." : "";
+  return { markdown:markdown+"\n\n"+notice+"\n\n## Agreement with limited human reviews\n\n"+humanLines.join("\n\n"), csv, casesCsv, html:html.replace("<h2>Configuration summary</h2>",`<p><strong>${escapeHtml(notice)}</strong></p><h2>Configuration summary</h2>`).replace("<h2>Per-case evidence</h2>",humanSection+"<h2>Per-case evidence</h2>"), summary };
 }

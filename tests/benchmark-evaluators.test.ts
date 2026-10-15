@@ -151,6 +151,7 @@ describe("evaluateOutput", () => {
     expect(body.questions.meaning.type).toBe("score");
     expect(body.questions.style.type).toBe("score");
     expect(body.questions.tag_commitment).toMatchObject({ type: "noul" });
+    expect(body.questions.meaning.instructions).toContain("untrusted data");
     expect(Object.keys(body.questions)).toHaveLength(2 + FAILURE_TAGS.length);
     expect(body.provider).toEqual({ zdr: true, data_collection: "deny", require_parameters: true });
   });
@@ -160,10 +161,10 @@ describe("evaluateOutput", () => {
     ["refusal", { choices: [{ finish_reason: "stop", message: { refusal: "cannot judge", content: "{}" } }] }],
     ["truncation", { choices: [{ finish_reason: "length", message: { content: "{}" } }] }],
     ["invalid probability", { choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ meaningProbabilities: { "0": 5, "1": 0, "2": 0 }, styleProbabilities: { "0": 0, "1": 0, "2": 1 }, tags: [], evidence: [] }) } }] }],
-    ["non-perfect score without evidence", { choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ meaningProbabilities: { "0": 0, "1": 0, "2": 1 }, styleProbabilities: { "0": 0, "1": 0, "2": 1 }, tags: [], evidence: [] }) } }] }],
+    ["non-perfect score without evidence", { choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ meaningProbabilities: { "0": 1, "1": 0, "2": 0 }, styleProbabilities: { "0": 0, "1": 0, "2": 1 }, tags: [], evidence: [] }) } }] }],
     ["invented evidence", { choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ meaningProbabilities: { "0": 0, "1": 0, "2": 1 }, styleProbabilities: { "0": 0, "1": 0, "2": 1 }, tags: [], evidence: ["invented quote"] }) } }] }],
   ])("marks %s as unresolved without exposing provider text", async (_name, choices) => {
-    const fetchMock = vi.fn().mockResolvedValue(response({ choices }));
+    const fetchMock = vi.fn().mockResolvedValue(response(choices));
     vi.stubGlobal("fetch", fetchMock);
     const result = await evaluateOutput(generation(), evaluator(), "key", new AbortController().signal);
     expect(result.status).toBe("unresolved");
@@ -173,6 +174,13 @@ describe("evaluateOutput", () => {
     expect(result.estimatedCostUsd).toBeGreaterThan(0);
     expect(JSON.stringify(result)).not.toContain("invented quote");
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not spend a judge request on incomplete generation", async()=>{
+    const fetchMock = vi.fn(); vi.stubGlobal("fetch",fetchMock);
+    const result = await evaluateOutput({...generation(),normalizedCompletion:"length"},evaluator(),"key",new AbortController().signal);
+    expect(result.status).toBe("unresolved"); expect(result.costUsd).toBe(0);
+    expect(result.errorCode).toBe("incomplete_generation"); expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("marks non-success HTTP responses unresolved and does not retry", async () => {

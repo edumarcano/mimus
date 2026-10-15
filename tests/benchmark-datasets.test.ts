@@ -61,6 +61,10 @@ describe("benchmark datasets", () => {
     expect(new Set(challenge.map((item) => item.id)).size).toBe(40);
     expect(challenge.map((item) => item.split).filter((split) => split === "calibration")).toHaveLength(24);
     expect(challenge.map((item) => item.split).filter((split) => split === "validation")).toHaveLength(16);
+    for (const split of ["calibration","validation"]) {
+      expect(challenge.some(c=>c.split === split && c.critical)).toBe(true);
+      expect(challenge.some(c=>c.split === split && !c.critical)).toBe(true);
+    }
 
     const groups = new Map<string | undefined, CaseRecord[]>();
     for (const item of challenge) {

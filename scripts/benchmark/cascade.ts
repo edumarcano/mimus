@@ -9,6 +9,8 @@ export type CascadeThresholdResult = {
   escalated: number;
   disagreements: number;
   missedSeriousFailures: number;
+  baselineResolved: number;
+  baselineUnresolved: number;
   decisionCostUsd: number | null;
   estimatedDownstreamSavingsUsd: number | null;
 };
@@ -94,11 +96,13 @@ function evaluate(
   let escalated = 0;
   let disagreements = 0;
   let missedSeriousFailures = 0;
+  let baselineResolved = 0;
   const decisionCosts: Array<number | null> = [];
   const llmCosts: Array<number | null> = [];
   for (const generation of generations) {
     const decision = decisions.get(generation.id);
     const llm = llms.get(generation.id);
+    if (llm?.status === "complete" && llm.meaning !== null && llm.style !== null) baselineResolved++;
     const route = decisionRoute(generation, decision, threshold, seed);
     if (evaluatorsDisagree(decision, llm)) disagreements += 1;
     decisionCosts.push(decision?.costUsd ?? null);
@@ -113,7 +117,7 @@ function evaluate(
   const escalatedLlmIds = generations.filter((generation) => decisionRoute(generation, decisions.get(generation.id), threshold, seed) === "escalate");
   const actualEscalatedCost = sumKnown(escalatedLlmIds.map((generation) => llms.get(generation.id)?.costUsd ?? null));
   const savings = llmTotal == null || actualEscalatedCost == null ? null : Math.max(0, llmTotal - actualEscalatedCost);
-  return { threshold, split, cases: generations.length, passed, failed, escalated, disagreements, missedSeriousFailures, decisionCostUsd: sumKnown(decisionCosts), estimatedDownstreamSavingsUsd: savings };
+  return { threshold, split, cases: generations.length, passed, failed, escalated, disagreements, missedSeriousFailures, baselineResolved, baselineUnresolved:generations.length-baselineResolved, decisionCostUsd: sumKnown(decisionCosts), estimatedDownstreamSavingsUsd: baselineResolved === generations.length ? savings : null };
 }
 
 export function simulateCascade(
@@ -122,6 +126,8 @@ export function simulateCascade(
   options: { decisionEvaluatorId: string; llmEvaluatorId: string; seed: number; thresholds?: number[] },
 ): CascadeReport {
   const thresholds = options.thresholds ?? [0.8, 0.9, 0.95];
+  if (options.decisionEvaluatorId === options.llmEvaluatorId) throw new Error("Cascade requires distinct decision and LLM evaluators");
+  if (judgments.some(j => (j.evaluatorId === options.decisionEvaluatorId && j.evaluator.role !== "decision") || (j.evaluatorId === options.llmEvaluatorId && j.evaluator.role !== "llm"))) throw new Error("Cascade evaluator role mismatch");
   if (!Number.isSafeInteger(options.seed)) throw new Error("Cascade seed must be an integer");
   for (const threshold of thresholds) if (!Number.isFinite(threshold) || threshold <= 0 || threshold >= 1) throw new Error("Cascade thresholds must be between 0 and 1");
   if (new Set(thresholds).size !== thresholds.length) throw new Error("Cascade thresholds must be unique");
@@ -159,7 +165,8 @@ export function simulateCascade(
     rows.push(evaluate(validation, decisionMap, llmMap, threshold, options.seed, "validation"));
   }
   const calibrations = rows.filter((row) => row.split === "calibration");
-  const selected = [...calibrations].sort((a, b) => a.missedSeriousFailures - b.missedSeriousFailures || a.escalated - b.escalated || a.threshold - b.threshold)[0];
+  const comparable = calibration.length > 0 && validation.length > 0 && rows.every(row=>row.baselineUnresolved === 0);
+  const selected = comparable ? [...calibrations].sort((a, b) => a.missedSeriousFailures - b.missedSeriousFailures || a.escalated - b.escalated || a.threshold - b.threshold)[0] : undefined;
   const selectedValidation = selected ? rows.find((row) => row.split === "validation" && row.threshold === selected.threshold) ?? null : null;
   return {
     decisionEvaluatorId: options.decisionEvaluatorId,

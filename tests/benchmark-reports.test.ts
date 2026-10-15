@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { loadExperiment } from "../scripts/benchmark/manifest";
 import type { GenerationRecord, JudgmentRecord, HumanReview } from "../scripts/benchmark/types";
 import { buildReport } from "../scripts/benchmark/reports";
 
@@ -23,6 +24,15 @@ function judgment(overrides: Partial<JudgmentRecord> = {}): JudgmentRecord {
 }
 
 describe("benchmark reporting", () => {
+  it("requires complete LLM judgments for every release observation",()=>{
+    const cases = loadExperiment("evals/experiments/release-template.json").cases;
+    const records = cases.map(c=>generation({id:c.id,caseId:c.id,case:c,transport:"openrouter"}));
+    const scores = records.map(g=>judgment({id:`j-${g.id}`,generationId:g.id}));
+    expect(buildReport(records,scores,[]).summary.groups[0].eligibleReleaseEvidence).toBe(true);
+    expect(buildReport(records,scores.map(j=>({...j,evaluator:{...j.evaluator,role:"decision"}})),[]).summary.groups[0].eligibleReleaseEvidence).toBe(false);
+    const noncritical = records.find(r=>!r.case.critical)!;
+    expect(buildReport(records,scores.map(j=>j.generationId === noncritical.id ? {...j,style:null} : j),[]).summary.groups[0].eligibleReleaseEvidence).toBe(false);
+  });
   it("uses only repetition zero for the primary denominator and keeps unknown costs unknown", () => {
     const primary = generation();
     const repeat = generation({ id: "g2", repetition: 1, caseId: "case2" });
@@ -44,6 +54,7 @@ describe("benchmark reporting", () => {
     const human: HumanReview = { schemaVersion: 1, kind: "human", reviewSetId: "rs", generationId: "g1", meaning: 1, style: 2, tags: [], note: "human" };
     const result = buildReport([generation()], [first], [human]);
     expect(result.summary.groups[0].humanReviews).toBe(1);
+    expect(result.summary.humanAgreement[0]).toMatchObject({reviewed:1,resolved:1,meaningAgreement:0,styleAgreement:1});
     expect(result.markdown).toContain("Human and automated scores are reported separately");
   });
 

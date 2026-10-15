@@ -24,6 +24,8 @@ describe("blind human review", () => {
     expect(html).toContain("&lt;/pre&gt;&lt;script&gt;");
     expect(html).not.toContain("generation-secret");
     expect(html).not.toContain("private-model");
+    expect(html).toContain("Scoring requirements");
+    expect(html).toContain("Human → LinkedIn");
     expect(html).not.toContain("meaningPass");
     expect(html).not.toContain("set</script>");
     expect(html).toContain("set\\u003c/script\\u003e");

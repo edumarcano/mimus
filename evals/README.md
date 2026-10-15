@@ -24,10 +24,10 @@ not a guarantee for any individual result.
 | [`datasets/evaluator-challenge.jsonl`](datasets/evaluator-challenge.jsonl) | 20 source passages, each with a faithful and deliberately flawed rewrite; 12 calibration pairs and 8 validation pairs | Constructed reference labels; not human-validated ground truth |
 | [`datasets/release-v1.jsonl`](datasets/release-v1.jsonl) | 40 fresh fictional cases across all 20 directed style pairs, including 10 critical cases | Reserved for final comparison after configurations are frozen |
 
-The new model generations, evaluator comparison, cascade simulation, and final
-release scoring are pending. No new model winner, quality score, or cost total is
-claimed. Human review is planned for at most 25 outputs: 12 calibration, 8 audit,
-and up to 5 disagreements.
+Dated records below establish which experiments ran and what they observed;
+the protocol alone does not establish a completed comparison or shipping winner.
+The human review budget is at most 25 outputs: 12 calibration, 8 audit, and up to
+5 disagreements.
 
 ## Records
 
@@ -35,6 +35,11 @@ and up to 5 disagreements.
 | --- | --- | --- |
 | [`results/summary.md`](results/summary.md) | Gemini release-candidate evaluation (`gemini-3.5-flash-lite`, prompt v4) | Historical; unchanged |
 | [`results/glm-development.md`](results/glm-development.md) | GLM development run on 40 development-split cases | Development evidence; 39/40 deterministic checks passed; no recorded scores |
+| [`results/benchmark-pilot-2026-10-15.md`](results/benchmark-pilot-2026-10-15.md) | Technical pilot for generator and evaluator access | Dated access and artifact evidence |
+| [`results/evaluator-calibration-2026-10-15.md`](results/evaluator-calibration-2026-10-15.md) | Evaluator calibration with limited human review | Original scores and confirmed adjudications remain separate |
+| [`results/evaluator-validation-2026-10-15.md`](results/evaluator-validation-2026-10-15.md) | Independent evaluator comparison and diagnostic cascade | Offline evaluator choice; constructed-label limitations apply |
+| [`results/prompt-comparison-2026-10-15.md`](results/prompt-comparison-2026-10-15.md) | Shared prompt v4 versus concise candidate | Retained v4 under the predeclared gate |
+| [`results/local-demo-verification-2026-10-15.md`](results/local-demo-verification-2026-10-15.md) | Local keyboard, browser, zoom, and Narrator checks | Includes maintainer observations and corrected accessibility defects |
 
 Historical records do not establish the quality of planned benchmark
 configurations. Preserve them as dated observations; do not combine their scores

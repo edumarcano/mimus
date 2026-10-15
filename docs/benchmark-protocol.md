@@ -141,6 +141,7 @@ cascade simulation have dated records in `evals/results/`. Calibration preserves
 original human scores and separate maintainer adjudications. The dated validation
 record selects the offline evaluators; full generator comparisons, development
 cascade assessment, fresh release scoring, and the shipping-model decision remain
-pending. Accessibility review with a screen reader and a second
-browser, plus the approved provider-operation checks, remain explicit verification
-items until their dated evidence is recorded.
+pending. The [local demo verification record](../evals/results/local-demo-verification-2026-10-15.md)
+separates automated keyboard/browser checks from maintainer Edge, 200% zoom, and
+Narrator observations, including the reported defects and their successful retests.
+Provider-operation checks remain separate from these local UI observations.

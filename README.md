@@ -84,8 +84,9 @@ review is limited to calibration and a small audit. The benchmark and data are
 described in [the protocol](docs/benchmark-protocol.md) and
 [evaluation guide](evals/README.md).
 
-The new model runs, judge comparison, cascade experiment, and release scoring are
-pending; the repository does not claim a winner or a completed model comparison.
+Dated [benchmark records](evals/README.md#records) distinguish observed model,
+evaluator, and prompt results from the remaining protocol. They do not establish
+a shipping winner or completed release evaluation.
 The older **Gemini** release-candidate evaluation remains historical evidence for
 that configuration only ([summary](evals/results/summary.md)). The **GLM** run
 completed 40 requests and 39 passed deterministic checks, but has no committed

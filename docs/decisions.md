@@ -74,7 +74,7 @@ Tab traversal was not machine-verified. Keyboard, zoom, and live use were report
 as normal.
 
 **Not verified then:** screen readers, Safari, Firefox, and real cancellation
-behavior. These remain unverified (see [Release readiness](#2026-10-14-release-readiness)).
+behavior. These remain unverified (see [dated deployment checks](#2026-10-14-dated-deployment-checks)).
 
 ## 2026-10-07: Google terms review (Superseded: provider changed)
 
@@ -245,7 +245,7 @@ not the release-candidate denominator. See
 cap do not prove meaning preservation. The app cannot enforce account-level prompt
 logging. The US allowlist is a visitor restriction, not data residency.
 
-## 2026-10-14: Release readiness
+## 2026-10-14: Dated deployment checks
 
 Dated checks at `main` commit `4988df4`, when Production was an examples-only
 demo. These observations do not describe the later live deployment.

@@ -108,6 +108,13 @@ not a human correctness label. Cascade behavior is an offline experiment only:
 score every release output with the selected LLM judge and do not gate production
 rewrites through an evaluator.
 
+For cascade false rejections, the resolved baseline-pass denominator is LLM
+meaning 2 and style 2 without serious tags; a routed failure against such a pass
+counts as a false rejection. Select thresholds on calibration by minimizing
+missed serious failures, then false rejections, then escalations, with the lower
+threshold breaking a complete tie. Report validation separately. Gross avoided
+LLM charges exclude decision-model costs; subtract those costs for net savings.
+
 ## Records, privacy, and operating boundaries
 
 Record exact model and effort IDs, prompt/rubric version, dataset and manifest
@@ -124,10 +131,11 @@ request flow. CI uses fixtures and mocks and never calls a provider.
 
 ## Operational and portfolio status
 
-The technical pilot and initial evaluator calibration have dated records in
-`evals/results/`; calibration includes original human scores and separate
-maintainer adjudications. Evaluator validation, full generator comparisons,
-cascade simulation, fresh release scoring, and the shipping-model decision are
+The technical pilot, evaluator calibration/validation, and initial challenge-set
+cascade simulation have dated records in `evals/results/`. Calibration preserves
+original human scores and separate maintainer adjudications. The dated validation
+record selects the offline evaluators; full generator comparisons, development
+cascade assessment, fresh release scoring, and the shipping-model decision remain
 pending. Accessibility review with a screen reader and a second
 browser, plus the approved provider-operation checks, remain explicit verification
 items until their dated evidence is recorded.

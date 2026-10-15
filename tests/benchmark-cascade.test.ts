@@ -74,6 +74,48 @@ describe("offline cascade simulation", () => {
     expect(row.passed).toBe(1);
     expect(row.escalated).toBe(0);
     expect(row.missedSeriousFailures).toBe(1);
+    expect(row.estimatedDownstreamSavingsUsd).toBe(0.005);
     expect(report.note).toContain("cannot trigger an LLM call");
+  });
+
+  it("counts confident false rejections and avoids selecting a threshold that causes them", () => {
+    const cases = [generation("c2"), generation("v1", "validation")];
+    const judgments = cases.flatMap(item => [
+      judgment(item.id, "decision", { meaning: 0, probabilities: { meaningPass: 0.05, stylePass: 0.99, seriousFailure: 0.85 } }),
+      judgment(item.id, "llm"),
+    ]);
+    const report = run(cases, judgments, 7);
+    const row = report.thresholds.find(r => r.threshold === 0.8 && r.split === "calibration")!;
+    expect(row.failed).toBe(1);
+    expect(row.falseRejections).toBe(1);
+    expect(row.baselinePasses).toBe(1);
+    expect(report.selectedThreshold).toBe(0.9);
+    expect(report.thresholds.find(r => r.threshold === 0.9 && r.split === "calibration")?.falseRejections).toBe(0);
+  });
+
+  it("excludes unresolved and non-passing baselines and escalations from false rejections", () => {
+    const cases = [generation("critical", "calibration", true), generation("failure"), generation("unknown"), generation("tagged")];
+    const baselines: Partial<JudgmentRecord>[] = [{}, { meaning: 0 }, { status: "unresolved", meaning: null, style: null }, { tags: ["invention"] }];
+    const judgments = cases.flatMap((item, index) => [
+      judgment(item.id, "decision", { meaning: 0, probabilities: { meaningPass: 0, stylePass: 0.99, seriousFailure: 0.99 } }),
+      judgment(item.id, "llm", baselines[index]),
+    ]);
+    const row = run(cases, judgments, 7).thresholds.find(r => r.threshold === 0.8 && r.split === "calibration")!;
+    expect(row.falseRejections).toBe(0);
+    expect(row.baselinePasses).toBe(1);
+    expect(row.baselineUnresolved).toBe(1);
+    expect(row.estimatedDownstreamSavingsUsd).toBeNull();
+  });
+
+  it("keeps the calibration threshold even when validation would favor another", () => {
+    const cases = [generation("c2"), generation("v1", "validation")];
+    const judgments = cases.flatMap(item => [
+      judgment(item.id, "decision", { meaning: 0, probabilities: { meaningPass: 0.05, stylePass: 0.99, seriousFailure: 0.85 } }),
+      judgment(item.id, "llm", item.case.split === "calibration" ? { meaning: 0 } : {}),
+    ]);
+    const report = run(cases, judgments, 7);
+    expect(report.selectedThreshold).toBe(0.8);
+    expect(report.selectedValidation?.falseRejections).toBe(1);
+    expect(report.thresholds.find(r => r.threshold === 0.9 && r.split === "validation")?.falseRejections).toBe(0);
   });
 });

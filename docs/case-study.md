@@ -86,9 +86,11 @@ The [technical pilot](../evals/results/benchmark-pilot-2026-10-15.md) and
 [initial evaluator calibration](../evals/results/evaluator-calibration-2026-10-15.md)
 have dated evidence. Calibration exposed errors in both human reviews and
 constructed references; the original scores and confirmed adjudications remain
-separate. Evaluator validation, full generator comparisons, cascade simulation,
-release scoring, and the shipping-model decision remain pending. The historical
-corpus and its observations retain their original meaning.
+separate. The [validation and cascade comparison](../evals/results/evaluator-validation-2026-10-15.md)
+selects the offline evaluators and reports savings separately from correctness.
+Full generator comparisons, development cascade assessment, release scoring, and
+the shipping-model decision remain pending. The historical corpus and its
+observations retain their original meaning.
 
 ### One failure and its fix
 

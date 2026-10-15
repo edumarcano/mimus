@@ -215,12 +215,31 @@ export function createTranslateHandler(deps: TranslateHandlerDeps) {
       text: payload.text,
     });
 
+    // Client cancellation (Stop, closed tab) and the deadline are different
+    // outcomes. Each has its own controller, and only the deadline is logged as
+    // UPSTREAM_TIMEOUT.
+    const clientAbort = new AbortController();
     const deadlineController = new AbortController();
     const deadlineTimer = setTimeout(() => deadlineController.abort(), deadlineMs);
     const upstreamSignal = combineAbortSignals([
-      request.signal,
+      clientAbort.signal,
       deadlineController.signal,
     ]);
+
+    // Logged synchronously, before the abort propagates. With
+    // supportsCancellation the platform may end the function right after the
+    // abort, so later cleanup code is not guaranteed to run.
+    const markClientGone = () => {
+      if (clientAbort.signal.aborted) {
+        return;
+      }
+      clientAbort.abort();
+      finishLog({ status: 499, styles });
+    };
+    request.signal.addEventListener("abort", markClientGone, { once: true });
+    if (request.signal.aborted) {
+      markClientGone();
+    }
 
     if (upstreamSignal.aborted) {
       clearTimeout(deadlineTimer);
@@ -307,6 +326,9 @@ export function createTranslateHandler(deps: TranslateHandlerDeps) {
             safeEnqueue(encodeSseEvent("delta", { text: firstDeltaText }));
 
             while (true) {
+              const next = await iterator!.next();
+              // Checked after the await, so an adapter that ignores the signal
+              // cannot add deltas or complete a stream that was stopped.
               if (upstreamSignal.aborted) {
                 safeEnqueue(
                   encodeSseEvent("error", {
@@ -319,7 +341,6 @@ export function createTranslateHandler(deps: TranslateHandlerDeps) {
                 break;
               }
 
-              const next = await iterator!.next();
               if (next.done) {
                 safeEnqueue(
                   encodeSseEvent("error", {
@@ -411,7 +432,7 @@ export function createTranslateHandler(deps: TranslateHandlerDeps) {
         },
         cancel: () => {
           streamClosed = true;
-          deadlineController.abort();
+          markClientGone();
           clearTimeout(deadlineTimer);
         },
       });

@@ -42,8 +42,10 @@ model output.</sub>
   any time.
 - **Without a key, the app runs in demo mode:** prewritten, labeled examples and no
   model calls. You can also run live mode locally with your own OpenRouter key.
-- **Known limits:** emergency shutdown has not been rehearsed end to end, and it is
-  not verified whether a Stop reaches the model host and stops billing. See
+- **Known limits:** Vercel cancellation opt-in and disabled mode were verified in
+  Preview, but a live client disconnect reaching the function, upstream generation
+  cancellation, and provider billing after Stop remain unverified. The Production
+  emergency shutdown has not been rehearsed end to end. See
   [`docs/deployment.md`](docs/deployment.md) and the [changelog](CHANGELOG.md).
 
 ## Features

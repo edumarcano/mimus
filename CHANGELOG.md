@@ -30,8 +30,10 @@ writing styles while aiming to preserve the original meaning.
   page explain the remaining data-handling limitations.
 - Request validation, input/output limits, origin and visitor-country checks,
   timeouts, and Vercel WAF rate limiting.
+- Cancellation support for `/api/translate` on Vercel, upstream stream cleanup,
+  and safeguards against treating stopped output as complete.
 - Synthetic evaluation records, automated checks, and a deployment and shutdown
-  runbook.
+  runbook. Disabled mode returned HTTP 503 with no provider call in Preview.
 
 ### Known limitations
 
@@ -40,7 +42,11 @@ writing styles while aiming to preserve the original meaning.
   and style scores were not committed. See the [evaluation](evals/README.md).
 - Live rewriting is limited to approved visitor regions and depends on
   third-party provider availability and account spending limits.
-- Whether Stop terminates upstream generation and billing remains unverified.
-  The emergency shutdown procedure has not been rehearsed end to end. See the
-  [deployment guide](docs/deployment.md).
+- Vercel's cancellation setting was verified in Preview, but a live client
+  disconnect reaching the function and stopping upstream generation has not been
+  observed. Whether billing stops after Stop depends on the model host and remains
+  unverified.
+- Disabled mode was verified in a branch Preview, but the Production WAF and
+  disabled-mode shutdown/restore procedures have not been rehearsed end to end.
+  See the [deployment guide](docs/deployment.md).
 - Screen readers, Safari, and Firefox have not been separately tested.

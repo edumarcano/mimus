@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 import PrivacyPage from "@/app/privacy/page";
 import {
   NOTICE_TEXT,
@@ -11,6 +11,8 @@ import {
 } from "@/lib/notice";
 
 describe("/privacy page", () => {
+  afterEach(cleanup);
+
   it("renders shared notice text and version", () => {
     render(<PrivacyPage />);
     expect(screen.getByTestId("notice-version").textContent).toBe(

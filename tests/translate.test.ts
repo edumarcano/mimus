@@ -514,4 +514,171 @@ describe("createTranslateHandler", () => {
     expect(adapter).not.toHaveBeenCalled();
     expect(response.status).toBe(ERROR_STATUS.UPSTREAM_TIMEOUT);
   });
+
+  it("logs client cancellation as 499 with no timeout code", async () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: async function* (_req, signal) {
+        yield { type: "delta", text: "partial" };
+        await abortPromise(signal);
+        throw new AppError("UPSTREAM_TIMEOUT");
+      },
+    });
+
+    const controller = new AbortController();
+    const response = await handler(
+      postRequest(validBody(), {
+        headers: { "x-vercel-ip-country": "US" },
+        signal: controller.signal,
+      }),
+    );
+    controller.abort();
+    await collectSse(response);
+
+    const logs = requestLogs(logSpy);
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatchObject({ status: 499 });
+    expect(logs[0]).not.toHaveProperty("code");
+    logSpy.mockRestore();
+  });
+
+  it("logs a deadline expiry as UPSTREAM_TIMEOUT with status 504", async () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      deadlineMs: 40,
+      adapter: async function* (_req, signal) {
+        await abortPromise(signal);
+        throw new AppError("UPSTREAM_TIMEOUT");
+      },
+    });
+
+    const response = await handler(postRequest(validBody()));
+    expect(response.status).toBe(504);
+    const logs = requestLogs(logSpy);
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatchObject({ status: 504, code: "UPSTREAM_TIMEOUT" });
+    logSpy.mockRestore();
+  }, 2000);
+
+  it("propagates a client abort to the adapter signal before the first event", async () => {
+    let captured: AbortSignal | undefined;
+    let started!: () => void;
+    const startedPromise = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: async function* (_req, signal) {
+        captured = signal;
+        started();
+        await abortPromise(signal);
+        throw new AppError("UPSTREAM_TIMEOUT");
+      },
+    });
+
+    const controller = new AbortController();
+    const responsePromise = handler(
+      postRequest(validBody(), { signal: controller.signal }),
+    );
+    await startedPromise;
+    controller.abort();
+    const response = await responsePromise;
+
+    expect(captured?.aborted).toBe(true);
+    expect(response.status).toBe(ERROR_STATUS.UPSTREAM_TIMEOUT);
+  });
+
+  it("never completes a stream after abort, even if the adapter ignores the signal", async () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    let release!: () => void;
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: async function* () {
+        yield { type: "delta", text: "partial" };
+        await released;
+        yield { type: "finish", reason: "complete" };
+      },
+    });
+
+    const controller = new AbortController();
+    const response = await handler(
+      postRequest(validBody(), {
+        headers: { "x-vercel-ip-country": "US" },
+        signal: controller.signal,
+      }),
+    );
+    const reader = response.body!.getReader();
+    const parser = new SseStreamParser();
+    const events: string[] = [];
+    const first = await reader.read();
+    events.push(...parser.push(first.value!).map((e) => e.event));
+
+    controller.abort();
+    release();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      events.push(...parser.push(value).map((e) => e.event));
+    }
+
+    expect(events).toEqual(["meta", "delta", "error"]);
+    expect(events).not.toContain("done");
+    logSpy.mockRestore();
+  });
+
+  it("keeps input, output, the API key, and provider payloads out of cancellation logs", async () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const handler = createTranslateHandler({
+      getConfig: () => ({ ...liveConfig, openrouterApiKey: "sk-or-SECRET_KEY" }),
+      adapter: async function* (_req, signal) {
+        yield { type: "delta", text: "SECRET_OUTPUT" };
+        await abortPromise(signal);
+        throw new Error("provider body SECRET_OUTPUT sk-or-SECRET_KEY");
+      },
+    });
+
+    const controller = new AbortController();
+    const response = await handler(
+      postRequest(validBody({ text: "SECRET_INPUT" }), {
+        headers: { "x-vercel-ip-country": "US" },
+        signal: controller.signal,
+      }),
+    );
+    controller.abort();
+    await collectSse(response);
+
+    const logged = [...logSpy.mock.calls, ...errorSpy.mock.calls]
+      .map((call) => String(call[0]))
+      .join("\n");
+    expect(logged).toContain('"requestId"');
+    expect(logged).not.toContain("SECRET_INPUT");
+    expect(logged).not.toContain("SECRET_OUTPUT");
+    expect(logged).not.toContain("sk-or-SECRET_KEY");
+    expect(errorSpy).not.toHaveBeenCalled();
+    logSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
 });
+
+function abortPromise(signal: AbortSignal): Promise<void> {
+  return new Promise<void>((resolve) => {
+    if (signal.aborted) {
+      resolve();
+      return;
+    }
+    signal.addEventListener("abort", () => resolve(), { once: true });
+  });
+}
+
+function requestLogs(spy: { mock: { calls: unknown[][] } }) {
+  return spy.mock.calls
+    .map((call) => String(call[0]))
+    .filter((line) => line.includes('"requestId"'))
+    .map((line) => JSON.parse(line) as Record<string, unknown>);
+}

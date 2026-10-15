@@ -73,9 +73,17 @@ describe("benchmark datasets", () => {
       expect(new Set(pair.map((item) => item.text)).size).toBe(1);
       expect(pair.every((item) => item.labelSource === "constructed")).toBe(true);
       expect(pair.every((item) => item.expectedStyle === 2 && item.outputText)).toBe(true);
+      expect(pair.every((item) => item.mustPreserve.length >= 2)).toBe(true);
+      expect(pair.every((item) => item.mustPreserve.every((fact) => !/preserve the source/i.test(fact)))).toBe(true);
+      expect(pair.every((item) => item.mustNotInvent.every((claim) => !/do not add causes, approvals/i.test(claim)))).toBe(true);
       expect(pair.map((item) => item.expectedMeaning).sort()).toEqual([0, 2]);
       expect(new Set(pair.map((item) => item.outputText)).size).toBe(2);
     }
+    const conditionalPair = groups.get("evaluator-pair-03") ?? [];
+    expect(conditionalPair.find((item) => item.expectedMeaning === 0)?.outputText)
+      .toContain("send the draft now");
+    expect(conditionalPair.find((item) => item.expectedMeaning === 2)?.mustPreserve)
+      .toContain("Do not send the draft before Lee confirms the address.");
     expect(challenge.some((item) => historical.some((prior) => prior.id === item.id))).toBe(false);
   });
 
@@ -88,7 +96,15 @@ describe("benchmark datasets", () => {
     expect(new Set(release.map((item) => item.intensity))).toEqual(
       new Set(["subtle", "balanced", "maximum"]),
     );
+    expect(release.every((item) => item.text.length <= 3_000)).toBe(true);
+    expect(release.some((item) => item.text.length >= 1_000 && item.themes?.includes("long_input"))).toBe(true);
+    expect(release.some((item) => item.text.length <= 60 && item.themes?.includes("short_input"))).toBe(true);
     expect(release.every((item) => item.mustPreserve.length && item.mustNotInvent.length)).toBe(true);
+    const firstCase = release.find((item) => item.id === "release-v1-01");
+    expect(firstCase?.mustPreserve.join(" ")).toContain("Ari");
+    expect(firstCase?.mustPreserve.join(" ")).toContain("Tuesday");
+    expect(firstCase?.mustPreserve.join(" ")).toContain("studio");
+    expect(firstCase?.mustPreserve.join(" ")).toContain("deposit");
     expect(release.some((item) => historical.some((prior) => prior.text === item.text))).toBe(false);
   });
 });

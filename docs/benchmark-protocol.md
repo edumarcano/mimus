@@ -9,15 +9,17 @@ cost. The experiment targets $1 and has a $3 cumulative ceiling.
 
 | Set | Cases | Use |
 | --- | ---: | --- |
-| Existing development cases | 40 selected by the existing `development` split | Prompt and model development; includes the 12-case screen below |
-| Existing historical holdouts | 20 | Historical/supplemental evidence only; not fresh release evidence |
+| Existing development cases | 40 in the existing `development` split: 30 original `dev-*` cases plus 10 consumed `holdout-*` cases | Prompt and model development; includes the 12-case screen below |
+| Additional historical holdout | 10 `holdout2-*` cases | Previously scored on Gemini; supplemental history, not fresh release evidence |
 | Screening | 12 IDs from existing development cases | Prompt comparison and reasoning-effort screening |
 | Evaluator challenge | 20 source passages, each with a faithful and flawed rewrite | Evaluator calibration and validation |
 | Release v1 | 40 newly written synthetic cases | Final comparison of two frozen generator configurations |
 
-The existing 50 cases and their recorded results retain their historical
-meaning. `holdout2-*` was evaluated on Gemini and informed its target revision;
-it is not untouched holdout evidence. Screening IDs are listed in
+The existing corpus contains 50 distinct cases, not 40 development cases plus 20
+additional holdouts. The consumed `holdout-*` ten are already counted in the 40
+development cases above. The separate `holdout2-*` ten were evaluated on Gemini
+and informed its target revision; they are not untouched holdout evidence.
+Screening IDs are listed in
 [`../evals/datasets/screening.json`](../evals/datasets/screening.json). The
 challenge set has 12 paired passages in calibration and 8 paired passages in
 validation; both members of a pair always stay in the same split. Its references

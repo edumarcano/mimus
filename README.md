@@ -21,10 +21,6 @@ aims to change the expression without inventing facts or losing the point.
 <sub>Demo-mode screenshot: the result is a labeled, prewritten example, not live
 model output.</sub>
 
-Live rewriting is available to visitors in approved regions who acknowledge the
-data-use notice. The app can also run locally without credentials using labeled
-demo examples.
-
 ## Features
 
 - Five styles (Human, LinkedIn, Corporate, Startup Founder, Academic), all 20
@@ -74,8 +70,8 @@ is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
 
 ## Evaluation
 
-Quality is measured on 50 synthetic cases with deterministic checks and manual
-meaning and style scoring.
+The repository includes 50 synthetic cases, deterministic checks, and a rubric
+for manual meaning and style scoring.
 
 - The **Gemini** release-candidate evaluation was formally scored. It is historical
   evidence for a previous provider and does not apply to GLM:
@@ -84,12 +80,6 @@ meaning and style scoring.
   deterministic checks. Formal meaning and style scores were not committed, and the
   original meaning target was not demonstrated:
   [`evals/results/glm-development.md`](evals/results/glm-development.md).
-- For v1.0.0, the release evidence requirement was revised to accept these
-  limitations instead of requiring another 50-case run. GLM is not claimed to have
-  passed the original benchmark or to preserve meaning better than Gemini. The
-  pre-registered GLM evaluation is deferred, not completed; see
-  [`docs/decisions.md`](docs/decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
-
 Meaning preservation is a goal, not a guarantee for any individual result.
 
 ## Run locally

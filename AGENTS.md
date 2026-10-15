@@ -2,54 +2,55 @@
 
 ## Project
 
-Mimus is a small public AI writing-register translator.
+Mimus rewrites English text between writing styles while aiming to preserve meaning.
+Keep the product focused and the architecture small and coherent; avoid speculative
+features and infrastructure.
 
-`docs/product-spec.md` is the authoritative v1 product specification.
-
-Keep the project intentionally focused. Prefer polished execution and a small,
-coherent architecture over feature breadth or speculative infrastructure.
+`docs/product-spec.md` describes intended product behavior and technical
+requirements. Consult it before changing contracts, and update it when an approved
+change revises those requirements. The implementation and tests establish current
+behavior; dated evaluation and deployment records establish what was observed.
 
 ## Working agreement
 
-- Inspect relevant existing code and tests before changing behavior.
-- Preserve unrelated user changes.
-- Prefer the smallest complete implementation that satisfies the current requirement.
-- Resolve ordinary implementation details independently. Return decisions that
-  materially affect product scope, architecture, cost, privacy, or data handling
-  to the parent/user.
-- Keep one implementation owner for an active worktree.
-- Do not claim validation, model behavior, deployment behavior, or evaluation
-  results that were not actually observed.
+- Inspect relevant code, tests, and documentation before editing.
+- Preserve unrelated changes and prefer the smallest complete solution.
+- Resolve ordinary implementation details independently. Ask before decisions that
+  materially change product scope, architecture, cost, privacy, or data handling.
+- Keep one implementation owner per active worktree. Parallel investigation or
+  review is fine; avoid conflicting edits.
+- Review the resulting diff for correctness, scope, and unintended changes.
+- Do not present plans, assumptions, or historical observations as verified results.
+  Avoid release-readiness or final-model claims without a corresponding decision
+  and evidence.
 
-## AI-assisted workflow
+## Workflow
 
-Reusable workflows live in `.agents/skills/`.
+Reusable workflows live in `.agents/skills/`. Use them where appropriate for
+planning, implementation, regression fixes, and review.
 
-For substantial planned implementation, the parent may delegate coding to a
-configured worker but retains responsibility for scope, integration, and final
-review.
+Implement directly when practical. Delegate independent investigation, review,
+or implementation only when it offers a clear benefit, with explicit scope and
+ownership. No particular agent, model, or delegation hierarchy is required.
 
-Use:
-- `worker` for general engineering implementation.
-- `ui-worker` for frontend, visual, accessibility, and documentation work.
-- `explorer` for substantial read-only repository investigation.
+## Secrets, privacy, and operational boundaries
 
-## Secrets and data
+- Never commit credentials or real user data. Keep secrets in ignored local
+  environment files and provider/model access on the server.
+- Do not intentionally log or persist submitted or generated text unless an
+  approved change explicitly updates the privacy contract.
+- Get explicit authorization before live provider calls that spend credits,
+  Production changes, firewall or secret changes, repository visibility changes,
+  or publishing tags and releases. Do not infer authorization from a plan.
 
-- Never commit credentials or real user data.
-- Keep secrets in ignored local environment files.
-- Keep model/provider code server-side.
-- Do not intentionally log or persist submitted or generated text unless the
-  product specification explicitly changes.
+## Validation and documentation
 
-## Validation
-
-Use the validation commands defined by the implemented project.
-
-Run focused checks while working and the relevant broader checks before handoff.
-Report checks that could not be completed.
+- Run focused checks while working and relevant broader checks before handoff.
+- Report what ran, what passed, what could not run, and any remaining risks.
+- Update affected documentation without copying transient operational status or
+  release decisions into evergreen product descriptions.
 
 ## Scope
 
-Ideas outside the current v1 specification are not implementation work.
-Record them separately instead of adding them opportunistically.
+Treat new ideas as proposals until agreed. An approved change may revise the
+specification; do not add unrelated work opportunistically.

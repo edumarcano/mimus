@@ -160,8 +160,14 @@ appending original labels. Duplicate imports are refused. The review budget is
 
 For a run containing independent decision and LLM judgments, use
 `cascade --run RUN --decision-evaluator decision-jev --llm-evaluator judge-luna`.
-Its JSON compares thresholds using calibration observations and reports
-validation observations separately. Savings are estimates; disagreement with an
+Its JSON compares thresholds using development observations and reports constructed
+calibration and held-out validation separately, preserving original split labels.
+When development observations are absent, constructed calibration is an explicitly
+labeled diagnostic fallback. Cohort counts and incomplete reasons are included;
+threshold selection requires a selection cohort, held-out validation, and resolved
+LLM baselines in those two cohorts. Combine the independently scored observations
+in one derived run directory before invoking the command across separate runs;
+do not duplicate human-review files or relabel cases. Savings are estimates; disagreement with an
 LLM is not independently established human error.
 
 The budget ledger is cumulative across run IDs: changing a run ID does not reset

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { GenerationRecord, JudgmentRecord } from "../scripts/benchmark/types";
 import { simulateCascade } from "../scripts/benchmark/cascade";
 
-function generation(id: string, split: "calibration" | "validation" = "calibration", critical = false): GenerationRecord {
+function generation(id: string, split: "development" | "calibration" | "validation" = "calibration", critical = false): GenerationRecord {
   return {
     schemaVersion: 1, kind: "generation", id, runId: "r", manifestHash: "m", datasetHash: "d", gitRevision: "rev", dirty: false,
     caseId: id, configId: "model", promptVersion: "4", case: { id, split, critical, text: "source", sourceStyle: "human", targetStyle: "linkedin", intensity: "balanced", mustPreserve: [], mustNotInvent: [] },
@@ -25,6 +25,37 @@ function run(generations: GenerationRecord[], judgments: JudgmentRecord[], seed 
 }
 
 describe("offline cascade simulation", () => {
+  it("selects on development while keeping constructed calibration and validation separate", () => {
+    const cases = [generation("c2", "development"), generation("constructed", "calibration", true), generation("v1", "validation")];
+    const originalCases = structuredClone(cases);
+    const judgments = cases.flatMap(item => [
+      judgment(item.id, "decision", { meaning: 0, probabilities: { meaningPass: 0.05, stylePass: 0.99, seriousFailure: 0.85 } }),
+      judgment(item.id, "llm", item.case.split === "development" ? {} : item.case.split === "calibration" ? { status: "unresolved", meaning: null, style: null } : { meaning: 0 }),
+    ]);
+    const report = run(cases, judgments, 7);
+    expect(report.cohortCounts).toEqual({ development: 1, calibration: 1, validation: 1 });
+    expect(report.thresholdSource).toBe("development");
+    expect(report.selectedThreshold).toBe(0.9);
+    expect(report.incompleteReasons).toEqual([]);
+    expect(report.thresholds.find(row => row.threshold === 0.8 && row.split === "development")?.falseRejections).toBe(1);
+    expect(report.thresholds.find(row => row.threshold === 0.8 && row.split === "calibration")?.baselinePasses).toBe(0);
+    expect(report.thresholds.find(row => row.threshold === 0.8 && row.split === "calibration")?.baselineUnresolved).toBe(1);
+    expect(report.selectedValidation?.cases).toBe(1);
+    expect(report.selectedValidation?.split).toBe("validation");
+    expect(report.thresholds.find(row => row.threshold === 0.8 && row.split === "validation")?.missedSeriousFailures).toBe(0);
+    expect(cases).toEqual(originalCases);
+  });
+
+  it("reports development observations and missing validation instead of an empty simulation", () => {
+    const item = generation("c2", "development");
+    const report = run([item], [judgment(item.id, "decision"), judgment(item.id, "llm")], 7);
+    expect(report.thresholdSource).toBe("development");
+    expect(report.cohortCounts.development).toBe(1);
+    expect(report.thresholds.filter(row => row.split === "development").every(row => row.cases === 1)).toBe(true);
+    expect(report.selectedThreshold).toBeNull();
+    expect(report.incompleteReasons).toContain("No held-out validation observations.");
+  });
+
   it("always escalates critical and contradictory examples and selects on calibration only", () => {
     const cases = [generation("c1", "calibration", true), generation("c2"), generation("v1", "validation")];
     const judgments = cases.flatMap((item) => [

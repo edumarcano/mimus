@@ -2,7 +2,7 @@ import type { GenerationRecord, JudgmentRecord } from "./types";
 
 export type CascadeThresholdResult = {
   threshold: number;
-  split: "calibration" | "validation";
+  split: "development" | "calibration" | "validation";
   cases: number;
   passed: number;
   failed: number;
@@ -23,6 +23,9 @@ export type CascadeReport = {
   thresholds: CascadeThresholdResult[];
   selectedThreshold: number | null;
   selectedValidation: CascadeThresholdResult | null;
+  thresholdSource: "development" | "calibration" | null;
+  cohortCounts: { development: number; calibration: number; validation: number };
+  incompleteReasons: string[];
   note: string;
 };
 
@@ -91,7 +94,7 @@ function evaluate(
   llms: Map<string, JudgmentRecord>,
   threshold: number,
   seed: number,
-  split: "calibration" | "validation",
+  split: CascadeThresholdResult["split"],
 ): CascadeThresholdResult {
   let passed = 0;
   let failed = 0;
@@ -166,15 +169,24 @@ export function simulateCascade(
     if (judgment.evaluatorId === options.llmEvaluatorId) llmMap.set(judgment.generationId, judgment);
   }
   const all = [...uniqueGenerations.values()];
+  const development = all.filter((record) => record.case.split === "development");
   const calibration = all.filter((record) => record.case.split === "calibration");
   const validation = all.filter((record) => record.case.split === "validation");
+  const thresholdSource = development.length > 0 ? "development" : calibration.length > 0 ? "calibration" : null;
   const rows: CascadeThresholdResult[] = [];
   for (const threshold of thresholds) {
+    rows.push(evaluate(development, decisionMap, llmMap, threshold, options.seed, "development"));
     rows.push(evaluate(calibration, decisionMap, llmMap, threshold, options.seed, "calibration"));
     rows.push(evaluate(validation, decisionMap, llmMap, threshold, options.seed, "validation"));
   }
-  const calibrations = rows.filter((row) => row.split === "calibration");
-  const comparable = calibration.length > 0 && validation.length > 0 && rows.every(row=>row.baselineUnresolved === 0);
+  const calibrations = rows.filter((row) => row.split === thresholdSource);
+  const incompleteReasons: string[] = [];
+  if (!thresholdSource) incompleteReasons.push("No development or constructed-calibration observations for threshold selection.");
+  if (!validation.length) incompleteReasons.push("No held-out validation observations.");
+  if (rows.some(row => (row.split === thresholdSource || row.split === "validation") && row.baselineUnresolved > 0)) {
+    incompleteReasons.push("Threshold-selection or validation observations have unresolved LLM baselines.");
+  }
+  const comparable = incompleteReasons.length === 0;
   const selected = comparable ? [...calibrations].sort((a, b) => a.missedSeriousFailures - b.missedSeriousFailures || a.falseRejections - b.falseRejections || a.escalated - b.escalated || a.threshold - b.threshold)[0] : undefined;
   const selectedValidation = selected ? rows.find((row) => row.split === "validation" && row.threshold === selected.threshold) ?? null : null;
   return {
@@ -183,6 +195,9 @@ export function simulateCascade(
     thresholds: rows,
     selectedThreshold: selected?.threshold ?? null,
     selectedValidation,
-    note: "Escalation routing uses only the decision evaluator, critical-case rules, decision self-contradictions, uncertainty, and seeded audits. Independent LLM disagreements are measured after routing and cannot trigger an LLM call that the simulation counts as avoided. Serious-failure comparisons use LLM labels, not human truth. False rejections count routed failures against resolved LLM passes (meaning 2, style 2, no serious tags); baselinePasses is their denominator. Thresholds minimize missed serious failures, then false rejections, then escalations on calibration data and are reported separately on validation data; this is not release gating.",
+    thresholdSource,
+    cohortCounts: { development: development.length, calibration: calibration.length, validation: validation.length },
+    incompleteReasons,
+    note: "Escalation routing uses only the decision evaluator, critical-case rules, decision self-contradictions, uncertainty, and seeded audits. Independent LLM disagreements are measured after routing and cannot trigger an LLM call that the simulation counts as avoided. Serious-failure comparisons use LLM labels, not human truth. False rejections count routed failures against resolved LLM passes (meaning 2, style 2, no serious tags); baselinePasses is their denominator. Thresholds minimize missed serious failures, then false rejections, then escalations on development data when present; constructed calibration is a separately labeled diagnostic fallback when development is absent. Validation is reported separately and does not select the threshold; this is not release gating.",
   };
 }

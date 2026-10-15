@@ -36,6 +36,7 @@ steps, and each one should be recorded in the decision log.
 | WAF enforcement on Production | 2026-10-13 | Verified while Production was in demo mode: 503 for the first requests, then 429 with `X-Vercel-Mitigated: deny` |
 | OpenRouter account settings | 2026-10-14 | Account setting: a $1/month Production key limit, with auto-recharge disabled, and privacy and ZDR settings applied |
 | Protected Preview live streaming | 2026-10-13 | Verified: SSE stream and `done`; logs without text or key |
+| Disabled branch Preview (`MIMUS_MODE=disabled`, temporary branch variable, no provider credentials) | 2026-10-14 | Verified on a Preview only: disabled notice on the page, `POST /api/translate` → 503 `SERVICE_UNAVAILABLE`, and a log entry with status 503. The variable was removed afterwards. Production not tested. |
 | Cancellation opt-in in a deployed build (`vercel inspect <preview> --format json`) | 2026-10-14 | Verified on a branch Preview only: `builds[0].config.vercelConfig.functions["src/app/api/translate/route.ts"].supportsCancellation` is `true`. The local build output agrees (`api/translate.func` has it; `index.func` does not). No model call. Production does not have this yet. |
 
 **Not verified:** deployed non-US region rejection, whether a client disconnect
@@ -199,7 +200,7 @@ changed, and no provider call was made.
 | Runbook commands exist: `firewall rules add`, `reorder`, `remove`, `diff`, `publish`; `promote`; `rollback` | Verified in `--help` output, not executed |
 | Deny-rule publish takes effect immediately, and its timing | **Not verified** |
 | Key revocation or zeroing stops new provider calls | **Not verified** (needs the live key) |
-| `MIMUS_MODE=disabled` deployment shows the disabled notice and 503 on Vercel | **Not verified.** The disabled mode is covered by unit tests and was checked locally with no credentials. That is not a deployed check. |
+| `MIMUS_MODE=disabled` deployment shows the disabled notice and 503 on Vercel | Verified on a branch Preview only (2026-10-14): disabled notice, `POST` → 503 `SERVICE_UNAVAILABLE`, and a matching log entry. Production not tested. See [runbook step 2](#2-disabled-branch-preview-no-provider-credentials--run). |
 | Rollback as a shutdown mechanism | Not relied on (see [Rollback](#rollback)) |
 
 **Rehearsal plan.** A full rehearsal would touch Production, because WAF rules apply
@@ -237,7 +238,15 @@ Do not use `vercel deploy --prebuilt` with a local `vercel build` output. On
 Windows, `vercel build` failed with `EPERM` on a symlink, and the output's file map
 includes `.env.local`.
 
-### 2. Disabled branch Preview (no provider credentials) — prepared
+### 2. Disabled branch Preview (no provider credentials) — run
+
+Run 2026-10-14 on Preview `mimus-8v87kovl5-edumarcano30-5426s-projects.vercel.app`
+(branch `fix/production-cancellation`). Observed: the page contains the disabled
+notice and `"mode":"disabled"`; `POST /api/translate` returned `503` with
+`SERVICE_UNAVAILABLE`; the matching log entry had status 503, code
+`SERVICE_UNAVAILABLE`, and no submitted or generated text. Route order is config
+check, then body parsing, so no provider call was made. The variable was removed
+afterwards, and `vercel env ls preview` showed none.
 
 The branch-scoped variable is set once, before the commit that carries this runbook:
 

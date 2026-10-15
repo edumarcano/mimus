@@ -441,3 +441,18 @@ Not run. The test needs a provider call, so run it only with explicit approval.
 `npm run test:e2e` (mocked provider; the build step runs in demo mode). CI runs the
 same checks, with the end-to-end suite as a separate job. Live evaluation is manual
 and opt-in; see [`evals/README.md`](../evals/README.md).
+
+## Portfolio verification still pending
+
+The benchmark is offline and does not alter Production settings, request
+processing, logging, privacy routing, or persistence. No live model comparisons
+are implied by the benchmark datasets or protocol. Paid provider runs require a
+separate approval after their preflight cost estimate is reviewed.
+
+The following checks still need dated evidence before v1 portfolio claims are
+made: a screen-reader pass, a second-browser review, 200% zoom behavior, the
+Preview and Production header-scoped WAF deny rehearsals, Production disabled
+mode and restoration, and one live cancellation correlation. WAF publishes,
+Production interruption, and live cancellation each have separate approval gates
+in the runbook above. Application-side cancellation does not prove that an
+upstream host stopped generation or billing.

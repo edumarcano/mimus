@@ -53,11 +53,39 @@ flowchart LR
 
 ## Evaluating meaning
 
-The evaluation is a set of 50 fictional cases with annotated meaning (what must be
-preserved and what must not be invented), deterministic checks, and manual 0-2
-scoring of meaning and style. Ten cases are critical: factual invention, changed
-commitments, negation, attribution, and prompt injection. A runner uses the same
-prompt builder and adapter as production, and raw runs stay out of the repository.
+The benchmark separates generation from evaluation. Its planned evidence includes
+the existing 50-case historical corpus, a 12-case development screen, paired
+faithful/flawed evaluator examples, and 40 fresh release cases. A selected effort
+setting for each generator is compared on development cases before two frozen
+configurations are carried to the release set. Meaning and style remain separate
+0-2 scores; failures such as invented facts, changed commitments, lost
+attribution, negation reversals, and omissions receive explicit tags.
+
+```mermaid
+flowchart LR
+  Manifest[Versioned experiment manifest] --> Runner[Offline benchmark runner]
+  Cases[Synthetic datasets] --> Runner
+  Runner --> Outputs[Generation records]
+  Outputs --> LLM[LLM judge]
+  Outputs --> Decision[Decision model]
+  Outputs --> Blind[Limited blind human review]
+  LLM --> Report[Comparison and cascade report]
+  Decision --> Report
+  Blind --> Report
+```
+
+This is an offline experiment. The decision-model cascade is simulated for
+review-cost and missed-failure tradeoffs; it is not part of production rewriting.
+Human involvement is capped at 25 outputs, with calibration, random audits of
+confident passes, and a small disagreement budget. Findings must be labeled
+automated evaluation with limited human calibration and auditing. See the
+[benchmark protocol](benchmark-protocol.md) for datasets, thresholds, and
+selection rules.
+
+The fresh data is defined, but model generations, evaluator comparison, cascade
+simulation, release scoring, and the shipping-model decision remain pending. No
+benchmark result is implied by the protocol or datasets. The historical corpus
+and its observations retain their original meaning.
 
 ### One failure and its fix
 
@@ -119,8 +147,9 @@ nothing here claims GLM matches or beats Gemini on meaning.
   cleanup, and the notice; component tests; and a small Playwright suite for demo
   and live flows against a mocked provider. CI runs lint, typecheck, tests, and the
   build without secrets, with end-to-end as a separate job.
-- **In the browser:** layout at 360 and 1440 px, target sizes, computed contrast,
-  reduced motion, and focus behavior.
+- **In the browser:** prior checks covered layout at 360 and 1440 px, target
+  sizes, computed contrast, reduced motion, and focus behavior. A screen-reader
+  pass, 200% zoom, and a second-browser check remain to be recorded.
 - **On the deployment:** a protected Preview streamed real output, and the WAF rate
   limit was observed enforcing. On live Production, I checked a Human to Corporate
   rewrite by hand, and Chrome DevTools showed a `meta` event, 13 `delta` events, and
@@ -156,4 +185,5 @@ evaluation records, dated deployment observations) is what the claims rest on.
 - Decide holdout rules first, and say when they are broken.
 - Read provider terms before the last milestone. They changed the architecture.
 - Do not read a log code as proof of what happened upstream.
+- A benchmark design is not a benchmark result; keep each claim tied to dated evidence.
 - A small, specific specification makes both agents and reviewers faster.

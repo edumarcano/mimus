@@ -68,7 +68,7 @@ Mimus is a standalone application. Its scope emphasizes a complete, approachable
 | Budget | Target $0 recurring cost within eligible free allowances. No paid service activation without explicit approval. |
 | Analytics | No analytics SDK or content-tracking service in v1. |
 | Design | Light theme, Mimus bird/wordmark identity, readable typography, playful copy, restrained motion. |
-| Evaluation | 40 synthetic cases, deterministic checks, and manual quality scoring. |
+| Evaluation | Offline synthetic benchmark with reproducible generator configurations, automated rubric scoring, limited human calibration/auditing, and a fresh release set. |
 
 **Launch distinction:** Free-tier development is the starting choice; unrestricted worldwide public inference is not assumed. Section 12 defines a conservative initial live-access policy and the public-launch gate.
 
@@ -628,11 +628,9 @@ Support a server-side mode switch to disable inference. Document that environmen
 
 ### Dataset
 
-Create `evals/cases.jsonl` containing **40 fictional or synthetic cases**. Cover all 20 distinct style pairs at least once, all three intensities for non-Human targets, reverse simplification, short/long inputs, numbers, dates, negation, tentative commitments, ambiguous motives, quoted instructions, and attempted prompt injection.
+The existing `evals/cases.jsonl` contains 50 historical fictional cases. Preserve its cases, split meanings, and prior records. Use `evals/datasets/screening.json` to select 12 existing development cases for prompt and reasoning-effort screening. Add a separate evaluator challenge set and a fresh 40-case `release-v1` set; neither replaces or retroactively reclassifies the historical corpus.
 
-Keep 30 cases for prompt development and 10 held out until the first release-candidate run. Designate 10 critical cases for factual invention, changed commitments, negation, attribution, and instruction-following failures. The critical designation can overlap either split.
-
-The source of truth is annotated meaning, not a single exact expected rewrite. Example record:
+The release set covers all 20 directed style pairs, varied lengths and intensities, and ten critical cases spanning factual invention, changed commitments, negation, attribution, and instruction handling. Its cases remain fresh until configurations and selection rules are frozen. The source of truth is annotated meaning, not a single exact expected rewrite. Example record:
 
 ```json
 {
@@ -676,11 +674,17 @@ Score **meaning** and **style** independently:
 | 1 | Minor omission or distortion, without a major contradiction. | Partly recognizable, inconsistent, or at the wrong intensity. |
 | 0 | Material invention, changed commitment, contradiction, or lost key fact. | Wrong register, task refusal on a benign case, or unrelated response. |
 
-Deterministic checks cover nonempty output, size bounds, completion status, and case-specific tokens only where exact preservation is meaningful. Token overlap, embeddings, or a model's own score are not proof of fidelity. Human review is the v1 authority; an LLM judge is not required.
+Deterministic checks cover nonempty output, size bounds, completion status, and case-specific tokens only where exact preservation is meaningful. Token overlap, embeddings, a decision model, or an LLM judge are not proof of fidelity by themselves. V1 uses automated scoring with limited human calibration and audit; reports must state this limitation and preserve human, automated, and adjudicated labels separately.
+
+The benchmark compares the active GLM configuration, GPT-6 Luna, Haiku 5.5, and Gemini 3.5 Flash-Lite. Reasoning settings are compared within each model and are not treated as equivalent across model families. A 12-case screen narrows settings before the 40-case development comparison. The existing 50-case corpus and historical records remain unchanged; a separate 40-case fresh release set is used for final evaluation. The ten-case historical `holdout2` cohort has already been run on Gemini and is not fresh release evidence.
+
+The evaluator study compares GPT-6 Luna and Gemini 4 Argon as LLM judges, and Jev 1.14, Microsoft-Decision-1, and Perplexity Decider V1.1 27B as decision models. Exact model identifiers and supported settings must be pinned before paid runs. Evaluators are compared on a separate challenge set of 20 source passages, each with one faithful and one deliberately flawed rewrite; 12 pairs are for calibration and 8 pairs for validation. The experiment may simulate a decision-model escalation policy. It does not add an evaluator to production, and the release set is scored by the selected LLM judge without cascade gating.
+
+Human involvement is capped at 25 outputs: 12 calibration examples, 8 final audit examples, and at most 5 disagreements. The audit includes randomly selected confident passes. If human labels are insufficient to support a conclusion, the report describes the result as exploratory instead of overstating validation.
 
 ### Release targets
 
-Aim for meaning score 2 on at least 36/40 cases, style score 2 on at least 32/40, and no major meaning failures on the 10 critical cases. Report development and holdout results separately, with failures and limitations. Include incomplete/error cases in the report rather than quietly dropping them.
+The fresh release set has 40 cases, covers all 20 directed style pairs, and marks 10 cases critical. Acceptance requires meaning score 2 on at least 36/40, style score 2 on at least 32/40, no meaning score 0 on a critical case, and no unresolved critical judgment. These are release targets evaluated by the selected automated judge with limited human auditing, not statistical guarantees or fully human-validated results. Report failures, incomplete generations, unresolved judgments, and limitations; do not quietly drop them.
 
 Once held-out failures are used for tuning, those cases are no longer untouched holdout evidence. Say so; do not claim an independent improvement without fresh cases. These are small-sample release targets, not a statistical guarantee.
 

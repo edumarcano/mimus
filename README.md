@@ -23,7 +23,7 @@ model output.</sub>
 
 ## Status
 
-**v1.0.0 is prepared and awaiting final approval.** No release or tag exists yet.
+**Initial public release: v1.0.0 (October 14, 2026).**
 
 - **Live rewriting is on at the Production site.** It uses `z-ai/glm-5.3-flash`
   through OpenRouter, for visitors in approved regions who acknowledge the

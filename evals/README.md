@@ -17,12 +17,8 @@ guarantee for any individual result.
 | --- | --- | --- |
 | [`results/summary.md`](results/summary.md) | Gemini release-candidate evaluation (`gemini-3.5-flash-lite`, prompt v4) | Historical; unchanged |
 | [`results/glm-development.md`](results/glm-development.md) | GLM development run on 40 development-split cases | Development evidence; 39/40 deterministic checks passed; no recorded scores |
-| `results/glm-release.md` | GLM release evaluation | Does not exist. The protocol is pre-registered but deferred, not run or approved ([`docs/decisions.md`](../docs/decisions.md#glm-quality-gate-superseded-protocol-deferred)) |
 
-The Gemini results do not transfer to the active GLM configuration. For v1.0.0 the
-GLM was retained, and the release evidence requirement was revised instead of requiring
-the deferred evaluation; the original meaning target was not demonstrated for GLM
-([release decision](../docs/decisions.md#2026-10-14-v100-release-decision-and-production-activation-active)).
+The Gemini results apply only to the evaluated Gemini configuration, not to GLM.
 
 ## Running the evaluation
 

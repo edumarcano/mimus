@@ -82,10 +82,13 @@ automated evaluation with limited human calibration and auditing. See the
 [benchmark protocol](benchmark-protocol.md) for datasets, thresholds, and
 selection rules.
 
-The fresh data is defined, but model generations, evaluator comparison, cascade
-simulation, release scoring, and the shipping-model decision remain pending. No
-benchmark result is implied by the protocol or datasets. The historical corpus
-and its observations retain their original meaning.
+The [technical pilot](../evals/results/benchmark-pilot-2026-10-15.md) and
+[initial evaluator calibration](../evals/results/evaluator-calibration-2026-10-15.md)
+have dated evidence. Calibration exposed errors in both human reviews and
+constructed references; the original scores and confirmed adjudications remain
+separate. Evaluator validation, full generator comparisons, cascade simulation,
+release scoring, and the shipping-model decision remain pending. The historical
+corpus and its observations retain their original meaning.
 
 ### One failure and its fix
 

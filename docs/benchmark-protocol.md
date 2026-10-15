@@ -124,8 +124,10 @@ request flow. CI uses fixtures and mocks and never calls a provider.
 
 ## Operational and portfolio status
 
-The model runs, evaluator comparison, cascade simulation, fresh release scoring,
-and shipping-model decision are pending. No benchmark results or cost totals are
-claimed by this protocol. Accessibility review with a screen reader and a second
+The technical pilot and initial evaluator calibration have dated records in
+`evals/results/`; calibration includes original human scores and separate
+maintainer adjudications. Evaluator validation, full generator comparisons,
+cascade simulation, fresh release scoring, and the shipping-model decision are
+pending. Accessibility review with a screen reader and a second
 browser, plus the approved provider-operation checks, remain explicit verification
 items until their dated evidence is recorded.

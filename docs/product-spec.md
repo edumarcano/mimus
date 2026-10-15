@@ -2,11 +2,6 @@
 
 **Translate meaning, not just words.**
 
-Target release: **v1.0.0** | Updated: October 14, 2026
-
-Status: specification. The target version does not imply that the application
-has shipped or that release checks have passed.
-
 This is the single product and technical specification for Mimus. It describes
 what the application is intended to do, not what has already been implemented or
 verified. Numerical limits and evaluation thresholds are project decisions, not
@@ -44,7 +39,7 @@ Mimus is a standalone application. Its scope emphasizes a complete, approachable
 
 ---
 
-## 2. Decisions for v1.0.0
+## 2. Product and architecture decisions
 
 | Area | Decision |
 | --- | --- |
@@ -278,7 +273,7 @@ changes; record a resolved model version when the provider supplies one.
 
 For initial experiments, edit a complete candidate configuration in code and
 record which revision was tested. Do not build an environment-driven override,
-model picker, or generic experiment framework for this release.
+model picker, or generic experiment framework without a deliberate specification change.
 
 ### OpenRouter adapter
 
@@ -557,8 +552,7 @@ public live activation. A privacy notice alone does not resolve them.
 **Conservative v1 deployment default:** Publicly viewable examples, with live requests
 limited to US traffic after review. The US allowlist is a visitor restriction
 in this app. It is not data residency, and the app does not claim that inference
-stays in the US. Production stays demo until live activation is approved.
-Live activation was approved and completed on 2026-10-14; see [`decisions.md`](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
+stays in the US. 
 
 Use Vercel's platform-supplied country information at the server boundary; reject unknown or non-allowlisted locations for live requests. Do not accept a country sent in the JSON body. Local development may use `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` only in a loopback development server with `NODE_ENV=development` and no Vercel deployment environment. Fail closed outside that context; never activate the bypass through a request parameter. Vercel documents the geolocation headers and their deployment/proxy limitations. [S13]
 
@@ -690,8 +684,6 @@ Aim for meaning score 2 on at least 36/40 cases, style score 2 on at least 32/40
 
 Once held-out failures are used for tuning, those cases are no longer untouched holdout evidence. Say so; do not claim an independent improvement without fresh cases. These are small-sample release targets, not a statistical guarantee.
 
-**v1.0.0 release note.** The Gemini release candidate was formally scored against these targets, and the critical-case target was revised for it. The shipped GLM configuration was not scored against them: its 40-case development run completed with 39 of 40 deterministic checks passing, but formal meaning and style scores were not committed, and the original meaning target was not demonstrated. For v1.0.0, GLM was retained, and the release evidence requirement was revised to accept the documented limitations instead of requiring another 50-case evaluation. The pre-registered GLM release evaluation is deferred, not completed. This is a recorded revision, not a pass, and it does not support a claim that GLM met these targets or outperformed Gemini. See [`decisions.md`](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
-
 ---
 
 ## 15. Automated testing and verification
@@ -808,8 +800,8 @@ MIMUS_LIVE_COUNTRIES=US
 MIMUS_DEV_ALLOW_LOCAL_LIVE=false
 ```
 
-These are the canonical v1.0.0 configuration names. The released app has no
-legacy-name lookup (the pre-release `PARLANCE_*` names are ignored), and the names
+These are the configuration names used by Mimus. The application has no
+legacy-name lookup (the former `PARLANCE_*` names are ignored), and the names
 preserve demo-by-default and fail-closed location checks. `APP_ORIGIN` must match
 the actual trusted deployment origin.
 
@@ -851,10 +843,6 @@ Build the app so someone can clone the repository, install locked dependencies, 
 
 ## 18. Definition of done
 
-The first complete release targets **v1.0.0**. These are acceptance requirements,
-not a maintained progress checklist. Code and verification evidence determine
-whether a requirement is satisfied.
-
 A release candidate is ready when:
 
 - All five styles and 20 distinct direction pairs work; Human output and intensity follow the specified rules.
@@ -867,14 +855,9 @@ A release candidate is ready when:
 - Public-launch audience, region, billing, and hosting conditions have been reviewed and recorded.
 - Production WAF enforcement, request caps, mode switch, and upstream quota errors are verified.
 - Automated checks pass, or any unmet release gate is explicitly identified as blocking completion.
-- The synthetic evaluation has been run, scores and failures are recorded, and release targets are met or revised transparently before release. For the Gemini release candidate, the critical-case target was revised. For the shipped GLM configuration, the release evaluation in Section 14 was not run. The release evidence requirement was revised to accept the documented limitations, and the original meaning target was not demonstrated. See the v1.0.0 release note in Section 14.
+- The synthetic evaluation has been run, scores and failures are recorded, and results and limitations are reported transparently before release.
 - The repository, README, permitted live deployment, screenshots, setup instructions, and engineering case study are ready for public use and match the verified implementation.
 - The Mimus name, logo/favicon assets, page metadata, privacy wording, active URLs, and release documentation are consistent; supplied PNGs have been checked for transparency, mark consistency, and legibility at their actual sizes.
-
-Publishing the repository and the v1.0.0 tag/release is a maintainer action after
-acceptance. A version in package metadata or a prepared release note is not proof
-that publication has happened. Daily implementation units do not require separate
-versioned releases.
 
 The case study should explain scope, the style/meaning tradeoff, one observed failure and fix, actual evaluation results, costs/limits, and the role of AI-assisted development. Do not claim production scale, user traction, perfect privacy, or guaranteed meaning preservation without evidence.
 

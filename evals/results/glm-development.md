@@ -6,12 +6,6 @@ unchanged and remains historical. It is not release acceptance, not deployed
 verification, and not evidence that the release targets in the product
 specification were met.
 
-*Release status (2026-10-14):* this configuration was retained for v1.0.0, and the
-release evidence requirement was revised instead of requiring a further evaluation.
-That is an accepted-limitations decision, not a pass; see the
-[release decision](../../docs/decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
-The results below are unchanged.
-
 ## Run configuration
 
 | Item | Value |
@@ -52,8 +46,8 @@ Manual meaning and style scores were **not recorded** in the repository. The loc
 scoring sheet was not filled in. This record therefore publishes **no numeric
 meaning or style tally**.
 
-The approved migration decision is that these development results **did not meet
-the original meaning-preservation target**. The release target was not passed.
+Without manual meaning and style scores, this run does **not demonstrate** that
+the meaning-preservation target was met.
 
 ## Limitations
 

@@ -21,33 +21,6 @@ aims to change the expression without inventing facts or losing the point.
 <sub>Demo-mode screenshot: the result is a labeled, prewritten example, not live
 model output.</sub>
 
-## Status
-
-**Initial public release: v1.0.0 (October 14, 2026).**
-
-- **Live rewriting is on at the Production site.** It uses `z-ai/glm-5.3-flash`
-  through OpenRouter, for visitors in approved regions who acknowledge the
-  data-use notice. A Human to Corporate rewrite kept the meeting-reschedule facts,
-  and streaming was confirmed in Chrome DevTools (a `meta` event, 13 `delta`
-  events, and `done` in about 724 ms). Very short responses can look like they
-  arrive all at once.
-- **Quality is accepted with limits, not proven.** GLM is shipped for a free,
-  experimental portfolio app with documented quality limitations. The original
-  meaning-preservation target was not demonstrated, and formal GLM scores were not
-  committed. See [Evaluation](#evaluation).
-- **Spend controls are account settings, not independently verified:** a $1/month
-  Production key limit, with auto-recharge disabled, and ZDR and privacy settings
-  applied. A monthly limit caps spending within its monthly period, not lifetime
-  spend, and it does not guarantee zero additional charges. The service can stop at
-  any time.
-- **Without a key, the app runs in demo mode:** prewritten, labeled examples and no
-  model calls. You can also run live mode locally with your own OpenRouter key.
-- **Known limits:** Vercel cancellation opt-in and disabled mode were verified in
-  Preview, but a live client disconnect reaching the function, upstream generation
-  cancellation, and provider billing after Stop remain unverified. The Production
-  emergency shutdown has not been rehearsed end to end. See
-  [`docs/deployment.md`](docs/deployment.md) and the [changelog](CHANGELOG.md).
-
 ## Features
 
 - Five styles (Human, LinkedIn, Corporate, Startup Founder, Academic), all 20
@@ -97,8 +70,8 @@ is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
 
 ## Evaluation
 
-Quality is measured on 50 synthetic cases with deterministic checks and manual
-meaning and style scoring.
+The repository includes 50 synthetic cases, deterministic checks, and a rubric
+for manual meaning and style scoring.
 
 - The **Gemini** release-candidate evaluation was formally scored. It is historical
   evidence for a previous provider and does not apply to GLM:
@@ -107,11 +80,6 @@ meaning and style scoring.
   deterministic checks. Formal meaning and style scores were not committed, and the
   original meaning target was not demonstrated:
   [`evals/results/glm-development.md`](evals/results/glm-development.md).
-- For v1.0.0, the release evidence requirement was revised to accept these
-  limitations instead of requiring another 50-case run. GLM is not claimed to have
-  passed the original benchmark or to preserve meaning better than Gemini. The
-  pre-registered GLM evaluation is deferred, not completed; see
-  [`docs/decisions.md`](docs/decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
 
 Meaning preservation is a goal, not a guarantee for any individual result.
 

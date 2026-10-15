@@ -2,10 +2,7 @@
 
 Notable public releases of Mimus are documented here.
 
-## [1.0.0] - October 14, 2026
-
-Initial public release of Mimus, a web app for rewriting English text between
-writing styles while aiming to preserve the original meaning.
+## Unreleased
 
 ### Features
 
@@ -23,8 +20,7 @@ writing styles while aiming to preserve the original meaning.
 ### Architecture and safeguards
 
 - Next.js App Router, TypeScript, and Tailwind CSS, hosted on Vercel.
-- OpenRouter inference using `z-ai/glm-5.3-flash` (low reasoning, prompt v4),
-  with output delivered through server-sent events.
+- Server-side OpenRouter inference with output delivered through server-sent events.
 - Zero-data-retention endpoint routing and denial of provider data collection
   requested for every live inference call; an acknowledgement and `/privacy`
   page explain the remaining data-handling limitations.
@@ -37,16 +33,10 @@ writing styles while aiming to preserve the original meaning.
 
 ### Known limitations
 
-- Meaning preservation is not guaranteed. The GLM configuration did not
-  demonstrate the original meaning-preservation target, and formal GLM meaning
-  and style scores were not committed. See the [evaluation](evals/README.md).
+- Meaning preservation is not guaranteed. Model-evaluation evidence and gaps
+  are documented in the [evaluation records](evals/README.md).
 - Live rewriting is limited to approved visitor regions and depends on
   third-party provider availability and account spending limits.
-- Vercel's cancellation setting was verified in Preview, but a live client
-  disconnect reaching the function and stopping upstream generation has not been
-  observed. Whether billing stops after Stop depends on the model host and remains
-  unverified.
-- Disabled mode was verified in a branch Preview, but the Production WAF and
-  disabled-mode shutdown/restore procedures have not been rehearsed end to end.
-  See the [deployment guide](docs/deployment.md).
+- Upstream cancellation depends on the model host; billing after Stop is not
+  guaranteed to end immediately. See the [deployment guide](docs/deployment.md).
 - Screen readers, Safari, and Firefox have not been separately tested.

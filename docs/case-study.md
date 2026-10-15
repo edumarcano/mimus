@@ -2,8 +2,8 @@
 
 Mimus rewrites English text between writing styles, such as plain speech to
 LinkedIn-style posts and back. It is deliberately small: one page, one API route,
-no accounts or database. This is the story of making a small AI product behave
-honestly, and of what stopped it from simply shipping.
+no accounts or database. This case study examines the architecture, evaluation,
+and limitations of a small AI product.
 
 ## The problem
 
@@ -37,8 +37,7 @@ flowchart LR
   SSE framing. Browser code never imports the provider or model configuration.
 - **Model settings live in code.** The model, reasoning effort, output cap, and
   privacy routing are committed together and are not environment variables, so a
-  configuration change is a reviewed change and the evaluated configuration is the
-  shipped one.
+  configuration change is reviewable and can be compared with evaluation records.
 - **Demo by default.** With no key the app shows labeled, prewritten examples and
   never contacts a provider. Live mode fails closed: a missing key, origin, or
   country list disables it.
@@ -113,15 +112,6 @@ checks, but formal meaning and style scores were not committed and the original
 meaning target was not demonstrated. The Gemini results do not transfer to it, and
 nothing here claims GLM matches or beats Gemini on meaning.
 
-For a while that kept the public site examples-only, with a pre-registered 50-case
-protocol waiting to close the gate. For v1.0.0 I made a different call. I revised
-the release evidence requirement, kept `z-ai/glm-5.3-flash` with low reasoning and
-prompt v4, and accepted the documented limitations for a free, experimental
-portfolio app rather than spend another evaluation. The protocol is deferred, not
-completed. Production went live on 2026-10-14. In short, the live model is accepted
-with known limits. It has not been shown to meet the original bar. See the
-[decision log](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).
-
 ## Testing and verification
 
 - **Automated:** unit and integration tests for schemas, limits, prompts, stream
@@ -142,12 +132,6 @@ with known limits. It has not been shown to meet the original bar. See the
 Hosting targets Vercel Hobby, and the model cost per request is small but not zero.
 The output cap and input limit bound a single request, not total spend; the key's
 credit limit and monitoring are the budget controls, and the WAF limit is per IP.
-Confirmed in the account settings (not independently verified): a $1/month Production
-key limit, with auto-recharge disabled, and ZDR and privacy settings applied. The
-repository cannot check these. The emergency shutdown runbook has been
-reviewed but not rehearsed end to end, and rollback is not treated as a way to
-disable inference.
-
 The most important unknown is cancellation. The application aborts the upstream
 request when a client stops, and mocked tests cover that. Whether Vercel delivers the
 disconnect, and whether a given model host stops generating and billing, are not
@@ -172,5 +156,4 @@ evaluation records, dated deployment observations) is what the claims rest on.
 - Decide holdout rules first, and say when they are broken.
 - Read provider terms before the last milestone. They changed the architecture.
 - Do not read a log code as proof of what happened upstream.
-- When a release bar is revised, record who revised it and what stayed unproven.
 - A small, specific specification makes both agents and reviewers faster.

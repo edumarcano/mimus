@@ -2,9 +2,9 @@
 
 Notable public releases of Mimus are documented here.
 
-## [1.0.0] - October 14, 2026
+## [1.0.0] - Unreleased
 
-Initial public release of Mimus, a web app for rewriting English text between
+Planned initial release of Mimus, a web app for rewriting English text between
 writing styles while aiming to preserve the original meaning.
 
 ### Features

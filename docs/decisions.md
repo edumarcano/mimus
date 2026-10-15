@@ -373,7 +373,7 @@ conclusion. The public-live conditions need review and approval before activatio
 | Retention settings | ZDR guide: `provider.zdr` is OR-ed with account settings, in-memory caching is allowed, endpoints with unclear policy are treated as retaining | Required: confirm the account is ZDR-only and prompt logging is off (the app cannot enforce it), and that an eligible endpoint exists for the model |
 | Data use | Terms 6.5: inputs are categorized in anonymized form; 6.2: opting into prompt logging grants OpenRouter broad rights | Keep logging off. The notice already discloses categorization. |
 | Spend | Terms 3.2; limits documentation | Required: per-key spending limit, auto top-up off, activity monitoring |
-| Hosting | Vercel Hobby is limited to non-commercial personal use | Judgment: acceptable for a free portfolio demo. Reassess if monetized. |
+| Hosting | Vercel Hobby is limited to non-commercial personal use | Judgment: acceptable for a free, non-commercial deployment. Reassess if monetized. |
 
 Sources (accessed 2026-10-14): OpenRouter [Terms of Service](https://openrouter.ai/terms)
 (last updated August 31, 2026), [Privacy Policy](https://openrouter.ai/privacy),
@@ -449,7 +449,7 @@ evaluation or provider call was made to write it.
 
 I decided to retain `z-ai/glm-5.3-flash` with `low` reasoning and prompt v4 for
 v1.0.0, accepting its documented quality limitations for a free, experimental
-portfolio application.
+release.
 
 What the evidence does and does not show:
 

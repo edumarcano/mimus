@@ -116,8 +116,8 @@ nothing here claims GLM matches or beats Gemini on meaning.
 For a while that kept the public site examples-only, with a pre-registered 50-case
 protocol waiting to close the gate. For v1.0.0 I made a different call. I revised
 the release evidence requirement, kept `z-ai/glm-5.3-flash` with low reasoning and
-prompt v4, and accepted the documented limitations for a free, experimental
-portfolio app rather than spend another evaluation. The protocol is deferred, not
+prompt v4, and accepted the documented limitations for the initial free release rather
+than run another evaluation. The protocol is deferred, not
 completed. Production went live on 2026-10-14. In short, the live model is accepted
 with known limits. It has not been shown to meet the original bar. See the
 [decision log](decisions.md#2026-10-14-v100-release-decision-and-production-activation-active).

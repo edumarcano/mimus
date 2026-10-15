@@ -30,18 +30,25 @@ different models tokenize identically. Both arms include one explicitly reported
 zero-token blocked response in their usage counts.
 
 The candidate improved several counts, but Gemini lost two full-meaning scores
-and Luna lost two full-style scores. The rule requires nondecreasing meaning and
-style counts for every baseline generator, so it is not adopted or tuned for an
+and Luna lost two full-style scores. Across all 48 cases per arm, full-meaning
+scores fell from 44 to 43 and full-style scores stayed at 38. The
+[predeclared adoption rule](evaluator-validation-2026-10-15.md#limits-and-next-phase)
+requires nondecreasing meaning and style counts for every baseline generator,
+so it is not adopted or tuned for an
 individual model. This small screen does not establish a general prompt ranking.
 
 Luna none was blocked on `dev-inject-01` in both arms. Each response reported
 zero tokens and zero cost. These remain incomplete generations and receive local
 unresolved judgment records; they were not sent to the judge. All 94 actual Argon
-requests produced valid judgments. No retries or substitutions were used.
+requests produced valid judgments. No benchmark-client retries or model
+substitutions were used. Provider routing varied; the observations include the
+reported route where available. Provider-internal retry behavior was not measured.
 
 Four identical, successful generator observations were reused from the technical
 pilot for v4. Reused records retain their original timing, usage, and cost as
 performance observations, with provenance links; they incurred no new charge.
+The four [sanitized pilot source records](pilot-source-generations-2026-10-15.jsonl)
+allow those reuse links and original measurements to be checked independently.
 This phase made **186 new inference requests** and recorded **$0.188687656** in
 additional provider-reported charges. Cumulative study spend reached
 **$0.292240490** across **410 requests**, with no unknown-cost settlements.

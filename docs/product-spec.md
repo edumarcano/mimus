@@ -273,7 +273,7 @@ changes; record a resolved model version when the provider supplies one.
 
 For initial experiments, edit a complete candidate configuration in code and
 record which revision was tested. Do not build an environment-driven override,
-model picker, or generic experiment framework for this release.
+model picker, or generic experiment framework without a deliberate specification change.
 
 ### OpenRouter adapter
 
@@ -800,8 +800,8 @@ MIMUS_LIVE_COUNTRIES=US
 MIMUS_DEV_ALLOW_LOCAL_LIVE=false
 ```
 
-These are the canonical v1.0.0 configuration names. The released app has no
-legacy-name lookup (the pre-release `PARLANCE_*` names are ignored), and the names
+These are the configuration names used by Mimus. The application has no
+legacy-name lookup (the former `PARLANCE_*` names are ignored), and the names
 preserve demo-by-default and fail-closed location checks. `APP_ORIGIN` must match
 the actual trusted deployment origin.
 

@@ -36,9 +36,11 @@ steps, and each one should be recorded in the decision log.
 | WAF enforcement on Production | 2026-10-13 | Verified while Production was in demo mode: 503 for the first requests, then 429 with `X-Vercel-Mitigated: deny` |
 | OpenRouter account settings | 2026-10-14 | Account setting: a $1/month Production key limit, with auto-recharge disabled, and privacy and ZDR settings applied |
 | Protected Preview live streaming | 2026-10-13 | Verified: SSE stream and `done`; logs without text or key |
+| Cancellation opt-in in a deployed build (`vercel inspect <preview> --format json`) | 2026-10-14 | Verified on a branch Preview only: `builds[0].config.vercelConfig.functions["src/app/api/translate/route.ts"].supportsCancellation` is `true`. The local build output agrees (`api/translate.func` has it; `index.func` does not). No model call. Production does not have this yet. |
 
-**Not verified:** deployed non-US region rejection, whether Vercel delivers a
-client disconnect to the function, whether the provider stops billing after an
+**Not verified:** deployed non-US region rejection, whether a client disconnect
+reaches the function on Vercel (the opt-in is deployed only on a branch Preview,
+and no live disconnect has been observed), whether the provider stops billing after an
 abort, quota exhaustion on the host, Production function-log contents for live
 requests, and the emergency shutdown rehearsal (see
 [Shutdown readiness](#shutdown-readiness-review-2026-10-14)). See also
@@ -215,6 +217,134 @@ to the whole project and a Preview cannot isolate a deny rule.
    rule.
 3. *Key and redeploy steps* stay unrehearsed unless the maintainer chooses to
    interrupt live service.
+
+## Verification runbook (branch `fix/production-cancellation`)
+
+Each step says what it checks and what has actually run. Steps marked
+**prepared** have not been run and need the approval named in the step.
+
+### 1. Deployed cancellation config (Preview, no model calls) — run
+
+```bash
+vercel inspect <preview-url> --format json
+```
+
+Check `builds[0].config.vercelConfig.functions["src/app/api/translate/route.ts"].supportsCancellation`
+is `true`. Result on 2026-10-14: `true` on Preview deployment
+`dpl_AG1Q86nUTxvEFQuBYgU2EsCq1zwJ`.
+
+Do not use `vercel deploy --prebuilt` with a local `vercel build` output. On
+Windows, `vercel build` failed with `EPERM` on a symlink, and the output's file map
+includes `.env.local`.
+
+### 2. Disabled branch Preview (no provider credentials) — prepared
+
+The branch-scoped variable is set once, before the commit that carries this runbook:
+
+```bash
+vercel env add MIMUS_MODE preview --git-branch fix/production-cancellation --value disabled --yes
+```
+
+1. Push the branch so a new Preview builds with the variable.
+2. Open the branch Preview through deployment protection. Expect the page to show
+   `Translation is temporarily unavailable. Please check back later.`
+3. `POST /api/translate` with a valid JSON body. Expect `503` with
+   `SERVICE_UNAVAILABLE`, and no OpenRouter request in OpenRouter activity.
+4. Check `vercel logs` for the request: status 503, code `SERVICE_UNAVAILABLE`, and
+   no submitted text.
+5. Remove the variable and confirm it is gone:
+
+```bash
+vercel env rm MIMUS_MODE preview fix/production-cancellation --yes
+vercel env ls preview
+```
+
+### 3. Production header-scoped WAF rehearsal — prepared, needs approval
+
+WAF rules apply to the whole project. This rule matches only `POST /api/translate`
+with the header `x-mimus-rehearsal: 1`, so visitor traffic is unaffected. Requests in
+this rehearsal count against the rate-limit rule (5 per IP per 60 seconds), so keep
+the total under five. The header condition's JSON form is **not yet verified**. Check
+it against `vercel firewall rules add --help` and the Vercel firewall docs before running.
+
+1. `vercel firewall rules list`. Record the existing rules. Expect only
+   "Rate limit translate API".
+2. Stage the rule with three conditions that AND together (path, method, header):
+
+```bash
+vercel firewall rules add "Rehearsal deny translate header" \
+  --condition '{"type":"path","op":"eq","value":"/api/translate"}' \
+  --condition '{"type":"method","op":"eq","value":"POST"}' \
+  --condition '{"type":"header","key":"x-mimus-rehearsal","op":"eq","value":"1"}' \
+  --action deny --yes
+vercel firewall diff     # review: no other draft changes should be pending
+vercel firewall publish
+```
+
+3. Blocked: `POST /api/translate` with `x-mimus-rehearsal: 1` and a `text/plain` body.
+   Record the status and the response headers. Expect a firewall block, not an app
+   response.
+4. Unaffected: the same `POST` without the header. Expect `415` from the app, not a
+   firewall block. Also `GET /` should return 200 with the live notice. No provider
+   call is made in either request.
+5. Remove the rule, then publish the removal:
+
+```bash
+vercel firewall rules remove "Rehearsal deny translate header"
+vercel firewall diff
+vercel firewall publish
+```
+
+6. Confirm the header request now reaches the app (`415`).
+
+### 4. Production disabled mode, then restore — prepared, needs approval
+
+**Planned interruption:** from the moment the disabled Production deployment is live
+until step 5 is restored, new translations return `503`. Requests already in progress
+may be cut off. Schedule a short window.
+
+1. Record the current Production deployment: `vercel inspect https://mimus-rewrite.vercel.app`.
+2. Set Production `MIMUS_MODE` to `disabled`. This overwrites the live value.
+
+```bash
+vercel env add MIMUS_MODE production --value disabled --force --yes
+```
+
+3. Create a **new** Production deployment from `main`, for example with dashboard
+   Redeploy and build cache turned off. Do not deploy from this working copy, which
+   has `.vercel/output` and `.env.local`. A running deployment does not pick up a
+   changed variable.
+4. Verify: `GET /` shows the disabled notice, `POST /api/translate` with a valid body
+   returns `503` with `SERVICE_UNAVAILABLE`, and OpenRouter activity shows no new
+   requests.
+5. Restore live mode and redeploy the same way:
+
+```bash
+vercel env add MIMUS_MODE production --value live --force --yes
+```
+
+Then confirm `GET /` shows the live notice (`openrouter-zdr-v1`). The post-activation
+smoke test makes a provider call, so it needs approval too.
+
+### 5. Live cancellation test — prepared, needs approval; spends provider credits
+
+Not run. The test needs a provider call, so run it only with explicit approval.
+
+1. Use a dedicated test key with a low spending limit. Do not use the Production
+   key. Set these branch-scoped Preview variables: `OPENROUTER_API_KEY` (test key),
+   `MIMUS_MODE=live`, `MIMUS_LIVE_COUNTRIES=US`, `MIMUS_DEV_ALLOW_LOCAL_LIVE=false`,
+   and `APP_ORIGIN` set to the branch alias origin (the per-deployment hostname is
+   rejected).
+2. Send one request with about 2,000 characters of synthetic text and an `Origin`
+   header matching `APP_ORIGIN`. Stream it with a 3-second client timeout, so the
+   client disconnects after the first few `delta` events. Record the request time
+   and the response's request ID.
+3. Expect a function log entry for that request ID with status `499` and no error
+   code, and no `UPSTREAM_TIMEOUT`. The log must contain no submitted or generated
+   text, key, or provider payload.
+4. Check the OpenRouter activity entry for that generation and record exactly what it
+   shows. Do not conclude that billing stopped, because that depends on the host.
+5. Remove the branch-scoped variables and revoke the test key.
 
 ## Local checks
 

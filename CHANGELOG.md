@@ -46,6 +46,18 @@ served live generation since 2026-10-14.
 - Package version `0.1.0` is now `1.0.0`. `package.json` stays `"private": true`,
   which only prevents accidental npm publication.
 
+### Fixed
+
+- A client that stops a translation is now logged as status 499 with no error
+  code, instead of `UPSTREAM_TIMEOUT`. Only the 45-second deadline logs
+  `UPSTREAM_TIMEOUT`.
+- `/api/translate` is opted into Vercel request cancellation through `vercel.json`
+  (`supportsCancellation` for `src/app/api/translate/route.ts` only). The
+  branch Preview's deployment record shows the setting. A live disconnect has not
+  yet been observed on Vercel.
+- Stopping a stream can no longer complete it: a late `done` after abort is
+  ignored, and the upstream provider body is cancelled when parsing stops early.
+
 ### Known limitations
 
 - **GLM quality is accepted, not proven.** The original meaning-preservation target

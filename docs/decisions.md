@@ -307,15 +307,20 @@ These are four separate questions, and only the first two have evidence.
 
 1. *Browser abort.* Stop aborts the client fetch and the UI marks the output
    canceled. Verified by unit and end-to-end tests and manual use.
-2. *Application propagation.* The route combines `request.signal`, the stream's
-   `cancel()`, and the 45-second deadline into one abort signal that aborts the
-   upstream `fetch`. Verified in code and mocked tests only.
-3. *Vercel delivery.* Whether the platform delivers a client disconnect to the
-   function before the response completes is unverified. The one Preview attempt
-   was inconclusive: the request cut off locally logged 200 with 50 output tokens.
-   Why it logged that way was not established. The application logs a canceled
-   request as `UPSTREAM_TIMEOUT`, but that code only means the combined signal
-   fired (disconnect or deadline), so it is not proof of anything upstream.
+2. *Application propagation.* The route combines the client-abort signal (from
+   `request.signal` and the stream's `cancel()`) and the 45-second deadline into one
+   signal that aborts the upstream `fetch`. A client disconnect is logged as status
+   499 with no error code, separate from a deadline `UPSTREAM_TIMEOUT` (504). When
+   parsing stops early, the upstream body is cancelled. Verified in code and mocked
+   tests only.
+3. *Vercel delivery.* `vercel.json` opts only `src/app/api/translate/route.ts` into
+   `supportsCancellation: true`. The branch Preview's deployment record shows this
+   setting, and the local build output matches it (verified 2026-10-14). That is
+   configuration evidence, not delivery evidence: no live disconnect has been
+   observed on Vercel. The one earlier Preview attempt was inconclusive: the request
+   cut off locally logged 200 with 50 output tokens. Before this fix, a canceled
+   request was logged as `UPSTREAM_TIMEOUT`, which conflated a disconnect with a
+   deadline.
 4. *Upstream termination and billing.* OpenRouter documents (checked 2026-10-14)
    that aborting a stream stops processing and billing only for supported hosts,
    and lists InferenceNet, which served 33 of 40 requests in the development run, as

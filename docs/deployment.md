@@ -34,6 +34,7 @@ steps, and each one should be recorded in the decision log.
 | WAF rate-limit rule present (`vercel firewall rules list`) | 2026-10-14 | Verified: "Rate limit translate API", enabled, 5 requests per 60 s |
 | WAF enforcement on Production | 2026-10-13 | Verified while Production was in demo mode: 503 for the first requests, then 429 with `X-Vercel-Mitigated: deny` |
 | OpenRouter account settings | 2026-10-14 | Account setting: a $1/month Production key limit, with auto-recharge disabled, and privacy and ZDR settings applied |
+| Authorized offline benchmark key | 2026-10-15 | Verified: metadata for the local key reported a $5 monthly cap at the technical pilot. Reported: the maintainer confirmed that Vercel uses the same key. The offline study has a $1 target and $3 cumulative ceiling; no key or Vercel setting was changed. This later evidence does not rewrite the October 14 observation. |
 | Protected Preview live streaming | 2026-10-13 | Verified: SSE stream and `done`; logs without text or key |
 | Disabled branch Preview (`MIMUS_MODE=disabled`, temporary branch variable, no provider credentials) | 2026-10-14 | Verified on a Preview only: disabled notice on the page, `POST /api/translate` → 503 `SERVICE_UNAVAILABLE`, and a log entry with status 503. The variable was removed afterwards. Production not tested. |
 | Cancellation opt-in in a deployed build (`vercel inspect <preview> --format json`) | 2026-10-14 | Verified on a branch Preview only: `builds[0].config.vercelConfig.functions["src/app/api/translate/route.ts"].supportsCancellation` is `true`. The local build output agrees (`api/translate.func` has it; `index.func` does not). No model call. |
@@ -443,6 +444,11 @@ same checks, with the end-to-end suite as a separate job. Live evaluation is man
 and opt-in; see [`evals/README.md`](../evals/README.md).
 
 ## Portfolio verification still pending
+
+The [dated local demo check](../evals/results/local-demo-verification-2026-10-15.md)
+records keyboard editing, clearing, sample activation, visible focus, and style
+swap behavior, plus current draft-PR CI evidence. It does not substitute for a
+screen reader, another browser, actual browser zoom, or deployed provider checks.
 
 The benchmark is offline and does not alter Production settings, request
 processing, logging, privacy routing, or persistence. No live model comparisons

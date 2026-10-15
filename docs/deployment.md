@@ -86,8 +86,15 @@ observed, since it cannot be produced from a US network.
 One enforcing custom rule, "Rate limit translate API": `POST`, path starts with
 `/api/translate`, per IP, fixed 60-second window, limit 5, rate-limit action.
 Counters are regional and per IP, so the rule slows one client but does not stop
-distributed abuse and is not a budget control. Custom rules apply to the whole
-Vercel project, including Preview hostnames. Hobby allows up to three custom rules.
+distributed abuse and is not a budget control.
+
+Custom rules are configured per project, but a rule can be limited to one deployment
+environment with an `environment` condition whose value is `preview` or `production`
+([custom rules](https://vercel.com/docs/vercel-firewall/vercel-waf/custom-rules),
+[CLI reference](https://vercel.com/docs/cli/firewall)). The rate-limit rule has no
+`environment` condition, so it also applies to Preview hostnames. Verified 2026-10-14
+with `vercel firewall rules list --expand`, which lists its conditions as `path starts
+with /api/translate` and `method equals POST`.
 
 ## Live release conditions
 
@@ -198,25 +205,23 @@ changed, and no provider call was made.
 | Production variables are the five in [Configuration](#configuration), set for Production only | Verified (names and scope; values not inspected) |
 | Rate-limit rule present and enabled; no deny rule or unpublished draft listed | Verified (`vercel firewall rules list`) |
 | Runbook commands exist: `firewall rules add`, `reorder`, `remove`, `diff`, `publish`; `promote`; `rollback` | Verified in `--help` output, not executed |
-| Deny-rule publish takes effect immediately, and its timing | **Not verified** |
+| Custom-rule changes take effect on publish, without a redeploy (per Vercel's custom-rules docs) | Docs claim. Propagation timing is **not measured** |
 | Key revocation or zeroing stops new provider calls | **Not verified** (needs the live key) |
 | `MIMUS_MODE=disabled` deployment shows the disabled notice and 503 on Vercel | Verified on a branch Preview only (2026-10-14): disabled notice, `POST` → 503 `SERVICE_UNAVAILABLE`, and a matching log entry. Production not tested. See [runbook step 2](#2-disabled-branch-preview-no-provider-credentials--run). |
 | Rollback as a shutdown mechanism | Not relied on (see [Rollback](#rollback)) |
 
-**Rehearsal plan.** A full rehearsal would touch Production, because WAF rules apply
-to the whole project and a Preview cannot isolate a deny rule.
+**Rehearsal plan.** A header-scoped deny rule can be limited to one environment with
+an `environment` condition, so it can be rehearsed on Preview first and then on
+Production. Each publish needs its own approval (section 3 below).
 
-1. *Preview, no provider calls (optional).* Set `MIMUS_MODE=disabled` as a
-   branch-scoped Preview variable, deploy that branch, and confirm the disabled
-   notice and the 503 through Vercel's deployment protection. Preview has no key.
-   Remove the variable afterwards.
-2. *Production header-scoped deny rule (needs approval).* Stage a deny rule that
-   matches `/api/translate` **and** a header such as `x-mimus-rehearsal: 1`, publish
-   it, and record the time until a `POST` carrying that header is blocked. Visitor
-   traffic is unaffected, and no provider call is made. Then remove the rule and
-   publish again. This tests the publish mechanism, not the production-wide deny
-   rule.
-3. *Key and redeploy steps* stay unrehearsed unless the maintainer chooses to
+1. *Preview, no provider calls — done 2026-10-14.* `MIMUS_MODE=disabled` as a
+   branch-scoped Preview variable, confirmed through deployment protection, then
+   removed (runbook section 2).
+2. *Preview header-scoped deny rule (needs approval).* Runbook section 3, phase A.
+3. *Production header-scoped deny rule (needs approval, separate from phase A).*
+   Runbook section 3, phase B. The rule's `environment` condition limits it to
+   Production traffic.
+4. *Key and redeploy steps* stay unrehearsed unless the maintainer chooses to
    interrupt live service.
 
 ## Verification runbook (branch `fix/production-cancellation`)
@@ -268,43 +273,76 @@ vercel env rm MIMUS_MODE preview fix/production-cancellation --yes
 vercel env ls preview
 ```
 
-### 3. Production header-scoped WAF rehearsal — prepared, needs approval
+### 3. Header-scoped WAF deny rehearsal — prepared, needs approval for each publish
 
-WAF rules apply to the whole project. This rule matches only `POST /api/translate`
-with the header `x-mimus-rehearsal: 1`, so visitor traffic is unaffected. Requests in
-this rehearsal count against the rate-limit rule (5 per IP per 60 seconds), so keep
-the total under five. The header condition's JSON form is **not yet verified**. Check
-it against `vercel firewall rules add --help` and the Vercel firewall docs before running.
+**Syntax and behavior, checked against Vercel's docs on 2026-10-14**
+([CLI reference](https://vercel.com/docs/cli/firewall),
+[custom rules](https://vercel.com/docs/vercel-firewall/vercel-waf/custom-rules)):
 
-1. `vercel firewall rules list`. Record the existing rules. Expect only
-   "Rate limit translate API".
-2. Stage the rule with three conditions that AND together (path, method, header):
+- `rules add` stages a draft. Nothing changes for traffic until `vercel firewall publish`.
+  `publish` applies **all** staged drafts for the project, so review `vercel firewall diff`
+  before each publish.
+- Multiple `--condition` flags are AND'd. A `header` condition needs `key`. Operators
+  are `eq`, `sub`, `pre`, `suf`, `re`, `ex`, `inc`, and `gt`, plus their negated forms.
+- `environment` is a condition type with values `preview` or `production`. A rule with
+  `environment eq preview` cannot match Production traffic, and the reverse.
+- A `deny` action returns 403 and stops evaluation of later rules.
+- The existing "Rate limit translate API" rule has no `environment` condition, so it
+  applies to Preview too. Its live configuration is `path starts with /api/translate`,
+  `method equals POST`, 5 requests per 60 seconds per IP. Keep this rehearsal under
+  five `POST`s per minute per IP so the expected result comes from the deny rule.
+
+**Test request bodies use `text/plain`.** The route returns `415 UNSUPPORTED_MEDIA_TYPE`
+before its mode check and before any provider call, so no test can reach a model.
+
+#### Phase A: Preview (approval required before the first publish)
+
+1. Baseline: `vercel firewall rules list --expand` and `vercel firewall diff`. Record that
+   the rate-limit rule is enabled with the conditions above and that no other draft
+   is pending.
+2. Stage the rule with four AND'd conditions:
 
 ```bash
-vercel firewall rules add "Rehearsal deny translate header" \
+vercel firewall rules add "Rehearsal deny translate header (preview)" \
+  --condition '{"type":"environment","op":"eq","value":"preview"}' \
   --condition '{"type":"path","op":"eq","value":"/api/translate"}' \
   --condition '{"type":"method","op":"eq","value":"POST"}' \
-  --condition '{"type":"header","key":"x-mimus-rehearsal","op":"eq","value":"1"}' \
+  --condition '{"type":"header","op":"eq","key":"x-mimus-rehearsal","value":"1"}' \
   --action deny --yes
-vercel firewall diff     # review: no other draft changes should be pending
-vercel firewall publish
+vercel firewall diff     # only the added rule should appear
 ```
 
-3. Blocked: `POST /api/translate` with `x-mimus-rehearsal: 1` and a `text/plain` body.
-   Record the status and the response headers. Expect a firewall block, not an app
-   response.
-4. Unaffected: the same `POST` without the header. Expect `415` from the app, not a
-   firewall block. Also `GET /` should return 200 with the live notice. No provider
-   call is made in either request.
-5. Remove the rule, then publish the removal:
+3. **Approval gate.** Publish only after explicit approval:
 
 ```bash
-vercel firewall rules remove "Rehearsal deny translate header"
-vercel firewall diff
-vercel firewall publish
+vercel firewall publish --yes
 ```
 
-6. Confirm the header request now reaches the app (`415`).
+4. Against a branch Preview URL, through deployment protection (`vercel curl`):
+   - with `x-mimus-rehearsal: 1` and a `text/plain` body: expect `403` from the
+     firewall. Record the status and headers.
+   - without the header, same body: expect `415` from the app.
+   - `GET /`: expect 200 (not a firewall block).
+5. Rate limit intact: `vercel firewall rules list --expand` still shows the rate-limit
+   rule enabled with the same conditions and limit.
+6. Remove the rule, review, and get approval to publish the removal (the approval for
+   phase A covers this step):
+
+```bash
+vercel firewall rules remove "Rehearsal deny translate header (preview)" --yes
+vercel firewall diff     # only the removal should appear
+vercel firewall publish --yes
+```
+
+7. Confirm the header request now returns `415` from the app, not `403`.
+
+#### Phase B: Production (separate approval, before any Production publish)
+
+Repeat phase A with `"value":"production"` in the `environment` condition and the
+name "Rehearsal deny translate header (production)". Test against
+`https://mimus-rewrite.vercel.app`: `403` with the header, `415` without it, and `GET /`
+returns 200. Keep the request count under five per minute per IP. The approval for
+phase A does not cover Production.
 
 ### 4. Production disabled mode, then restore — prepared, needs approval
 
@@ -344,16 +382,74 @@ Not run. The test needs a provider call, so run it only with explicit approval.
    `MIMUS_MODE=live`, `MIMUS_LIVE_COUNTRIES=US`, `MIMUS_DEV_ALLOW_LOCAL_LIVE=false`,
    and `APP_ORIGIN` set to the branch alias origin (the per-deployment hostname is
    rejected).
-2. Send one request with about 2,000 characters of synthetic text and an `Origin`
-   header matching `APP_ORIGIN`. Stream it with a 3-second client timeout, so the
-   client disconnects after the first few `delta` events. Record the request time
-   and the response's request ID.
-3. Expect a function log entry for that request ID with status `499` and no error
-   code, and no `UPSTREAM_TIMEOUT`. The log must contain no submitted or generated
-   text, key, or provider payload.
-4. Check the OpenRouter activity entry for that generation and record exactly what it
-   shows. Do not conclude that billing stopped, because that depends on the host.
-5. Remove the branch-scoped variables and revoke the test key.
+2. Send one streaming request with about 2,000 characters of synthetic text (under the
+   3,000-character limit) as `application/json`, with `Origin` set to `APP_ORIGIN`:
+
+   ```json
+   {
+     "text": "<about 2,000 characters of synthetic text>",
+     "sourceStyle": "human",
+     "targetStyle": "corporate",
+     "intensity": "balanced",
+     "eligibilityConfirmed": true,
+     "privacyNoticeVersion": "openrouter-zdr-v1"
+   }
+   ```
+
+   Abort the client **immediately after the first `delta` event arrives**. Do not use
+   a fixed timeout. A minimal client reads the stream and aborts once the first
+   `delta` frame is in its buffer:
+
+   ```js
+   const controller = new AbortController();
+   const response = await fetch(`${origin}/api/translate`, {
+     method: "POST",
+     headers: { "content-type": "application/json", origin },
+     body: JSON.stringify(payload),
+     signal: controller.signal,
+   });
+   const reader = response.body.getReader();
+   const decoder = new TextDecoder();
+   let buffer = "";
+   for (;;) {
+     const { value, done } = await reader.read();
+     if (done) break;
+     buffer += decoder.decode(value, { stream: true });
+     const requestId = /"requestId":"([^"]+)"/.exec(buffer)?.[1]; // from the meta event
+     if (buffer.includes("event: done")) { /* generation finished first: inconclusive */ break; }
+     if (buffer.includes("event: delta")) { console.log({ requestId }); controller.abort(); break; }
+   }
+   ```
+
+   Record the time, the `requestId` from the `meta` event, and the `x-vercel-id`
+   response header. The `meta` event is the first SSE frame, so the ID is available
+   before the first `delta`.
+3. **Classify the result before reading any logs.**
+   - **Inconclusive:** the `done` event arrived before the abort. The generation
+     completed before cancellation, so nothing was tested. Record it that way and do
+     not rerun it without a new approval.
+   - **Cancelled:** the abort happened after the first `delta` and before `done`. Go to
+     step 4.
+4. **Vercel log correlation.** Find the entry for that `requestId`:
+
+   ```bash
+   vercel logs <branch-alias-url>
+   ```
+
+   Expect status `499` with no `code`, and no `UPSTREAM_TIMEOUT`. A `499` shows that
+   the function saw the disconnect. A `200` with `done` for that request ID means the
+   disconnect was not delivered, and it is a finding to record. Log entries must not
+   contain submitted or generated text, the key, or provider payloads.
+5. **OpenRouter correlation.** Our logs do not carry the provider's generation ID, so
+   the match is approximate: the time window, model `z-ai/glm-5.3-flash`, and the
+   token counts from the matching Vercel log entry. Record what the activity entry
+   shows, including completion status and cost if displayed. Mark the match as
+   approximate in the record.
+6. **Conclusions.** A `499` log entry shows the function observed the disconnect. It
+   does **not** show that generation stopped or that billing stopped. Cancellation
+   does not guarantee an end to provider billing, and the host that serves a request
+   determines what is billed (see [decisions](decisions.md#cancellation-what-is-and-is-not-known)).
+7. Remove the branch-scoped variables and revoke the test key.
 
 ## Local checks
 

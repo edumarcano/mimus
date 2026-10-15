@@ -72,6 +72,7 @@ describe("benchmark datasets", () => {
       expect(new Set(pair.map((item) => item.split)).size).toBe(1);
       expect(new Set(pair.map((item) => item.text)).size).toBe(1);
       expect(pair.every((item) => item.labelSource === "constructed")).toBe(true);
+      expect(pair.every((item) => item.sourceStyle !== item.targetStyle)).toBe(true);
       expect(pair.every((item) => item.expectedStyle === 2 && item.outputText)).toBe(true);
       expect(pair.every((item) => item.mustPreserve.length >= 2)).toBe(true);
       expect(pair.every((item) => item.mustPreserve.every((fact) => !/preserve the source/i.test(fact)))).toBe(true);
@@ -91,6 +92,7 @@ describe("benchmark datasets", () => {
     expect(release).toHaveLength(40);
     expect(new Set(release.map((item) => item.id)).size).toBe(40);
     expect(release.every((item) => item.split === "release")).toBe(true);
+    expect(release.every((item) => item.sourceStyle !== item.targetStyle)).toBe(true);
     expect(release.filter((item) => item.critical)).toHaveLength(10);
     expect(new Set(release.map((item) => `${item.sourceStyle}->${item.targetStyle}`)).size).toBe(20);
     expect(new Set(release.map((item) => item.intensity))).toEqual(

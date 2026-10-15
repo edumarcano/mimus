@@ -80,6 +80,7 @@ for manual meaning and style scoring.
   deterministic checks. Formal meaning and style scores were not committed, and the
   original meaning target was not demonstrated:
   [`evals/results/glm-development.md`](evals/results/glm-development.md).
+
 Meaning preservation is a goal, not a guarantee for any individual result.
 
 ## Run locally

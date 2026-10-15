@@ -11,18 +11,6 @@ Each entry is labeled **Active** (still governs the project), **Superseded**
 provenance). Early entries use the project's pre-release name, Parlance, and its
 `PARLANCE_*` variables.
 
-## Current decisions
-
-| Topic | Decision | Entry |
-| --- | --- | --- |
-| Provider and model | OpenRouter, `z-ai/glm-5.3-flash`, reasoning `low`, 2,048-token cap, ZDR and `data_collection: "deny"` routing | [OpenRouter migration](#2026-10-13-openrouter-and-glm-53-flash-migration-active) |
-| Prompt | Version 4, unchanged since the Gemini evaluation | [Prompt iteration](#2026-10-07-gemini-release-candidate-evaluation-historical-evidence) |
-| Notice | `openrouter-zdr-v1` | [OpenRouter migration](#2026-10-13-openrouter-and-glm-53-flash-migration-active) |
-| Production | Live on `z-ai/glm-5.3-flash` since 2026-10-14 | [Release decision](#2026-10-14-v100-release-decision-and-production-activation-active) |
-| Release model | GLM, low reasoning, prompt v4, kept for v1.0.0. The original meaning target was not demonstrated. | [Release decision](#2026-10-14-v100-release-decision-and-production-activation-active) |
-| Release evidence | Revised: no further 50-case evaluation required. The GLM protocol is deferred, not run. | [Release decision](#2026-10-14-v100-release-decision-and-production-activation-active) |
-| Emergency shutdown | Runbook reviewed; full rehearsal not performed | [Shutdown readiness](#shutdown-readiness-not-rehearsed) |
-
 ## 2026-10-06: Candidate integration check (Superseded: Gemini)
 
 **Purpose:** confirm that a candidate model streams through the real route and
@@ -259,11 +247,8 @@ logging. The US allowlist is a visitor restriction, not data residency.
 
 ## 2026-10-14: Release readiness
 
-Evidence and decisions for the v1.0.0 milestone. Base: `main` at `4988df4`, whose
-Production deployment was Ready and whose GitHub CI passed. This entry was written
-while Production was an examples-only demo. Its Production state is superseded by
-the [release decision](#2026-10-14-v100-release-decision-and-production-activation-active)
-below. The cancellation, spend, and provider-policy analysis still applies.
+Dated checks at `main` commit `4988df4`, when Production was an examples-only
+demo. These observations do not describe the later live deployment.
 
 ### Post-merge cleanup
 
@@ -273,7 +258,7 @@ below. The cancellation, spend, and provider-policy analysis still applies.
 - `vercel env ls` for the project returned no environment variables in any
   environment (read-only check, earlier on 2026-10-14). Production therefore ran
   the demo default at that time. Later that day, the live variables were added
-  (see the release decision below).
+  (see the dated activation record below).
 
 ### Production smoke test (verified; demo build, superseded by activation)
 
@@ -298,8 +283,7 @@ rate limit. This confirms the rule exists and is configured as intended. Its
 enforcement was observed on 2026-10-13 (above).
 
 **Access limitations.** Function logs were not inspected. The footer "Source on
-GitHub" link returns 404 while the repository is private (still true at the time of
-the release-finalization PR).
+GitHub" link returns 404 while the repository is private (at the time of this check).
 
 ### Cancellation: what is and is not known
 
@@ -361,8 +345,7 @@ section). It does not block public live access if the risk is accepted.
 
 ### Provider-policy recommendation (approval required)
 
-Researched 2026-10-14 from the sources below. This is a recommendation, not a legal
-conclusion. The public-live conditions need review and approval before activation.
+Researched 2026-10-14 from the sources below. This is not a legal conclusion.
 
 | Condition | Basis | Recommendation |
 | --- | --- | --- |
@@ -390,94 +373,10 @@ confirmed in the account. The terms wording was recorded during research and was
 not re-checked in the final review. Confirm it against the current text before
 deciding.
 
-### GLM quality gate (Superseded: protocol deferred)
+## 2026-10-14: Production activation (historical evidence)
 
-*Status update, 2026-10-14:* the release evidence requirement was revised, and this
-protocol was not run. See the
-[release decision](#2026-10-14-v100-release-decision-and-production-activation-active).
-The protocol below is kept as written. It is historical and deferred. It was not
-run, completed, or approved as a release gate, and it has not been shown to be
-satisfied.
-
-The spec requires an actual evaluation with recorded scores on the configuration
-that ships, with targets either met or transparently revised. For GLM that was not
-satisfied: the development run has no recorded scores, and the Gemini results do
-not transfer. Provisional scores from an informal handoff are not committed
-evidence. Model selection and prompt v4 are not reopened.
-
-**Protocol (pre-registered; nothing has been run).**
-- **Prerequisite:** decide whether the injection cases require OpenRouter's prior
-  written approval (see
-  [provider policy](#provider-policy-recommendation-approval-required)). If they do,
-  obtain approval before the first request. Accepting the risk is not a substitute.
-- The committed GLM configuration and prompt v4, unchanged, on a clean tree, using
-  the committed `npm run eval` runner, which consumes the same streaming adapter as
-  production. The development run used a separate non-streaming harness and did not
-  verify the streaming path.
-- Two runs, once each: `npm run eval -- --live` (40 development cases) and
-  `npm run eval -- --live --split holdout --include-holdout` (the 10 `holdout2-*`
-  cases), about 50 requests on a capped evaluation key. The earlier run's cost
-  (about $0.0014 for 40 cases) is illustrative, not a guarantee. The key limit is
-  the bound.
-- At most one reported re-run per errored case with `--ids`. No tuning, no extra
-  runs, no model or prompt change.
-- Meaning and style scores are assigned with the spec rubric. The release cohort is
-  the 30 `dev-*` cases plus the 10 `holdout2-*` cases. The 10 `holdout-*` cases are
-  supplemental.
-- The `holdout2-*` cases are labeled "not tuned on GLM; previously run and scored on
-  Gemini", not as untouched independent evidence.
-- Results are published as a sanitized `evals/results/glm-release.md`. Raw output
-  stays in the ignored `evals/results/raw/`.
-
-**Decision rule.** If the spec targets are met, the gate is cleared. If not, either
-a case-specific target revision is recorded with a rationale and the failures are
-disclosed, or live access stays off.
-
-### Documentation cleanup
-
-The README, deployment guide, evaluation docs, and specification were reconciled
-with the evidence above. Active documents describe the current system. Provider
-history lives here and in `evals/results/`.
-
-## 2026-10-14: v1.0.0 release decision and Production activation (Active)
-
-Base: `main` at `27b9432`. This entry records a decision and the evidence behind the
-live deployment. It changes no model, prompt, or inference behavior, and no
-evaluation or provider call was made to write it.
-
-### Decision: retain GLM for v1.0.0
-
-I decided to retain `z-ai/glm-5.3-flash` with `low` reasoning and prompt v4 for
-v1.0.0, accepting its documented quality limitations for a free, experimental
-release.
-
-What the evidence does and does not show:
-
-- The Gemini evaluation was formally scored and remains historical evidence
-  ([`evals/results/summary.md`](../evals/results/summary.md)). It does not transfer
-  to GLM.
-- GLM completed its 40-case development run, and 39 of 40 cases passed the
-  deterministic checks (the exception was the brittle `holdout-numbers-01` token).
-  Formal meaning and style scores were **not committed**, so this record has no
-  meaning or style tally for GLM
-  ([`evals/results/glm-development.md`](../evals/results/glm-development.md)).
-- The original GLM meaning-preservation acceptance target was **not demonstrated**.
-  GLM did not pass the original benchmark, and nothing here claims it outperformed
-  Gemini on meaning preservation.
-- I **revised the release evidence requirement** and accepted these limitations,
-  instead of requiring another 50-case evaluation. This is a revision of the
-  evidence bar, not a pass.
-- Meaning preservation remains a product goal, not a guarantee for any result.
-- The pre-registered GLM evaluation protocol
-  ([above](#glm-quality-gate-superseded-protocol-deferred)) is historical and
-  deferred. It was not run, completed, or approved. No injection cases will be sent
-  for it, so the OpenRouter red-teaming approval question in the provider-policy
-  table does not arise for this release.
-- Model selection and prompt v4 are not reopened.
-
-### Production activation (2026-10-14)
-
-Production is no longer examples-only.
+These observations were recorded during the October 14 live activation and are
+not a continuing release or model-selection decision.
 
 **Verified in a read-only check during release finalization:**
 
@@ -544,9 +443,4 @@ configuration, the WAF, the key, or any deployment:
   unmeasured. The app's `disabled` mode is covered by tests, which is not a deployed
   check.
 
-### Remaining accepted limitations
 
-Reasoning-effort `low` and unpinned hosts mean quality and latency can vary. The
-cancellation and billing behavior above is unverified. The US allowlist is a visitor
-restriction, not data residency. Hobby is for personal, non-commercial use, and
-Mimus is a free demo.

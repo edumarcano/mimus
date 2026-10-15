@@ -307,21 +307,31 @@ These are four separate questions, and only the first two have evidence.
 
 1. *Browser abort.* Stop aborts the client fetch and the UI marks the output
    canceled. Verified by unit and end-to-end tests and manual use.
-2. *Application propagation.* The route combines `request.signal`, the stream's
-   `cancel()`, and the 45-second deadline into one abort signal that aborts the
-   upstream `fetch`. Verified in code and mocked tests only.
-3. *Vercel delivery.* Whether the platform delivers a client disconnect to the
-   function before the response completes is unverified. The one Preview attempt
-   was inconclusive: the request cut off locally logged 200 with 50 output tokens.
-   Why it logged that way was not established. The application logs a canceled
-   request as `UPSTREAM_TIMEOUT`, but that code only means the combined signal
-   fired (disconnect or deadline), so it is not proof of anything upstream.
+2. *Application propagation.* The route combines the client-abort signal (from
+   `request.signal` and the stream's `cancel()`) and the 45-second deadline into one
+   signal that aborts the upstream `fetch`. A client disconnect is logged as status
+   499 with no error code, separate from a deadline `UPSTREAM_TIMEOUT` (504). When
+   parsing stops early, the upstream body is cancelled. Verified in code and mocked
+   tests only.
+3. *Vercel delivery.* `vercel.json` opts only `src/app/api/translate/route.ts` into
+   `supportsCancellation: true`. The branch Preview's deployment record shows this
+   setting, and the local build output matches it (verified 2026-10-14). That is
+   configuration evidence, not delivery evidence: no live disconnect has been
+   observed on Vercel. The one earlier Preview attempt was inconclusive: the request
+   cut off locally logged 200 with 50 output tokens. Before this fix, a canceled
+   request was logged as `UPSTREAM_TIMEOUT`, which conflated a disconnect with a
+   deadline. A live test that aborts right after the first `delta`, and correlates the
+   request ID with Vercel logs and OpenRouter activity, is prepared in
+   [`deployment.md`](deployment.md#5-live-cancellation-test--prepared-needs-approval-spends-provider-credits).
+   It has not been run, and it needs approval because it spends provider credits. If
+   generation finishes before the abort, the result is recorded as inconclusive.
 4. *Upstream termination and billing.* OpenRouter documents (checked 2026-10-14)
    that aborting a stream stops processing and billing only for supported hosts,
    and lists InferenceNet, which served 33 of 40 requests in the development run, as
    not supported. For unsupported hosts, the documentation says the model continues
    and the full response is billed. Neither the app nor Vercel logs can show what a
    specific request cost after an abort; OpenRouter's own activity record could.
+   Cancellation therefore does not guarantee an end to provider billing, on any host.
 
 **Impact.** Stop may not stop spend on some hosts. This is bounded per request by
 input size and the output cap, and in total only by the key's spending limit (next
@@ -500,7 +510,10 @@ controls.
 **Not verified:** function-log contents for live Production requests (Hobby keeps
 logs for one hour, and they were not inspected), non-US region rejection, whether
 Vercel delivers a client disconnect, and whether OpenRouter hosts stop billing after
-Stop. Other provider-policy conditions (model-host terms, regions, hosting) have not
+Stop. The header-scoped WAF deny rehearsal and the live cancellation test are prepared
+([`deployment.md`](deployment.md#3-header-scoped-waf-deny-rehearsal--prepared-needs-approval-for-each-publish)
+and [runbook section 5](deployment.md#5-live-cancellation-test--prepared-needs-approval-spends-provider-credits)),
+and neither has been run. Other provider-policy conditions (model-host terms, regions, hosting) have not
 been separately reviewed. The
 [recommendation table](#provider-policy-recommendation-approval-required) remains
 the reference.
@@ -516,10 +529,13 @@ configuration, the WAF, the key, or any deployment:
 
 - The runbook's CLI command forms (`firewall rules add`, `reorder`, `remove`, `diff`,
   `publish`, plus `promote` and `rollback`) exist in the installed Vercel CLI (62.5.0).
-  They were checked in `--help` output and not executed.
-- WAF rules apply to the whole project, so a Preview cannot isolate a deny-rule
-  rehearsal. A header-scoped rule on Production would exercise the publish mechanism
-  without affecting visitors, but it needs separate approval.
+  They were checked in `--help` output and against Vercel's CLI reference, and not executed.
+- Custom rules are configured per project, but an `environment` condition
+  (`preview` or `production`) limits a rule to one environment. A header-scoped deny
+  rule can therefore be rehearsed on Preview first and then on Production, with a
+  separate approval for each publish. The existing rate-limit rule has no environment
+  condition, so it applies to Preview too. The earlier statement that a Preview cannot
+  isolate a deny rule was wrong, and this entry replaces it.
 - After the activation redeploy, the previous Production deployment may itself be a
   live build. Rollback is therefore **not** a guaranteed way to disable inference,
   and the runbook does not rely on it.

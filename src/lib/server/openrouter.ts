@@ -226,7 +226,11 @@ async function* readSseEvents(
       yield finish;
     }
   } finally {
-    reader.releaseLock();
+    // Cancel, do not just release the lock. When parsing stops early (a
+    // malformed frame, a provider error, or the consumer returning), the
+    // provider connection must close. Otherwise generation continues unobserved.
+    // Cancelling after a normal end is a no-op.
+    void reader.cancel().catch(() => undefined);
   }
 }
 

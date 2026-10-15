@@ -423,6 +423,24 @@ describe("Translator workflow", () => {
     expect(textarea().disabled).toBe(false);
   });
 
+  it("Stop aborts the browser request signal", async () => {
+    const s = controlledStream();
+    const fetchMock = vi.fn().mockResolvedValue(s.response);
+    vi.stubGlobal("fetch", fetchMock);
+    render(<Translator config={cfg("live")} />);
+    await fillAndSubmit();
+    s.push(delta("Par"));
+    await waitFor(() => expect(output()).toBe("Par"));
+
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    expect(init.signal?.aborted).toBe(false);
+    fireEvent.click(btn("Stop"));
+
+    expect(init.signal?.aborted).toBe(true);
+    expect(status()).toBe("Stopped");
+    expect(output()).toBe("Par");
+  });
+
   it("Stop then immediate resubmit never shows old-run text", async () => {
     const first = controlledStream();
     const second = controlledStream();

@@ -330,6 +330,63 @@ describe("streamRewrite", () => {
     });
   });
 
+  it("cancels the upstream body when parsing stops early", async () => {
+    const encoder = new TextEncoder();
+    const cancelUpstream = vi.fn();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      body: new ReadableStream({
+        start(controller) {
+          // A valid delta followed by a provider error frame. Parsing stops
+          // here, and the provider connection must not stay open.
+          controller.enqueue(
+            encoder.encode(
+              'data: {"choices":[{"delta":{"content":"a"},"finish_reason":null}]}\n\n' +
+                'data: {"choices":[{"error":{"message":"provider failure"}}]}\n\n',
+            ),
+          );
+        },
+        cancel: cancelUpstream,
+      }),
+    });
+
+    await expect(collectEvents()).rejects.toMatchObject({
+      code: "SERVICE_UNAVAILABLE",
+    });
+    expect(cancelUpstream).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancels the upstream body when the consumer stops before the stream ends", async () => {
+    const encoder = new TextEncoder();
+    const cancelUpstream = vi.fn();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      body: new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            encoder.encode(
+              'data: {"choices":[{"delta":{"content":"a"},"finish_reason":null}]}\n\n',
+            ),
+          );
+        },
+        cancel: cancelUpstream,
+      }),
+    });
+
+    const iterator = streamRewrite(
+      { systemInstruction: "s", input: "u" },
+      new AbortController().signal,
+    )[Symbol.asyncIterator]();
+    expect(await iterator.next()).toEqual({
+      done: false,
+      value: { type: "delta", text: "a" },
+    });
+    await iterator.return?.(undefined);
+    expect(cancelUpstream).toHaveBeenCalledTimes(1);
+  });
+
   it("throws SERVICE_UNAVAILABLE when choice.error is present", async () => {
     mockFetchResponse({
       chunks: [

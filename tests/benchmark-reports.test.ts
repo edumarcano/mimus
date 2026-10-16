@@ -24,6 +24,78 @@ function judgment(overrides: Partial<JudgmentRecord> = {}): JudgmentRecord {
 }
 
 describe("benchmark reporting", () => {
+  it("counts missing judgments across the full reference cohort and each split", () => {
+    const records = ["calibration", "validation"].flatMap((split) =>
+      [0, 1].map((index) =>
+        generation({
+          id: `${split}-${index}`,
+          caseId: `${split}-${index}`,
+          case: {
+            ...generation().case,
+            split: split as "calibration" | "validation",
+            labelSource: "constructed",
+            expectedMeaning: 2,
+            expectedStyle: 2,
+          },
+        }),
+      ),
+    );
+    const scores = [
+      judgment({ generationId: "calibration-0" }),
+      judgment({
+        id: "other-judge",
+        generationId: "validation-0",
+        evaluatorId: "other",
+      }),
+    ];
+    const result = buildReport(records, scores, []);
+
+    for (const scorerId of ["judge", "other"]) {
+      for (const split of ["calibration", "validation"]) {
+        const resolved =
+          (scorerId === "judge" ? "calibration" : "validation") === split
+            ? 1
+            : 0;
+        expect(result.summary.evaluatorValidation).toContainEqual(
+          expect.objectContaining({
+            scorer: "evaluator",
+            scorerId,
+            split,
+            expectedExamples: 2,
+            resolved,
+            unresolved: 2 - resolved,
+            meaningDenominator: resolved,
+            meaningUnresolved: 2 - resolved,
+            styleDenominator: resolved,
+            styleUnresolved: 2 - resolved,
+          }),
+        );
+      }
+    }
+  });
+
+  it("reports an explicitly selected evaluator even before its first judgment", () => {
+    const record = generation({
+      case: {
+        ...generation().case,
+        labelSource: "constructed",
+        expectedMeaning: 2,
+        expectedStyle: 2,
+      },
+    });
+    const result = buildReport([record], [], [], "not-started");
+    expect(result.summary.evaluatorValidation).toEqual([
+      expect.objectContaining({
+        scorerId: "not-started",
+        expectedExamples: 1,
+        resolved: 0,
+        unresolved: 1,
+        meaningUnresolved: 1,
+        styleUnresolved: 1,
+      }),
+    ]);
+  });
+
   it("requires complete LLM judgments for every release observation",()=>{
     const cases = loadExperiment("evals/experiments/release-template.json").cases;
     const records = cases.map(c=>generation({id:c.id,caseId:c.id,case:c,transport:"openrouter"}));

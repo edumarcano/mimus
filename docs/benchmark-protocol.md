@@ -134,7 +134,7 @@ benchmark is an offline development tool. It does not change production model
 selection at runtime, persistence, logging, privacy routing, or the production
 request flow. CI uses fixtures and mocks and never calls a provider.
 
-## Operational and portfolio status
+## Study status
 
 The technical pilot, evaluator calibration/validation, and initial challenge-set
 cascade simulation have dated records in `evals/results/`. Calibration preserves

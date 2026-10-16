@@ -107,8 +107,8 @@ historical Gemini release candidate met the earlier meaning (36/40) and style
 (40/40) thresholds but had one critical meaning score of 0 (9/10 cases without a
 zero); that target was revised for that evaluated configuration. Its cohort was
 the 30 `dev-*` cases plus the 10 `holdout2-*` cases; `holdout-*` was supplemental.
-The fresh release set will be scored only after model configurations and
-selection rules are frozen.
+The fresh release set was scored after the model configurations and selection
+rules were frozen; see the [release comparison](results/release-run-2026-10-15.md).
 
 Published results are reviewed summaries. Benchmark examples are fictional
 synthetic text, never user input.

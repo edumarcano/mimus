@@ -443,7 +443,7 @@ Not run. The test needs a provider call, so run it only with explicit approval.
 same checks, with the end-to-end suite as a separate job. Live evaluation is manual
 and opt-in; see [`evals/README.md`](../evals/README.md).
 
-## Portfolio verification still pending
+## Pending operational verification
 
 The [dated local demo check](../evals/results/local-demo-verification-2026-10-15.md)
 records keyboard editing, clearing, sample activation, visible focus, and style
@@ -458,9 +458,8 @@ processing, logging, privacy routing, or persistence. No live model comparisons
 are implied by the benchmark datasets or protocol. Paid provider runs require a
 separate approval after their preflight cost estimate is reviewed.
 
-The following operational checks still need dated evidence before corresponding
-v1 portfolio claims are made: the Preview and Production header-scoped WAF deny
-rehearsals, Production disabled
+Record dated evidence before describing these checks as verified for v1: the
+Preview and Production header-scoped WAF deny rehearsals, Production disabled
 mode and restoration, and one live cancellation correlation. WAF publishes,
 Production interruption, and live cancellation each have separate approval gates
 in the runbook above. Application-side cancellation does not prove that an

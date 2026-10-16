@@ -1,7 +1,6 @@
 import type { Intensity, StyleId } from "../../src/lib/styles";
 import type { NormalizedCompletion } from "../evaluate-stream";
 
-export const SCHEMA_VERSION = 1 as const;
 export const FAILURE_TAGS = ["invention", "commitment", "attribution", "negation", "omission", "numbers_dates", "instruction_handling", "style_intensity", "incomplete"] as const;
 export type FailureTag = typeof FAILURE_TAGS[number];
 export type Score = 0 | 1 | 2;

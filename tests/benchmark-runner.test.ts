@@ -57,9 +57,9 @@ describe("benchmark runner", () => {
   });
   it("does not turn absent billing into free usage or double charge reasoning",()=>{
     const c = base().manifest.configurations[0];
-    expect(usageCost(c,null)).toBeNull();
-    expect(usageCost(c,{inputTokens:1,outputTokens:2})).toBeNull();
-    expect(usageCost(c,{costUsd:.02})).toBe(.02);
+    expect(usageCost(null)).toBeNull();
+    expect(usageCost({inputTokens:1,outputTokens:2})).toBeNull();
+    expect(usageCost({costUsd:.02})).toBe(.02);
     expect(estimatedUsageCost(c,{inputTokens:100,outputTokens:10,reasoningTokens:5},1)).toBe((100*c.inputUsdPerMillion+10*c.outputUsdPerMillion)/1e6);
   });
 });

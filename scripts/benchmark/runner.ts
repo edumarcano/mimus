@@ -7,7 +7,7 @@ import { consumeAdapterStream } from "../evaluate-stream";
 import { REQUEST_INTERVAL_MS } from "../evaluate";
 import { hash, loadExperiment, object } from "./manifest";
 import { benchmarkPrompt } from "./prompt";
-import { estimateMaximumCost } from "./evaluators";
+import { EvaluationDeadlineError, estimateMaximumCost } from "./evaluators";
 import { append, readJsonl, reserve, ROOT, runDirectory, writeOnce } from "./store";
 import type { BenchmarkConfig, GenerationRecord, JudgmentRecord, Manifest, Usage } from "./types";
 
@@ -174,7 +174,7 @@ export async function judgeExperiment(experiment: Experiment, options: RunnerOpt
     const reservation = estimateMaximumCost(generation,evaluator);
     const noRequest = generation.normalizedCompletion !== "complete" || Boolean(generation.errorCode);
     const settle = options.fixture || noRequest ? () => {} : reserve(id, options.runId, experiment.manifestHash, reservation, experiment.manifest.maxUsd);
-    const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), REQUEST_DEADLINE_MS);
+    const controller = new AbortController(); const timer = setTimeout(() => controller.abort(new EvaluationDeadlineError()), REQUEST_DEADLINE_MS);
     const result = options.fixture || noRequest ? { schemaVersion: 1 as const, kind: "judgment" as const, id, runId: options.runId, generationId: generation.id, evaluatorId: evaluator.id, evaluator, rubricVersion: "1", status: "unresolved" as const, meaning: null, style: null, tags: [], evidence: options.fixture ? ["Fixture only; no semantic quality judgment"] : [], probabilities: null, date: new Date().toISOString(), durationMs: 0, usage: null, costUsd: 0, estimatedCostUsd: 0, errorCode: options.fixture ? "FIXTURE_ONLY" : "incomplete_generation" } : await evaluate(generation, evaluator, apiKey, controller.signal).finally(() => { clearTimeout(timer); controller.abort(); });
     clearTimeout(timer);
     const record = { ...result, id };

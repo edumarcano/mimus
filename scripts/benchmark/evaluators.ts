@@ -13,6 +13,13 @@ const CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
 const DECISIONS_URL = "https://openrouter.ai/api/alpha/decisions";
 const RUBRIC_VERSION = "1";
 
+export class EvaluationDeadlineError extends Error {
+  constructor() {
+    super("Evaluation request deadline exceeded");
+    this.name = "EvaluationDeadlineError";
+  }
+}
+
 const FAILURE_TAG_DEFINITIONS: Record<FailureTag, string> = {
   invention: "The rewrite adds a factual claim not supported by the source.",
   commitment: "The rewrite changes certainty, modality, conditions, or commitments.",
@@ -457,6 +464,9 @@ export async function evaluateOutput(
     }
     return await evaluateWithLlm(generation, evaluator, apiKey, signal, startedAt);
   } catch (error) {
+    if (signal.reason instanceof EvaluationDeadlineError) {
+      return unresolved(generation, evaluator, startedAt, "request_deadline");
+    }
     abortIfRequested(signal);
     const name = isRecord(error) && typeof error.name === "string" ? error.name : "";
     return unresolved(

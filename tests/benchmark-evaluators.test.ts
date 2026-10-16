@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { evaluateOutput } from "../scripts/benchmark/evaluators";
+import { EvaluationDeadlineError, evaluateOutput } from "../scripts/benchmark/evaluators";
 import type { BenchmarkConfig, GenerationRecord } from "../scripts/benchmark/types";
 import { FAILURE_TAGS } from "../scripts/benchmark/types";
 
@@ -214,6 +214,29 @@ describe("evaluateOutput", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
     await expect(evaluateOutput(generation(), evaluator(), "key", controller.signal)).rejects.toBe(reason);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("records an in-flight request deadline as unresolved with unknown cost", async () => {
+    const controller = new AbortController();
+    const fetchMock = vi.fn((_input: RequestInfo | URL, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => reject(init.signal?.reason), { once: true });
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const resultPromise = evaluateOutput(generation(), evaluator(), "key", controller.signal);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const timer = setTimeout(() => controller.abort(new EvaluationDeadlineError()), 0);
+    const result = await resultPromise;
+    clearTimeout(timer);
+
+    expect(result.status).toBe("unresolved");
+    expect(result.errorCode).toBe("request_deadline");
+    expect(result.usage).toBeNull();
+    expect(result.costUsd).toBeNull();
+    expect(result.estimatedCostUsd).toBeGreaterThan(0);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

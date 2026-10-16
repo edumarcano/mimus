@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MODEL_CONFIG } from "@/lib/server/model-config";
 import { ERROR_MESSAGES } from "@/lib/server/errors";
 import { streamRewrite } from "@/lib/server/openrouter";
 
@@ -82,7 +81,7 @@ async function collectEvents(
 }
 
 describe("streamRewrite", () => {
-  it("calls OpenRouter chat completions once with the migration body", async () => {
+  it("calls OpenRouter once with the adopted Gemini minimal configuration", async () => {
     mockFetchResponse({
       chunks: [
         'data: {"choices":[{"delta":{"content":"Hello"},"finish_reason":null}]}\n\n',
@@ -106,16 +105,16 @@ describe("streamRewrite", () => {
     expect(headers["X-Title"]).toBeUndefined();
 
     const body = JSON.parse(init.body as string) as Record<string, unknown>;
-    expect(body.model).toBe(MODEL_CONFIG.model);
+    expect(body.model).toBe("google/gemini-3.5-flash-lite");
     expect(body.messages).toEqual([
       { role: "system", content: "sys" },
       { role: "user", content: "user" },
     ]);
-    expect(body.max_tokens).toBe(MODEL_CONFIG.maxOutputTokens);
-    expect(body.reasoning).toEqual({ effort: MODEL_CONFIG.reasoningEffort });
+    expect(body.max_tokens).toBe(2048);
+    expect(body.reasoning).toEqual({ effort: "minimal" });
     expect(body.provider).toEqual({
-      data_collection: MODEL_CONFIG.dataCollection,
-      zdr: MODEL_CONFIG.zdr,
+      data_collection: "deny",
+      zdr: true,
       require_parameters: true,
     });
     expect(body.require_parameters).toBeUndefined();

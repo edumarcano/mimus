@@ -66,6 +66,9 @@ test.describe("live mode (mocked API)", () => {
 
     await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.goto("/");
+    await expect(page.getByTestId("availability")).toContainText(
+      "Gemini 3.5 Flash-Lite",
+    );
 
     const translate = page.getByRole("button", { name: "Translate" });
     await expect(translate).toBeDisabled();

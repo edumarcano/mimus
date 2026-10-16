@@ -14,6 +14,21 @@ steps, and each one should be recorded in the decision log.
 - Check Vercel's current deployment and environment variables before operations;
   the dated evidence below is not a live configuration inventory.
 
+### Gemini adoption rollout
+
+The committed configuration adopts Gemini minimal; Production activation is
+pending. The [dated local checks](../evals/results/gemini-adoption-2026-10-16.md)
+record model/route preflight, two completed synthetic requests, and the observed
+GLM deployment candidate for rollback. Before merging, refresh its eligibility
+and verify that it is still the deployment assigned to Production. After the
+authorized merge and Git-triggered deployment, confirm the deployed commit and
+the Gemini live banner, run the two authorized Production smoke requests, and
+inspect metadata-only logs promptly. Keep Preview in demo mode.
+
+If routing, streaming, reasoning isolation, or output formatting breaks, use
+[Rollback](#rollback) to restore that GLM deployment; if unavailable, revert the
+adoption change and redeploy. Record the observations and confirm recovery.
+
 ### Evidence labels
 
 | Label | Meaning |
@@ -426,7 +441,8 @@ Not run. The test needs a provider call, so run it only with explicit approval.
    disconnect was not delivered, and it is a finding to record. Log entries must not
    contain submitted or generated text, the key, or provider payloads.
 5. **OpenRouter correlation.** Our logs do not carry the provider's generation ID, so
-   the match is approximate: the time window, model `z-ai/glm-5.3-flash`, and the
+   the match is approximate: the time window, the model ID in the deployed
+   `MODEL_CONFIG` (Gemini after adoption), and the
    token counts from the matching Vercel log entry. Record what the activity entry
    shows, including completion status and cost if displayed. Mark the match as
    approximate in the record.

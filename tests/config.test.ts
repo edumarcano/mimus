@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { getPublicConfig, getServerConfig } from "@/lib/server/config";
-import { MODEL_PUBLIC_LABEL } from "@/lib/server/model-config";
 
 const ENV_KEYS = [
   "MIMUS_MODE",
@@ -162,6 +161,6 @@ describe("getPublicConfig", () => {
     expect(JSON.stringify(pub)).not.toContain("secret-key");
     expect(JSON.stringify(pub)).not.toContain("localhost");
     expect(pub.limits.maxInputCodePoints).toBe(3000);
-    expect(pub.modelLabel).toBe(MODEL_PUBLIC_LABEL);
+    expect(pub.modelLabel).toBe("Gemini 3.5 Flash-Lite");
   });
 });

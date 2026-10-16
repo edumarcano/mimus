@@ -56,7 +56,7 @@ the environment or the browser.
 
 ## Model and privacy
 
-Live mode calls OpenRouter with `z-ai/glm-5.3-flash` (low reasoning, 2,048-token
+Live mode calls OpenRouter with `google/gemini-3.5-flash-lite` (minimal reasoning, 2,048-token
 output cap) and requests zero-data-retention endpoints with data collection
 denied. Hosts are not pinned, so behavior can vary between requests. The choice
 and its trade-offs are explained in the [case study](docs/case-study.md).
@@ -89,8 +89,9 @@ Gemini minimal: it met the frozen automated targets with 37/40 full-meaning and
 37/40 full-style scores. Haiku low scored 38/40 and 23/40, with one unresolved
 judgment. Eight blind human audits agreed with the judge on meaning in 7/8 and
 style in 4/8; only one audited output was Gemini. These are automated results with
-limited human auditing, not independently validated accuracy. Runtime adoption
-remains pending; the live configuration above is still GLM.
+limited human auditing, not independently validated accuracy. The committed runtime
+configuration adopts Gemini minimal; Production activation and deployed smoke checks
+remain pending (see the [adoption decision](docs/decisions.md#2026-10-16-gemini-minimal-adoption-committed-configuration-production-activation-pending)).
 The older **Gemini** release-candidate evaluation remains historical evidence for
 that configuration only ([summary](evals/results/summary.md)). The **GLM** run
 completed 40 requests and 39 passed deterministic checks, but has no committed

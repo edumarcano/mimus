@@ -94,9 +94,15 @@ advances Gemini minimal and Haiku low. The
 material meaning failures and fresh-judge disagreements on unchanged text. The
 [development cascade](../evals/results/development-cascade-2026-10-15.md) leaves
 threshold selection inconclusive because two LLM baselines are unresolved.
-Fresh release assessment, final human auditing, and the shipping-model decision
-remain pending. The historical corpus and its observations retain their original
-meaning.
+The [fresh release comparison](../evals/results/release-run-2026-10-15.md) recommends
+Gemini minimal under the frozen automated gates: 37/40 full-meaning and 37/40
+full-style scores. Haiku low scored 38/40 and 23/40, with one noncritical unresolved
+judgment, so it missed the style target. The eight blind human audits agreed with
+Argon on meaning in 7/8 and style in 4/8; seven examples were Haiku and only one
+was Gemini. Both score sets remain unchanged. This limited, uneven human sample
+does not independently establish the recommended model's correctness, and
+possible bias from Argon and Gemini sharing a vendor was not measured. Runtime
+adoption remains pending. The historical corpus retains its original meaning.
 
 ### One failure and its fix
 
@@ -191,7 +197,8 @@ The project was built with AI coding agents under written rules: a repository
 instruction file, reusable planning, implementation, regression, and review skills,
 and separate worker roles for engineering and for interface and documentation work.
 I set product priorities and the study budget, approved major choices, completed
-twelve blind calibration reviews and three separate adjudications, and performed
+twenty blind reviews (twelve calibration and eight final audits) and three
+separate calibration adjudications, and performed
 the manual UI checks recorded here. Coding agents contributed substantially to
 planning, implementation, integration, automated validation, and review. I remain
 responsible for scope and final decisions. The evidence in this repository

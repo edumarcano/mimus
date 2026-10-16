@@ -1,7 +1,7 @@
 # Offline benchmark protocol
 
-This protocol describes the planned v1 benchmark. Dataset files and software
-support do not imply that model calls have run or that any model has passed.
+This protocol defines the v1 benchmark. Dated records at the end document the
+completed study; dataset files and software alone do not establish results.
 Live runs require a separate spend approval after a preflight reports expected
 cost. The experiment targets $1 and has a $3 cumulative ceiling.
 
@@ -145,9 +145,12 @@ all failed and unresolved observations. The [difficult-case repeats](../evals/re
 retain observed meaning failures; Gemini minimal and Haiku low proceed unchanged
 under the frozen release manifest. The [final audit sampling rule](../evals/results/release-audit-rule-2026-10-15.md)
 is recorded before release calls. The [fresh collection record](../evals/results/release-run-2026-10-15.md)
-preserves complete generation coverage and one unresolved judgment. Fresh release
-assessment, final human auditing, and
-the shipping-model decision remain pending. The [local demo verification record](../evals/results/local-demo-verification-2026-10-15.md)
+preserves complete generation coverage, one unresolved judgment, and the eight
+completed blind human audits. Gemini minimal meets the automated targets and is
+recommended for v1; runtime adoption remains pending. Exact human/Argon agreement
+is 7/8 for meaning and 4/8 for style, with seven Haiku examples and only one Gemini
+example. These limited labels do not independently validate the recommendation.
+The [local demo verification record](../evals/results/local-demo-verification-2026-10-15.md)
 separates automated keyboard/browser checks from maintainer Edge, 200% zoom, and
 Narrator observations, including the reported defects and their successful retests.
 Provider-operation checks remain separate from these local UI observations.

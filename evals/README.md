@@ -2,8 +2,8 @@
 
 The repository keeps its original 50-case corpus and adds separate data for a
 reproducible v1 benchmark. The original records and split meanings are preserved.
-The benchmark design in [`docs/benchmark-protocol.md`](../docs/benchmark-protocol.md)
-describes planned experiments, not completed model results.
+The frozen protocol in [`docs/benchmark-protocol.md`](../docs/benchmark-protocol.md)
+defines the experiments; dated records below document their results and limits.
 
 The synthetic set in [`cases.jsonl`](cases.jsonl) has 50 fictional cases:
 
@@ -22,7 +22,7 @@ not a guarantee for any individual result.
 | --- | --- | --- |
 | [`datasets/screening.json`](datasets/screening.json) | 12 IDs selected from existing development cases | Development screen; not new cases |
 | [`datasets/evaluator-challenge.jsonl`](datasets/evaluator-challenge.jsonl) | 20 source passages, each with a faithful and deliberately flawed rewrite; 12 calibration pairs and 8 validation pairs | Constructed reference labels; not human-validated ground truth |
-| [`datasets/release-v1.jsonl`](datasets/release-v1.jsonl) | 40 fresh fictional cases across all 20 directed style pairs, including 10 critical cases | Reserved for final comparison after configurations are frozen |
+| [`datasets/release-v1.jsonl`](datasets/release-v1.jsonl) | 40 fictional cases across all 20 directed style pairs, including 10 critical cases | Evaluated after finalist freeze; further tuning consumes its holdout status |
 
 Dated records below establish which experiments ran and what they observed;
 the protocol alone does not establish a completed comparison or shipping winner.
@@ -44,13 +44,13 @@ The human review budget is at most 25 outputs: 12 calibration, 8 audit, and up t
 | [`results/development-cascade-2026-10-15.md`](results/development-cascade-2026-10-15.md) | Independent decision/LLM routes with validation separate | Formal threshold selection inconclusive; cost and duration components reported |
 | [`results/repeatability-2026-10-15.md`](results/repeatability-2026-10-15.md) | Three attempts on ten difficult cases per finalist | Meaning failures retained; Gemini minimal and Haiku low proceed unchanged |
 | [`results/release-audit-rule-2026-10-15.md`](results/release-audit-rule-2026-10-15.md) | Final eight-review sampling rule | Frozen before release calls; blind scores remain separate |
-| [`results/release-run-2026-10-15.md`](results/release-run-2026-10-15.md) | Fresh release collection and phase-end costs | 80 complete generations; 79 resolved judgments, one deadline; eight human audits pending |
+| [`results/release-run-2026-10-15.md`](results/release-run-2026-10-15.md) | Fresh release comparison and eight blind audits | Gemini minimal meets automated targets; recommendation pending adoption; audit style disagreement and limited model coverage retained |
 | [`results/local-demo-verification-2026-10-15.md`](results/local-demo-verification-2026-10-15.md) | Local keyboard, browser, zoom, and Narrator checks | Includes maintainer observations and corrected accessibility defects |
 
 Historical records do not establish the quality of planned benchmark
 configurations. Preserve them as dated observations; do not combine their scores
-with fresh release results. Gemini results apply only to the evaluated Gemini
-configuration, not to GLM.
+with fresh release results. Each model result applies only to its evaluated
+configuration and cohort.
 
 ## Existing evaluation runner
 

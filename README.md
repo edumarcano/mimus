@@ -84,9 +84,13 @@ review is limited to calibration and a small audit. The benchmark and data are
 described in [the protocol](docs/benchmark-protocol.md) and
 [evaluation guide](evals/README.md).
 
-Dated [benchmark records](evals/README.md#records) distinguish observed model,
-evaluator, and prompt results from the remaining protocol. They do not establish
-a shipping winner or completed release evaluation.
+The [fresh release comparison](evals/results/release-run-2026-10-15.md) recommends
+Gemini minimal: it met the frozen automated targets with 37/40 full-meaning and
+37/40 full-style scores. Haiku low scored 38/40 and 23/40, with one unresolved
+judgment. Eight blind human audits agreed with the judge on meaning in 7/8 and
+style in 4/8; only one audited output was Gemini. These are automated results with
+limited human auditing, not independently validated accuracy. Runtime adoption
+remains pending; the live configuration above is still GLM.
 The older **Gemini** release-candidate evaluation remains historical evidence for
 that configuration only ([summary](evals/results/summary.md)). The **GLM** run
 completed 40 requests and 39 passed deterministic checks, but has no committed

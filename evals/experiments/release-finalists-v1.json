@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "release-finalists-v1",
+  "stage": "release",
+  "dataset": "evals/datasets/release-v1.jsonl",
+  "promptVersion": "4",
+  "configurations": [
+    {
+      "id": "haiku-low",
+      "model": "anthropic/claude-haiku-5.5",
+      "role": "generator",
+      "reasoning": { "effort": "low" },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "gemini-minimal",
+      "model": "google/gemini-3.5-flash-lite",
+      "role": "generator",
+      "reasoning": { "effort": "minimal" },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.3,
+      "outputUsdPerMillion": 2.5
+    },
+    {
+      "id": "judge-argon",
+      "model": "google/gemini-4-argon",
+      "role": "llm",
+      "reasoning": { "effort": "low" },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 2,
+      "outputUsdPerMillion": 10
+    }
+  ],
+  "repetitions": 1,
+  "seed": 20261015,
+  "targetUsd": 1,
+  "maxUsd": 3,
+  "pricingDate": "2026-10-15",
+  "caseIds": [
+    "release-v1-01", "release-v1-02", "release-v1-03", "release-v1-04", "release-v1-05",
+    "release-v1-06", "release-v1-07", "release-v1-08", "release-v1-09", "release-v1-10",
+    "release-v1-11", "release-v1-12", "release-v1-13", "release-v1-14", "release-v1-15",
+    "release-v1-16", "release-v1-17", "release-v1-18", "release-v1-19", "release-v1-20",
+    "release-v1-21", "release-v1-22", "release-v1-23", "release-v1-24", "release-v1-25",
+    "release-v1-26", "release-v1-27", "release-v1-28", "release-v1-29", "release-v1-30",
+    "release-v1-31", "release-v1-32", "release-v1-33", "release-v1-34", "release-v1-35",
+    "release-v1-36", "release-v1-37", "release-v1-38", "release-v1-39", "release-v1-40"
+  ]
+}

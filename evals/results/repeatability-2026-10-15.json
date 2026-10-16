@@ -1,0 +1,1535 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-study-evidence",
+  "runId": "development-hard-repeat-v1",
+  "provenance": {
+    "schemaVersion": 1,
+    "manifestHash": "7ccdecdf10f9227e6b208c8b44b06ec8e2215400aee870bc4a9e7b587d237ba2",
+    "datasetHash": "f8708fb4ac18a67da5757979aa42d89728aee931763ee1822e22310850860ee6",
+    "sourceHash": "885ffcad154564abfe20ac3525675412918fda2f1ec2e25fa97cc6dc1a668ec8",
+    "gitRevision": "03ac8b27a7bb966e12ca841aa0e65f187a08ef9e",
+    "dirty": false,
+    "transport": "openrouter"
+  },
+  "manifest": {
+    "schemaVersion": 1,
+    "id": "development-hard-repeat-v1",
+    "stage": "repeat",
+    "dataset": "evals/cases.jsonl",
+    "promptVersion": "4",
+    "configurations": [
+      {
+        "id": "haiku-low",
+        "model": "anthropic/claude-haiku-5.5",
+        "role": "generator",
+        "reasoning": {
+          "effort": "low"
+        },
+        "maxOutputTokens": 2048,
+        "inputUsdPerMillion": 0.1,
+        "outputUsdPerMillion": 0.5
+      },
+      {
+        "id": "gemini-minimal",
+        "model": "google/gemini-3.5-flash-lite",
+        "role": "generator",
+        "reasoning": {
+          "effort": "minimal"
+        },
+        "maxOutputTokens": 2048,
+        "inputUsdPerMillion": 0.3,
+        "outputUsdPerMillion": 2.5
+      },
+      {
+        "id": "judge-argon",
+        "model": "google/gemini-4-argon",
+        "role": "llm",
+        "reasoning": {
+          "effort": "low"
+        },
+        "maxOutputTokens": 2048,
+        "inputUsdPerMillion": 2,
+        "outputUsdPerMillion": 10
+      }
+    ],
+    "repetitions": 3,
+    "seed": 20261015,
+    "targetUsd": 1,
+    "maxUsd": 3,
+    "pricingDate": "2026-10-15",
+    "caseIds": [
+      "dev-pair-10",
+      "dev-pair-12",
+      "dev-pair-06",
+      "dev-pair-08",
+      "dev-dates-01",
+      "holdout-dates-01",
+      "holdout-tentative-01",
+      "dev-pair-01",
+      "dev-conditional-01",
+      "dev-pair-04"
+    ]
+  },
+  "officialSummary": {
+    "groups": [
+      {
+        "configId": "gemini-minimal",
+        "model": "google/gemini-3.5-flash-lite",
+        "reasoning": "{\"effort\":\"minimal\"}",
+        "configHash": "d83558f9855fe7d6b6adf85c06b0473b0ce4d2195f6b9d6cb9064a2fafbb71b0",
+        "promptVersion": "4",
+        "split": "development",
+        "repetition": 0,
+        "generated": 10,
+        "uniqueCases": 10,
+        "errors": 0,
+        "incomplete": 0,
+        "unresolved": 0,
+        "meaning2": 8,
+        "style2": 9,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 0,
+        "eligibleReleaseEvidence": false,
+        "p50FirstContentMs": 641,
+        "p95FirstContentMs": 799,
+        "p50DurationMs": 832,
+        "p95DurationMs": 1045,
+        "generationCostUsd": 0.0018613,
+        "judgingCostUsd": 0.019077999999999998,
+        "humanReviews": 0,
+        "fixtureRecords": 0,
+        "reusedObservations": 10
+      },
+      {
+        "configId": "gemini-minimal",
+        "model": "google/gemini-3.5-flash-lite",
+        "reasoning": "{\"effort\":\"minimal\"}",
+        "configHash": "d83558f9855fe7d6b6adf85c06b0473b0ce4d2195f6b9d6cb9064a2fafbb71b0",
+        "promptVersion": "4",
+        "split": "development",
+        "repetition": 1,
+        "generated": 10,
+        "uniqueCases": 10,
+        "errors": 0,
+        "incomplete": 0,
+        "unresolved": 0,
+        "meaning2": 6,
+        "style2": 9,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 0,
+        "eligibleReleaseEvidence": false,
+        "p50FirstContentMs": 665,
+        "p95FirstContentMs": 1089,
+        "p50DurationMs": 879,
+        "p95DurationMs": 1113,
+        "generationCostUsd": 0.0018463,
+        "judgingCostUsd": 0.019096000000000002,
+        "humanReviews": 0,
+        "fixtureRecords": 0,
+        "reusedObservations": 0
+      },
+      {
+        "configId": "gemini-minimal",
+        "model": "google/gemini-3.5-flash-lite",
+        "reasoning": "{\"effort\":\"minimal\"}",
+        "configHash": "d83558f9855fe7d6b6adf85c06b0473b0ce4d2195f6b9d6cb9064a2fafbb71b0",
+        "promptVersion": "4",
+        "split": "development",
+        "repetition": 2,
+        "generated": 10,
+        "uniqueCases": 10,
+        "errors": 0,
+        "incomplete": 0,
+        "unresolved": 0,
+        "meaning2": 8,
+        "style2": 10,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 0,
+        "eligibleReleaseEvidence": false,
+        "p50FirstContentMs": 598,
+        "p95FirstContentMs": 880,
+        "p50DurationMs": 824,
+        "p95DurationMs": 1300,
+        "generationCostUsd": 0.0019313000000000002,
+        "judgingCostUsd": 0.018978,
+        "humanReviews": 0,
+        "fixtureRecords": 0,
+        "reusedObservations": 0
+      },
+      {
+        "configId": "haiku-low",
+        "model": "anthropic/claude-haiku-5.5",
+        "reasoning": "{\"effort\":\"low\"}",
+        "configHash": "20b4b0c9dc90a9a449fa7739d307ef38917924b44f8138878a33efd2a2859f54",
+        "promptVersion": "4",
+        "split": "development",
+        "repetition": 0,
+        "generated": 10,
+        "uniqueCases": 10,
+        "errors": 0,
+        "incomplete": 0,
+        "unresolved": 0,
+        "meaning2": 6,
+        "style2": 5,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 0,
+        "eligibleReleaseEvidence": false,
+        "p50FirstContentMs": 918,
+        "p95FirstContentMs": 1222,
+        "p50DurationMs": 1199,
+        "p95DurationMs": 3142,
+        "generationCostUsd": 0.0010134999999999999,
+        "judgingCostUsd": 0.02104,
+        "humanReviews": 0,
+        "fixtureRecords": 0,
+        "reusedObservations": 10
+      },
+      {
+        "configId": "haiku-low",
+        "model": "anthropic/claude-haiku-5.5",
+        "reasoning": "{\"effort\":\"low\"}",
+        "configHash": "20b4b0c9dc90a9a449fa7739d307ef38917924b44f8138878a33efd2a2859f54",
+        "promptVersion": "4",
+        "split": "development",
+        "repetition": 1,
+        "generated": 10,
+        "uniqueCases": 10,
+        "errors": 0,
+        "incomplete": 0,
+        "unresolved": 0,
+        "meaning2": 8,
+        "style2": 4,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 0,
+        "eligibleReleaseEvidence": false,
+        "p50FirstContentMs": 904,
+        "p95FirstContentMs": 1442,
+        "p50DurationMs": 1274,
+        "p95DurationMs": 1724,
+        "generationCostUsd": 0.0010495,
+        "judgingCostUsd": 0.021418000000000003,
+        "humanReviews": 0,
+        "fixtureRecords": 0,
+        "reusedObservations": 0
+      },
+      {
+        "configId": "haiku-low",
+        "model": "anthropic/claude-haiku-5.5",
+        "reasoning": "{\"effort\":\"low\"}",
+        "configHash": "20b4b0c9dc90a9a449fa7739d307ef38917924b44f8138878a33efd2a2859f54",
+        "promptVersion": "4",
+        "split": "development",
+        "repetition": 2,
+        "generated": 10,
+        "uniqueCases": 10,
+        "errors": 0,
+        "incomplete": 0,
+        "unresolved": 0,
+        "meaning2": 7,
+        "style2": 7,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 0,
+        "eligibleReleaseEvidence": false,
+        "p50FirstContentMs": 796,
+        "p95FirstContentMs": 1052,
+        "p50DurationMs": 1164,
+        "p95DurationMs": 1528,
+        "generationCostUsd": 0.0009884999999999998,
+        "judgingCostUsd": 0.020104,
+        "humanReviews": 0,
+        "fixtureRecords": 0,
+        "reusedObservations": 0
+      }
+    ],
+    "evaluatorValidation": [],
+    "humanAgreement": []
+  },
+  "repeatAnalysis": {
+    "runId": "development-hard-repeat-v1",
+    "groups": [
+      {
+        "configId": "haiku-low",
+        "sourceCases": 10,
+        "attempts": 30,
+        "completed": 30,
+        "meaning2": 21,
+        "style2": 16,
+        "allThreeMeaning2Cases": 6,
+        "allThreeStyle2Cases": 3,
+        "anyMeaning0Cases": 4,
+        "criticalMeaning0Cases": 0,
+        "anyUnresolvedCases": 0,
+        "cases": [
+          {
+            "caseId": "dev-pair-10",
+            "critical": false,
+            "allThreeMeaning2": false,
+            "allThreeStyle2": true,
+            "anyMeaning0": true,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "4836d999e7042dec2d8266440bac4994af84428155d760863c024e071fcb04f6",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 0,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "03a8b643349dd17228cc9f7bd3c43b08e3b627001a77cc782ac8986b3ddf4605"
+                }
+              },
+              {
+                "generationId": "ba79cb71cce45488d67b60079f186867b5f747d13a70838bcc972232c40c5203",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 0,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "5fa1fe30e7317bf0f61a483896a8ff265d6460494478e37e6ccfae7073e0e472",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 1,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-12",
+            "critical": false,
+            "allThreeMeaning2": false,
+            "allThreeStyle2": false,
+            "anyMeaning0": true,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "b3d680c4bbecd28696c329eea969623c40a21393a65dff71904c1627a6efa7d4",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 0,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "21edf2d183f7d74ae5f005cc4c4ddbaed4ad20347324432dcf372d3417ff8320"
+                }
+              },
+              {
+                "generationId": "c9be13d1dcb960ef39d42faf002ae775920eceaa84aff905b50b820045238f4a",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 1,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "34be9265b80d432b2814097a0312701092b5b0f838e6a781e445c5a418a2427f",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 1,
+                "style": 0,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-06",
+            "critical": false,
+            "allThreeMeaning2": false,
+            "allThreeStyle2": true,
+            "anyMeaning0": true,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "341f8ef57376b9f5496954e464f86ba45fa7c1b46afd11020d938d65c21f972d",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 0,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "3439bddb9985badfa9f93ceb7568eb5879a4bcc44e214bb53abbf50a097c1e57"
+                }
+              },
+              {
+                "generationId": "463962571a1f612f93eba9a7e9c9c24a922a6c478f85e425eb4c250f8eee7d93",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "e69e934803ce858f64763ca85e0436ad891c2e800882d0d9415baa38f8babcae",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-08",
+            "critical": false,
+            "allThreeMeaning2": false,
+            "allThreeStyle2": false,
+            "anyMeaning0": true,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "146182284446329346c04bcf7df0b38ba7234d117bdf4bfa7d642f41d93c4972",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 1,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "34b96cb9362cc4a0b15c49a9d8ad8618c7424462e8edcf1e0d71b7dee9dcc66d"
+                }
+              },
+              {
+                "generationId": "cfc8c0504082781e2ad67e12a9df5b30b96209ca3fc80789c351e1ea65d550e9",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 0,
+                "style": 0,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "944e6ba13bcb85501a93e62cfb6725a4f96dc8a2ac9f63eefc3ccd9136fba027",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 1,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-dates-01",
+            "critical": false,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": false,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "d6ef3e3d31c6fe90fbcdd627d9888171762b2e9f0bb853fc425ea668f4bc61fa",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 1,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "1f54e41c18a3dce24c2e7731cca4c0eab21badc7e38c087ff1e9f4464efd3736"
+                }
+              },
+              {
+                "generationId": "7683019392a14264bb986247b423a19e7e622a02489bbc06cc2df95e8122a1bd",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 1,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "a7606a10abfccf760f30f379460f4e6ef57f2a0956e8366bf07fe5b2ea0999f5",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 0,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "holdout-dates-01",
+            "critical": false,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": false,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "c0b2aba32cc3630331ed59a9a01a429c1d7ff8f04af0cbf1d65bfc5d7ed5d1ff",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 1,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "662030e1bc9f16469778d067155ba09427a0c73257fc6f1b4c9f5bbc2059ca1d"
+                }
+              },
+              {
+                "generationId": "43e312afe2725960510bb82d5ab29ba57f4fb2c91303cd98ef1d3278521809fc",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 1,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "3b323ce2a799656871cb7a4d50d566b1a94015727aac311c28648347d0dd7809",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "holdout-tentative-01",
+            "critical": false,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": false,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "dc016a000ce165850219c006c76ddaf1c3f081c3f7940bae1468cdfc589580a6",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 0,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "e8cc4596208c881569d2bd3beb55d5a8bad1d8ded3764057d92f2d0959432ca3"
+                }
+              },
+              {
+                "generationId": "0d74954088b26e8d6e2aea9396b6bf0001778bf11b2cba6a942d3f50e6850374",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 0,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "7f624422f737251ea80f13bfa7ba14d3640fe979ba2e2eb7eb6b207df868e4de",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 0,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-01",
+            "critical": true,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": false,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "f6b3bf5464fa294cc11c8b200f46f3e6137a0167619d1e947f360ac394f1860b",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 0,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "d8fcedd6c7c65cfe37624f78dbad9e01fb244c7ec3e3ec7ac9ff119c01b72a8a"
+                }
+              },
+              {
+                "generationId": "f8000686cda71d877483a60621b57f8d5cd5561470fb3a9a5c7aea7d74899fe7",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 0,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "09d07c556b3545fa941674437786d48b28375a549cfe826cd57cc4da927df79d",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-conditional-01",
+            "critical": true,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": false,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "5070730b9363bb773e5b33bcc1f82d28fb97af076c5127a31852782e01bf90e3",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 1,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "bf258e696ec792ac99bf0bb1fcb8c3bd63195942bee5f06615d4856738dc77bd"
+                }
+              },
+              {
+                "generationId": "985a432adccbbbef229d31ac17ada553bea8da840fd4d9390db57e3e7dce33fb",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "7f33795d3036a36d75e22c7b8a9d1a66e28c878dc2c537680f5ff2e4d670c949",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-04",
+            "critical": false,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": true,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "0cb5e794f653d48dca303c130853988a517f30d14997db71497d188d2796dcc7",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "7a4120bae37f39f394e417bc6e0730b3652e7b5d4060aab3560d5d1b9017ac21"
+                }
+              },
+              {
+                "generationId": "c6ba5def75bee23fba8e4d13e83653e3b7f60d59d02ed6889aa14673cf61466d",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "6f6bd3c9224387a1ef8f503ce003dc0ff785839cc460592a38b1610d8534b772",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": null
+              }
+            ]
+          }
+        ],
+        "criticalSourceCases": 2
+      },
+      {
+        "configId": "gemini-minimal",
+        "sourceCases": 10,
+        "attempts": 30,
+        "completed": 30,
+        "meaning2": 22,
+        "style2": 28,
+        "allThreeMeaning2Cases": 6,
+        "allThreeStyle2Cases": 8,
+        "anyMeaning0Cases": 1,
+        "criticalMeaning0Cases": 0,
+        "anyUnresolvedCases": 0,
+        "cases": [
+          {
+            "caseId": "dev-pair-10",
+            "critical": false,
+            "allThreeMeaning2": false,
+            "allThreeStyle2": false,
+            "anyMeaning0": true,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "5a074614267041800379f42f3382b10cf753d3c386707731c27c5ec54b9ccfaa",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 0,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "ae29263b5168b85a54f9d90a373fe73cbb754d0a1e3180db8b48d4b983bf599f"
+                }
+              },
+              {
+                "generationId": "3c41844b54aa865bbdc6bb6d7313dce466f93c27bad46729017d80c78bc84929",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 0,
+                "style": 0,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "28a8b12c42cd9e1dbb7ee3524934dac889f2d457f44fc6f06d3adc5c4cb40d88",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 0,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-12",
+            "critical": false,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": true,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "70af2375dbe12e7a0c6a63f425d429661961d70a24e3370f9a1af98e008054d3",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "68b871320458bd02e4e7735b754901ef8972ff51948230e08b00935cadb6fbf0"
+                }
+              },
+              {
+                "generationId": "8a99b47918c9ab9dc354fd3ba2e25c882df43463eef29407f4602ed59a735ce1",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "ff929645f769a4d833d69964c78cba1e401c825174b8d76ba557dc6cf055b5f5",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-06",
+            "critical": false,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": true,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "e99250cedba4d04dad9f9d2ad06c77b062091918cde1ae326ab9995043620ac3",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "8649943237a9651201c91b00f61c6ff3ab2bf925bd328b7e921c2b6aac9b6545"
+                }
+              },
+              {
+                "generationId": "3ba4f59665c1004834be1521b8862c130521f95976218c8ba7c3a1828e9b7914",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "b7e35c2179182c025e4a262f5b2082ea9765811586e8ea874b0316654345ea86",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-08",
+            "critical": false,
+            "allThreeMeaning2": false,
+            "allThreeStyle2": true,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "bd786653ae413d96d2d8f7432f78288d9da503a493d94c5536d924f725a0adc2",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 1,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "1c11f7825c4d990a4fe4e5b32d9153d76a11107f6eb2c2cf9832a2bab97c47c4"
+                }
+              },
+              {
+                "generationId": "fbb5d384552295007c50f80826496c729887184d8c6ec4d40f2cb93941f1aa05",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 1,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "d4a4a6831dc79a065939afd6b4a78f6654c18b1babe20ce8cb5c409e34a3c8c5",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 1,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-dates-01",
+            "critical": false,
+            "allThreeMeaning2": false,
+            "allThreeStyle2": true,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "5a2484f734a4d72f496e883299c977655d52dc51ae46cc58b63b4c8cabf6d22c",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "bdb7fe5e82bdd58db1b60d429fd043a5c40f1e786293a85a718e935e3fe1f567"
+                }
+              },
+              {
+                "generationId": "a96a44c31d4d9745d28fc76c3b5b023c42e7691c4fd593d4774e849fcfff3b45",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 1,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "24806bc521e893ab416c412050959e870fef4bfdedc6e584f29ad718cfba3c1e",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "holdout-dates-01",
+            "critical": false,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": true,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "905c2000568dd8a63562fbecb68902a7c7d22ff2b238a9f241dd400f3f514748",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "87a828ef80131b4f66d2fab0c2266d24e09d76726dc22fa8363cb1758148ac47"
+                }
+              },
+              {
+                "generationId": "2cd87977133e39e43cfb2e3bf0d0f3a606d3d620bdf0f4ecc96e6db8b37d00ae",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "0c2a91c1a898840a7d32353aa5edeb53801a12ff5dd4c7f2f8913a9b1b3373cb",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "holdout-tentative-01",
+            "critical": false,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": true,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "2c323c4882de31f3a18e2321dfda98a2b535da55b089506bda3036b866d362aa",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "32f60191efebeb7f8a06cb7a7049aafc08bf386d7c0271949ab22720691958f7"
+                }
+              },
+              {
+                "generationId": "806d25adc830be8b8a7cf0e90812250e2767e0314eab8796df8c4736664e5317",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "78a5625084ec6816c95bb9ac0beacbe62b7b07b02831b5035a9a71f2e8c9737b",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-01",
+            "critical": true,
+            "allThreeMeaning2": false,
+            "allThreeStyle2": true,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "ad12ae11e49a1390b3752431764a94e97818c8490e6d730a8072c68222d78135",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "b18d5ebeeb371f34f13dd88e0bd159b44844c3c9055a402d7962dee355908e0b"
+                }
+              },
+              {
+                "generationId": "84ec4153b4e8fbb92c54ef032bd06fe8b7d85bdfbfb69383c19b094267fe8034",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 1,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "29008d5541e40ab081ee61eba4cdeae93390f16a36d14189b3475d5e536ad93b",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-conditional-01",
+            "critical": true,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": true,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "e56389f38ae5824388b9a9a2fbf99699239f0be88bb63256f0af1f6265b6e8ce",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "5b82a990a4690e442f26b042016914e83ea4d9abfd4e3c1daea680dcc6840327"
+                }
+              },
+              {
+                "generationId": "b515c2ead0e010ff4f924ef396e8f760c1d3bfa1a515546e501165d668f630df",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "03dc4187d14e9b917260e77938bb9a7fc507aae18c8fc4bc21e1f0fa752abe1a",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": true,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          },
+          {
+            "caseId": "dev-pair-04",
+            "critical": false,
+            "allThreeMeaning2": true,
+            "allThreeStyle2": false,
+            "anyMeaning0": false,
+            "anyUnresolved": false,
+            "scores": [
+              {
+                "generationId": "8be5173ab02e98a60b91efbf5986030b4a3fd427ea0ca46de0332380ecd34b72",
+                "repetition": 0,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 1,
+                "status": "complete",
+                "outputChangedFromPrimary": false,
+                "reusedFrom": {
+                  "runId": "development-selected-v1",
+                  "generationId": "06ef1bca262704f3bc437415cc80e8c513698edf7af4cf29ae9e26c4c3a34ab3"
+                }
+              },
+              {
+                "generationId": "bea8216688698aeea204a0053867b8e963e7c4621d8d9416b590ba9b37184588",
+                "repetition": 1,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              },
+              {
+                "generationId": "0660f731b2d85204ea6eb4ae104b41e30ca7cb8cdf9ef8fd47150997dab56108",
+                "repetition": 2,
+                "completion": "complete",
+                "errorCode": null,
+                "critical": false,
+                "meaning": 2,
+                "style": 2,
+                "status": "complete",
+                "outputChangedFromPrimary": true,
+                "reusedFrom": null
+              }
+            ]
+          }
+        ],
+        "criticalSourceCases": 2
+      }
+    ],
+    "note": "Three attempts on ten selected difficult source cases per model, not thirty independent cases. Automated scores measure observed generator-plus-judge consistency; grader variability remains a limitation. No release outputs or thresholds are changed."
+  },
+  "attemptAudit": [
+    {
+      "configId": "haiku-low",
+      "generationFailureAttempts": 0,
+      "generationFailures": [],
+      "unresolvedArgonAttempts": 0,
+      "unresolvedArgon": [],
+      "reusedAttempts": 10,
+      "reused": [
+        {
+          "caseId": "dev-pair-10",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "03a8b643349dd17228cc9f7bd3c43b08e3b627001a77cc782ac8986b3ddf4605"
+          }
+        },
+        {
+          "caseId": "holdout-tentative-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "e8cc4596208c881569d2bd3beb55d5a8bad1d8ded3764057d92f2d0959432ca3"
+          }
+        },
+        {
+          "caseId": "dev-pair-12",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "21edf2d183f7d74ae5f005cc4c4ddbaed4ad20347324432dcf372d3417ff8320"
+          }
+        },
+        {
+          "caseId": "dev-conditional-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "bf258e696ec792ac99bf0bb1fcb8c3bd63195942bee5f06615d4856738dc77bd"
+          }
+        },
+        {
+          "caseId": "dev-pair-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "d8fcedd6c7c65cfe37624f78dbad9e01fb244c7ec3e3ec7ac9ff119c01b72a8a"
+          }
+        },
+        {
+          "caseId": "holdout-dates-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "662030e1bc9f16469778d067155ba09427a0c73257fc6f1b4c9f5bbc2059ca1d"
+          }
+        },
+        {
+          "caseId": "dev-pair-08",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "34b96cb9362cc4a0b15c49a9d8ad8618c7424462e8edcf1e0d71b7dee9dcc66d"
+          }
+        },
+        {
+          "caseId": "dev-pair-04",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "7a4120bae37f39f394e417bc6e0730b3652e7b5d4060aab3560d5d1b9017ac21"
+          }
+        },
+        {
+          "caseId": "dev-pair-06",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "3439bddb9985badfa9f93ceb7568eb5879a4bcc44e214bb53abbf50a097c1e57"
+          }
+        },
+        {
+          "caseId": "dev-dates-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "1f54e41c18a3dce24c2e7731cca4c0eab21badc7e38c087ff1e9f4464efd3736"
+          }
+        }
+      ]
+    },
+    {
+      "configId": "gemini-minimal",
+      "generationFailureAttempts": 0,
+      "generationFailures": [],
+      "unresolvedArgonAttempts": 0,
+      "unresolvedArgon": [],
+      "reusedAttempts": 10,
+      "reused": [
+        {
+          "caseId": "dev-pair-06",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "8649943237a9651201c91b00f61c6ff3ab2bf925bd328b7e921c2b6aac9b6545"
+          }
+        },
+        {
+          "caseId": "dev-pair-12",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "68b871320458bd02e4e7735b754901ef8972ff51948230e08b00935cadb6fbf0"
+          }
+        },
+        {
+          "caseId": "holdout-dates-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "87a828ef80131b4f66d2fab0c2266d24e09d76726dc22fa8363cb1758148ac47"
+          }
+        },
+        {
+          "caseId": "dev-pair-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "b18d5ebeeb371f34f13dd88e0bd159b44844c3c9055a402d7962dee355908e0b"
+          }
+        },
+        {
+          "caseId": "dev-pair-08",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "1c11f7825c4d990a4fe4e5b32d9153d76a11107f6eb2c2cf9832a2bab97c47c4"
+          }
+        },
+        {
+          "caseId": "dev-conditional-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "5b82a990a4690e442f26b042016914e83ea4d9abfd4e3c1daea680dcc6840327"
+          }
+        },
+        {
+          "caseId": "dev-pair-10",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "ae29263b5168b85a54f9d90a373fe73cbb754d0a1e3180db8b48d4b983bf599f"
+          }
+        },
+        {
+          "caseId": "dev-pair-04",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "06ef1bca262704f3bc437415cc80e8c513698edf7af4cf29ae9e26c4c3a34ab3"
+          }
+        },
+        {
+          "caseId": "holdout-tentative-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "32f60191efebeb7f8a06cb7a7049aafc08bf386d7c0271949ab22720691958f7"
+          }
+        },
+        {
+          "caseId": "dev-dates-01",
+          "repetition": 0,
+          "reusedFrom": {
+            "runId": "development-selected-v1",
+            "generationId": "bdb7fe5e82bdd58db1b60d429fd043a5c40f1e786293a85a718e935e3fe1f567"
+          }
+        }
+      ]
+    }
+  ],
+  "sameOutputJudgeVariability": [
+    {
+      "configId": "haiku-low",
+      "identicalOutputPairs": 5,
+      "scorableIdenticalOutputPairs": 5,
+      "meaningDisagreements": 0,
+      "styleDisagreements": 0,
+      "casesWithScoreVariationOnIdenticalOutput": 0
+    },
+    {
+      "configId": "gemini-minimal",
+      "identicalOutputPairs": 0,
+      "scorableIdenticalOutputPairs": 0,
+      "meaningDisagreements": 0,
+      "styleDisagreements": 0,
+      "casesWithScoreVariationOnIdenticalOutput": 0
+    }
+  ],
+  "costs": {
+    "phase": {
+      "runId": "development-hard-repeat-v1",
+      "reservationCount": 100,
+      "settlementCount": 100,
+      "reservedUsdNotSpend": 1.824852,
+      "knownSettledCostUsd": 0.12552959999999996,
+      "unknownSettlements": 0,
+      "unknownSettlementRetainedUsd": 0,
+      "totalReportedSettledCostUsd": 0.12552959999999996
+    },
+    "cumulativeLedger": {
+      "reservationCount": 1178,
+      "settlementCount": 1178,
+      "knownSettledCostUsd": 1.0428909029999995,
+      "unknownSettlements": 2,
+      "unknownSettlementRetainedUsd": 0.028739400000000002,
+      "totalReportedSettledCostUsd": null
+    },
+    "note": "Phase charges and cumulative ledger charges are separate. Reservations are not counted as spend; known subtotals exclude unknown settlements, and totals remain null when any settlement is unknown."
+  },
+  "interpretation": {
+    "sampleUnit": "Ten unique source cases per generator; three attempts per case/configuration (30 attempts/configuration, 60 total). Repeated attempts do not add independent source cases.",
+    "scoreAttribution": "Observed consistency combines generator sampling and Argon grader behavior. Scores are automated and are not human ground truth.",
+    "variability": "Score disagreements on byte-identical outputs are direct evidence of grader-label variability for those pairs; absence in this small sample does not prove grader stability.",
+    "failures": "All attempts, including failed, incomplete, unresolved, and reused observations, remain represented in the sanitized JSONL.",
+    "providerSanitization": "Provider names may be present; provider generation/request identifiers are omitted using the local export-phase projection.",
+    "review": "Reviewed against retained raw records before publication."
+  },
+  "reusedPrimaryJudgeComparison": {
+    "sourceRunId": "development-selected-v1",
+    "pairs": 20,
+    "resolvedPairs": 20,
+    "meaningAgreement": 18,
+    "styleAgreement": 19,
+    "changes": [
+      {
+        "caseId": "dev-pair-10",
+        "configId": "haiku-low",
+        "sourceMeaning": 0,
+        "repeatMeaning": 0,
+        "sourceStyle": 1,
+        "repeatStyle": 2
+      },
+      {
+        "caseId": "dev-pair-08",
+        "configId": "gemini-minimal",
+        "sourceMeaning": 2,
+        "repeatMeaning": 1,
+        "sourceStyle": 2,
+        "repeatStyle": 2
+      },
+      {
+        "caseId": "dev-pair-10",
+        "configId": "gemini-minimal",
+        "sourceMeaning": 1,
+        "repeatMeaning": 0,
+        "sourceStyle": 2,
+        "repeatStyle": 2
+      }
+    ],
+    "note": "These are fresh Argon judgments of exactly reused generation text. Score changes are grader variability, not changed generator output. Original judgments remain unchanged."
+  },
+  "rawFileDigests": {
+    "algorithm": "sha256",
+    "generations": "d0147be1546f638bd3d7a748536cfbd72c1248948ef8b2f47f96b795831e5832",
+    "judgments": "7cef1a0c8c3019162483f9995479509b0a357c1020b72928d5d03de7e17ae598",
+    "ledgerAtPhaseEnd": "76f20c970d2f49c5761edda0ebd29a0f8a33bb73298b8f2bda42d76c4a5adb96",
+    "note": "Digests identify retained private raw bytes at phase end; public observations omit private provider IDs."
+  }
+}

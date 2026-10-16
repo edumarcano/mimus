@@ -42,6 +42,8 @@ The human review budget is at most 25 outputs: 12 calibration, 8 audit, and up t
 | [`results/effort-screen-2026-10-15.md`](results/effort-screen-2026-10-15.md) | Twelve reasoning configurations on twelve shared cases | Four development settings selected; judge variability and failed attempts retained |
 | [`results/development-comparison-2026-10-15.md`](results/development-comparison-2026-10-15.md) | Four selected settings on forty development cases | Gemini minimal and Haiku low advance to repeatability testing |
 | [`results/development-cascade-2026-10-15.md`](results/development-cascade-2026-10-15.md) | Independent decision/LLM routes with validation separate | Formal threshold selection inconclusive; cost and duration components reported |
+| [`results/repeatability-2026-10-15.md`](results/repeatability-2026-10-15.md) | Three attempts on ten difficult cases per finalist | Meaning failures retained; Gemini minimal and Haiku low proceed unchanged |
+| [`results/release-audit-rule-2026-10-15.md`](results/release-audit-rule-2026-10-15.md) | Final eight-review sampling rule | Frozen before release calls; blind scores remain separate |
 | [`results/local-demo-verification-2026-10-15.md`](results/local-demo-verification-2026-10-15.md) | Local keyboard, browser, zoom, and Narrator checks | Includes maintainer observations and corrected accessibility defects |
 
 Historical records do not establish the quality of planned benchmark

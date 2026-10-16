@@ -343,16 +343,15 @@ section). It does not block public live access if the risk is accepted.
 - OpenRouter's terms make the account holder responsible for all charges on its
   keys, authorized or not.
 
-### Provider-policy recommendation (approval required)
+### Provider and hosting notes (historical research)
 
-Researched 2026-10-14 from the sources below. This is not a legal conclusion.
+Researched 2026-10-14 from the sources below.
 
 | Condition | Basis | Recommendation |
 | --- | --- | --- |
 | Audience 18+ | OpenRouter terms section 2 (18+ account holders); `NOTICE_AVAILABILITY` says adults only | Required for the account holder. Keep the adult acknowledgement, and treat it as a notice, not verification. |
 | Model-host terms | Terms 5.1-5.2 make the account holder responsible for complying with the applicable Model Terms and for ensuring customers do the same. Hosts are not pinned. | Review needed: read the terms of the hosts that actually served requests (observed: InferenceNet, Together, Parasail, Morph, Relace), and decide whether visitor acknowledgement is enough |
 | Regions | Terms 5.7 bar access to Restricted Models by region and bar VPN circumvention; terms 6.8 says country reporting can be inaccurate | Judgment: keep the US allowlist as conservative. It is not data residency. |
-| Adversarial evaluation | Ordinary handling of user text is product behavior: the app accepts arbitrary input and treats it as untrusted task data. Deliberately running injection cases to test whether a model obeys them is adversarial evaluation. Research recorded on 2026-10-14 reads terms section 7 item 11 as prohibiting unapproved Red Teaming (prompt injection or jailbreaking). | **Decision needed:** whether the planned GLM evaluation's injection cases require OpenRouter's prior written approval. If they do, obtain it before the first request. Accepting the risk does not replace that approval. No code change. |
 | Retention settings | ZDR guide: `provider.zdr` is OR-ed with account settings, in-memory caching is allowed, endpoints with unclear policy are treated as retaining | Required: confirm the account is ZDR-only and prompt logging is off (the app cannot enforce it), and that an eligible endpoint exists for the model |
 | Data use | Terms 6.5: inputs are categorized in anonymized form; 6.2: opting into prompt logging grants OpenRouter broad rights | Keep logging off. The notice already discloses categorization. |
 | Spend | Terms 3.2; limits documentation | Required: per-key spending limit, auto top-up off, activity monitoring |
@@ -414,7 +413,7 @@ Stop. The header-scoped WAF deny rehearsal and the live cancellation test are pr
 and [runbook section 5](deployment.md#5-live-cancellation-test--prepared-needs-approval-spends-provider-credits)),
 and neither has been run. Other provider-policy conditions (model-host terms, regions, hosting) have not
 been separately reviewed. The
-[recommendation table](#provider-policy-recommendation-approval-required) remains
+[historical notes](#provider-and-hosting-notes-historical-research) remain
 the reference.
 
 **Screenshots.** The images in the README and `docs/assets/screenshots/` were
@@ -463,7 +462,7 @@ deployment rehearsals and release acceptance are still pending. The experimental
 decision-model cascade remains offline: development threshold selection was
 inconclusive, so no evaluator is added to production rewriting.
 
-## 2026-10-16: Gemini minimal adoption (Committed configuration; Production activation pending)
+## 2026-10-16: Gemini minimal adoption (Production verified)
 
 **Decision.** Adopt `google/gemini-3.5-flash-lite` at `minimal` reasoning through
 OpenRouter, with the public label "Gemini 3.5 Flash-Lite". Keep prompt v4, the
@@ -480,23 +479,48 @@ human style disagreement and possible vendor-family bias remain unresolved.
 Historical reports and original labels remain unchanged. Adoption is not a
 guarantee of meaning preservation or a declaration that v1 is release-ready.
 
-**Activation status.** This decision changes the committed configuration.
-Production activation and deployed smoke verification are pending. The
-[local adoption checks](../evals/results/gemini-adoption-2026-10-16.md) verified
-two synthetic requests through the application handler and real OpenRouter adapter.
-Before merging,
-verify current model access, supported parameters, eligible privacy-preserving
-routes, the key's remaining allowance, and the healthy GLM rollback deployment.
-Use two local and two Production synthetic smoke requests, with a combined
-$0.10 ceiling and explicit authorization for the paid calls and Production work.
-The local pair completed after correcting the smoke harness; Production calls
-remain pending authorization. Earlier harness attempts are disclosed in the record.
-Record observed deployment and smoke results separately from this decision.
-No additional quality benchmark or human-scoring round is required for adoption.
+**Activation status.** PR #16 was merged at
+`a013c79779ae19616b0710fb3ff02d34e980e158` and deployed to Production. The
+[local checks](../evals/results/gemini-adoption-2026-10-16.md) and
+[Production verification](../evals/results/production-verification-2026-10-16.md)
+record actual requests, costs, streaming, and inspected metadata-only logs. Both
+Production streams completed, but Academic Maximum changed a relative 6% decrease
+to six percentage points. The maintainer explicitly accepted leaving that known
+meaning defect for now; the prompt and scores are unchanged. This is a mixed
+quality observation, not a fully passing meaning check. No additional quality
+benchmark or human-scoring round is required for adoption. The subsequent
+operational rehearsals and remaining publication gates are recorded in the
+[release checklist](release-checklist.md).
 
-**Rollback.** If activation breaks routing, streaming, reasoning isolation, or
-output formatting, restore the verified GLM deployment using the deployment
-runbook. If it is unavailable, revert this adoption change and redeploy. Confirm
-recovery and reconcile the deployed configuration with Git.
+**Rollback.** The initial adoption preflight identified the then-current GLM
+deployment as its rollback candidate. Subsequent operational redeployments
+replace that candidate; the immediately previous deployment may be disabled.
+Use the deployment runbook to select a currently eligible, verified healthy
+deployment, or redeploy a reviewed known-good revision. Confirm recovery and
+reconcile the deployed configuration with Git.
+
+## 2026-10-16: Release preparation and operational follow-up
+
+The maintainer approved completing the remaining operational checks and accepted
+leaving the percentage-versus-percentage-point meaning defect for now. The
+[Production record](../evals/results/production-verification-2026-10-16.md) records
+Preview/Production header-scoped WAF deny rehearsals and cleanup, live rate-limit
+enforcement, Production disabled-mode/restoration, a client abort correlated to
+application status 499, and a completed resubmission. These observations supersede
+the corresponding unverified statuses in the older dated records; they do not
+establish provider-side billing cessation or key-revocation behavior.
+
+The [release audit](../evals/results/release-audit-2026-10-16.md) records clean-source
+no-key setup, public file/history review, an unpatched dev-tool advisory, and open
+privacy questions. The maintainer approved retaining existing Git
+author attribution. No history rewrite was made. A signed-in OpenRouter notice
+announces a Google Safety Retention change effective October 18; its effect on
+the current privacy contract requires clarification rather than an assumed
+account-setting change.
+
+The [release checklist](release-checklist.md) is the current disposition of
+completed work, accepted limitations, remaining evidence gaps, and publication
+decisions. Release notes are drafted; no tag, GitHub release, or repository
+visibility change was published by this preparation work.
 
 

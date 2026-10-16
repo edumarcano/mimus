@@ -16,18 +16,19 @@ steps, and each one should be recorded in the decision log.
 
 ### Gemini adoption rollout
 
-The committed configuration adopts Gemini minimal; Production activation is
-pending. The [dated local checks](../evals/results/gemini-adoption-2026-10-16.md)
-record model/route preflight, two completed synthetic requests, and the observed
-GLM deployment candidate for rollback. Before merging, refresh its eligibility
-and verify that it is still the deployment assigned to Production. After the
-authorized merge and Git-triggered deployment, confirm the deployed commit and
-the Gemini live banner, run the two authorized Production smoke requests, and
-inspect metadata-only logs promptly. Keep Preview in demo mode.
+Gemini minimal is deployed on Production. The
+[local checks](../evals/results/gemini-adoption-2026-10-16.md) and
+[Production verification](../evals/results/production-verification-2026-10-16.md)
+record model/route preflight, completed streaming, costs, the accepted numerical
+meaning defect, and metadata-only logs. Keep Preview in demo mode. Before a new
+rollout, record the current healthy deployment and recheck rollback eligibility;
+the historical GLM deployment is no longer assumed to be the immediately previous
+Production deployment after the disabled-mode rehearsal.
 
 If routing, streaming, reasoning isolation, or output formatting breaks, use
-[Rollback](#rollback) to restore that GLM deployment; if unavailable, revert the
-adoption change and redeploy. Record the observations and confirm recovery.
+[Rollback](#rollback) to restore a recorded healthy deployment after checking
+its eligibility. If unavailable, redeploy a reviewed known-good revision. Record
+the observations and confirm recovery; do not assume the previous deployment is live.
 
 ### Evidence labels
 
@@ -39,6 +40,10 @@ adoption change and redeploy. Record the observations and confirm recovery.
 | **Not verified** | Not tested, or no evidence yet. |
 
 ### Evidence
+
+The table below preserves the earlier observations. Current follow-up is in the
+[October 16 Production verification](../evals/results/production-verification-2026-10-16.md)
+and the [release checklist](release-checklist.md).
 
 | Check | Date | Label and result |
 | --- | --- | --- |
@@ -54,10 +59,13 @@ adoption change and redeploy. Record the observations and confirm recovery.
 | Disabled branch Preview (`MIMUS_MODE=disabled`, temporary branch variable, no provider credentials) | 2026-10-14 | Verified on a Preview only: disabled notice on the page, `POST /api/translate` → 503 `SERVICE_UNAVAILABLE`, and a log entry with status 503. The variable was removed afterwards. Production not tested. |
 | Cancellation opt-in in a deployed build (`vercel inspect <preview> --format json`) | 2026-10-14 | Verified on a branch Preview only: `builds[0].config.vercelConfig.functions["src/app/api/translate/route.ts"].supportsCancellation` is `true`. The local build output agrees (`api/translate.func` has it; `index.func` does not). No model call. |
 
-**Not verified:** deployed non-US region rejection, whether a client disconnect
-reaches the function on Vercel, whether the provider stops billing after an
-abort, quota exhaustion on the host, Production function-log contents for live
-requests, and the emergency shutdown rehearsal (see
+**Current follow-up (2026-10-16):** Production Gemini streaming and logs,
+Preview/Production header-scoped deny rehearsals, the unchanged five-per-minute
+rate limit, disabled-mode/restoration, and application-side cancellation have
+[detailed evidence](../evals/results/production-verification-2026-10-16.md).
+Real non-US rejection, upstream quota exhaustion, provider billing after abort,
+and key revocation/zeroing remain unverified. These do not inherit verification
+from mocks or from the partial shutdown rehearsal (see
 [Shutdown readiness](#shutdown-readiness-review-2026-10-14)). See also
 [Cancellation](decisions.md#cancellation-what-is-and-is-not-known) and
 [Spend exposure](decisions.md#spend-exposure).
@@ -459,7 +467,7 @@ Not run. The test needs a provider call, so run it only with explicit approval.
 same checks, with the end-to-end suite as a separate job. Live evaluation is manual
 and opt-in; see [`evals/README.md`](../evals/README.md).
 
-## Pending operational verification
+## Operational verification status
 
 The [dated local demo check](../evals/results/local-demo-verification-2026-10-15.md)
 records keyboard editing, clearing, sample activation, visible focus, and style
@@ -474,9 +482,12 @@ processing, logging, privacy routing, or persistence. No live model comparisons
 are implied by the benchmark datasets or protocol. Paid provider runs require a
 separate approval after their preflight cost estimate is reviewed.
 
-Record dated evidence before describing these checks as verified for v1: the
-Preview and Production header-scoped WAF deny rehearsals, Production disabled
-mode and restoration, and one live cancellation correlation. WAF publishes,
-Production interruption, and live cancellation each have separate approval gates
-in the runbook above. Application-side cancellation does not prove that an
-upstream host stopped generation or billing.
+The [October 16 Production record](../evals/results/production-verification-2026-10-16.md)
+records completed WAF deny rehearsals on both environments, rate-limit enforcement,
+Production disabled mode/restoration, and a client abort correlated to an
+application log status of 499 followed by a completed resubmission. The procedures
+above retain their historical preparation labels; the dated follow-up establishes
+what was subsequently run. Approval for any future repetition must cover its
+actual traffic and cost impact. Application-side cancellation does not establish
+that an upstream host stopped generating or billing. Remaining evidence gaps and
+owner decisions are listed in the [release checklist](release-checklist.md).

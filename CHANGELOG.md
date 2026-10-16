@@ -35,11 +35,17 @@ Notable public releases of Mimus are documented here.
 - Offline multi-model and reasoning-effort benchmarks with budget reservations,
   immutable observations, explicit reuse lineage, limited blind human reviews,
   and a fresh release comparison. Decision-model routing is an offline experiment.
+- Dated Production verification of WAF enforcement and cleanup, disabled-mode
+  recovery, application-side cancellation, resubmission, and metadata-only logs.
 
 ### Known limitations
 
 - Meaning preservation is not guaranteed. Model-evaluation evidence and gaps
   are documented in the [evaluation records](evals/README.md).
+- A Production Academic Maximum rewrite changed a relative percentage decrease
+  into percentage points; the maintainer accepted retaining this known limitation.
+- An unpatched development-tool dependency advisory and the announced Google
+  Safety Retention change remain tracked in the [release checklist](docs/release-checklist.md).
 - Live rewriting is limited to approved visitor regions and depends on
   third-party provider availability and account spending limits.
 - Upstream cancellation depends on the model host; billing after Stop is not

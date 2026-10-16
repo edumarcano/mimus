@@ -1,9 +1,9 @@
-# Mimus case study
+# Mimus design notes
 
 Mimus rewrites English text between writing styles, such as plain speech to
 LinkedIn-style posts and back. It is deliberately small: one page, one API route,
-no accounts or database. This case study examines the architecture, evaluation,
-and limitations of a small AI product.
+no accounts or database. These notes describe the architecture, evaluation,
+and limitations of the personal project.
 
 ## The problem
 
@@ -102,8 +102,9 @@ Argon on meaning in 7/8 and style in 4/8; seven examples were Haiku and only one
 was Gemini. Both score sets remain unchanged. This limited, uneven human sample
 does not independently establish the recommended model's correctness, and
 possible bias from Argon and Gemini sharing a vendor was not measured. The runtime
-configuration now adopts Gemini minimal through OpenRouter; Production activation
-is pending. The historical corpus retains its original meaning.
+configuration adopts Gemini minimal through OpenRouter and is deployed on
+Production. The [Production record](../evals/results/production-verification-2026-10-16.md)
+retains a percentage-change error accepted by the maintainer for now. The historical corpus retains its original meaning.
 
 ### One failure and its fix
 
@@ -164,8 +165,8 @@ The staged benchmark subsequently provided comparative meaning and style scores.
 Its recommendation led to adopting `google/gemini-3.5-flash-lite` at minimal
 reasoning through the same OpenRouter adapter, with prompt v4 and the 2,048-token
 cap. This model change retains the existing privacy routing and notice version.
-The [adoption decision](decisions.md#2026-10-16-gemini-minimal-adoption-committed-configuration-production-activation-pending)
-separates the committed configuration from verification on Production.
+The [adoption decision](decisions.md#2026-10-16-gemini-minimal-adoption-production-verified)
+links the committed configuration to verification on Production.
 
 ## Testing and verification
 
@@ -192,11 +193,11 @@ separates the committed configuration from verification on Production.
 Hosting targets Vercel Hobby, and the model cost per request is small but not zero.
 The output cap and input limit bound a single request, not total spend; the key's
 credit limit and monitoring are the budget controls, and the WAF limit is per IP.
-The most important unknown is cancellation. The application aborts the upstream
-request when a client stops, and mocked tests cover that. Whether Vercel delivers the
-disconnect, and whether a given model host stops generating and billing, are not
-verified; OpenRouter documents that some hosts, including the one that served most
-development requests, do not support stream cancellation. See
+A [Production cancellation check](../evals/results/production-verification-2026-10-16.md)
+observed the client abort after the first content event, a correlated application
+log status of 499, and a successful resubmission. This verifies that Vercel
+delivered that disconnect to the function. Whether the upstream host stopped
+generating or billing remains a separate question. See
 [decisions](decisions.md#cancellation-what-is-and-is-not-known).
 
 ## AI-assisted development

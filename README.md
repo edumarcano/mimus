@@ -7,13 +7,14 @@
 
 <p align="center"><strong>Translate meaning, not just words.</strong></p>
 
-Mimus rewrites English text between recognizable writing styles: plain English
+Mimus is a small personal project that rewrites English text between recognizable
+writing styles: plain English
 into LinkedIn speak, corporate phrasing back into ordinary language, and more. It
 is a rewrite between writing registers, not a translator between languages, and it
 aims to change the expression without inventing facts or losing the point.
 
 [**Try Mimus**](https://mimus-rewrite.vercel.app) ·
-[Case study](docs/case-study.md) · [Product specification](docs/product-spec.md) ·
+[Design notes](docs/case-study.md) · [Product specification](docs/product-spec.md) ·
 [Evaluation](evals/README.md)
 
 ![Mimus in demo mode showing a prewritten Human to LinkedIn example](docs/assets/screenshots/desktop-1440.png)
@@ -59,7 +60,7 @@ the environment or the browser.
 Live mode calls OpenRouter with `google/gemini-3.5-flash-lite` (minimal reasoning, 2,048-token
 output cap) and requests zero-data-retention endpoints with data collection
 denied. Hosts are not pinned, so behavior can vary between requests. The choice
-and its trade-offs are explained in the [case study](docs/case-study.md).
+and its trade-offs are explained in the [design notes](docs/case-study.md).
 
 Live text is sent to OpenRouter and then to a third-party model host. Mimus has no
 application database and does not intentionally persist submitted or generated text
@@ -68,13 +69,12 @@ policy, not anonymity: the hosting platform and OpenRouter still process request
 metadata, and a host may cache prompts in memory. Use fictional text. The full notice
 is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
 
-## Engineering and evaluation
+## Design and evaluation
 
-Mimus is a small AI application whose harder engineering questions are visible in
-the repository: how a streamed request is stopped or marked incomplete, how
-meaning is measured separately from style, and how a model decision accounts for
-quality, latency, and cost. The implementation, tests, dated evidence, and limits
-are linked from the [case study](docs/case-study.md).
+The server handles validation, streaming, cancellation, and incomplete results.
+The evaluations measure meaning and style separately and compare quality,
+latency, and cost. The [design notes](docs/case-study.md) link the implementation,
+tests, dated results, and remaining limitations.
 
 The historical corpus contains 50 synthetic cases. The new benchmark adds a
 12-case screening list, a 40-output evaluator challenge set, and 40 fresh release
@@ -90,8 +90,9 @@ Gemini minimal: it met the frozen automated targets with 37/40 full-meaning and
 judgment. Eight blind human audits agreed with the judge on meaning in 7/8 and
 style in 4/8; only one audited output was Gemini. These are automated results with
 limited human auditing, not independently validated accuracy. The committed runtime
-configuration adopts Gemini minimal; Production activation and deployed smoke checks
-remain pending (see the [adoption decision](docs/decisions.md#2026-10-16-gemini-minimal-adoption-committed-configuration-production-activation-pending)).
+configuration adopts Gemini minimal and is deployed on Production. Streaming and
+metadata-only logs were verified; a numerical meaning defect is retained as an
+accepted limitation (see the [adoption decision](docs/decisions.md#2026-10-16-gemini-minimal-adoption-production-verified)).
 The older **Gemini** release-candidate evaluation remains historical evidence for
 that configuration only ([summary](evals/results/summary.md)). The **GLM** run
 completed 40 requests and 39 passed deterministic checks, but has no committed
@@ -121,10 +122,12 @@ npm run test:e2e   # Playwright, mocked provider
 ## Documentation
 
 - [Product specification](docs/product-spec.md): the behavioral contract.
-- [Case study](docs/case-study.md): design, evaluation, and lessons.
+- [Design notes](docs/case-study.md): design, evaluation, and lessons.
 - [Deployment and operations](docs/deployment.md): configuration, activation,
   shutdown, and rollback.
 - [Decisions and evidence](docs/decisions.md) and [CHANGELOG](CHANGELOG.md).
+- [Release checklist](docs/release-checklist.md): completed verification, remaining
+  evidence gaps, and publication decisions.
 - [Repository instructions](AGENTS.md): development conventions.
 
 ## License

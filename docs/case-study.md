@@ -53,7 +53,7 @@ flowchart LR
 
 ## Evaluating meaning
 
-The benchmark separates generation from evaluation. Its planned evidence includes
+The benchmark separates generation from evaluation. Its protocol includes
 the existing 50-case historical corpus, a 12-case development screen, paired
 faithful/flawed evaluator examples, and 40 fresh release cases. A selected effort
 setting for each generator is compared on development cases before two frozen
@@ -88,9 +88,15 @@ have dated evidence. Calibration exposed errors in both human reviews and
 constructed references; the original scores and confirmed adjudications remain
 separate. The [validation and cascade comparison](../evals/results/evaluator-validation-2026-10-15.md)
 selects the offline evaluators and reports savings separately from correctness.
-Full generator comparisons, development cascade assessment, release scoring, and
-the shipping-model decision remain pending. The historical corpus and its
-observations retain their original meaning.
+The [development comparison](../evals/results/development-comparison-2026-10-15.md)
+advances Gemini minimal and Haiku low. The
+[difficult-case repeats](../evals/results/repeatability-2026-10-15.md) retain
+material meaning failures and fresh-judge disagreements on unchanged text. The
+[development cascade](../evals/results/development-cascade-2026-10-15.md) leaves
+threshold selection inconclusive because two LLM baselines are unresolved.
+Fresh release assessment, final human auditing, and the shipping-model decision
+remain pending. The historical corpus and its observations retain their original
+meaning.
 
 ### One failure and its fix
 
@@ -98,8 +104,10 @@ On the first Gemini model, `dev-attribution-01` ("Morgan says the client might
 renew...") dropped Morgan's attribution and turned "might renew" into "moving
 forward positively". Raising the model's reasoning level from minimal to medium
 fixed it, and a prompt rule about attribution, uncertainty, and conditions
-reinforced the fix. The case passed in every later run and scored full marks in the
-release cohort.
+reinforced the fix. In the historical October 7 release-candidate cohort, this
+case received full meaning and style scores under prompt v4 and high effort.
+That observation applies to that configuration and cohort; it does not establish
+the behavior of later configurations or the new release set.
 
 ### A failure that stayed
 
@@ -152,9 +160,13 @@ nothing here claims GLM matches or beats Gemini on meaning.
   cleanup, and the notice; component tests; and a small Playwright suite for demo
   and live flows against a mocked provider. CI runs lint, typecheck, tests, and the
   build without secrets, with end-to-end as a separate job.
-- **In the browser:** prior checks covered layout at 360 and 1440 px, target
-  sizes, computed contrast, reduced motion, and focus behavior. A screen-reader
-  pass, 200% zoom, and a second-browser check remain to be recorded.
+- **In the browser:** checks covered layout at 360 and 1440 px, target
+  sizes, computed contrast, reduced motion, and focus behavior. The
+  [dated local verification](../evals/results/local-demo-verification-2026-10-15.md)
+  also records my Edge, actual 200% zoom, and Windows Narrator checks. Narrator
+  exposed missing example-selection announcements and unread rewrite text;
+  both defects were fixed and successfully retested. These observations are
+  separate from automated browser checks and deployed provider behavior.
 - **On the deployment:** a protected Preview streamed real output, and the WAF rate
   limit was observed enforcing. On live Production, I checked a Human to Corporate
   rewrite by hand, and Chrome DevTools showed a `meta` event, 13 `delta` events, and
@@ -178,9 +190,13 @@ development requests, do not support stream cancellation. See
 The project was built with AI coding agents under written rules: a repository
 instruction file, reusable planning, implementation, regression, and review skills,
 and separate worker roles for engineering and for interface and documentation work.
-The specification was the contract, and I kept planning, scope, integration, and
-review. The agents wrote much of the code. The evidence in this repository (tests,
-evaluation records, dated deployment observations) is what the claims rest on.
+I set product priorities and the study budget, approved major choices, completed
+twelve blind calibration reviews and three separate adjudications, and performed
+the manual UI checks recorded here. Coding agents contributed substantially to
+planning, implementation, integration, automated validation, and review. I remain
+responsible for scope and final decisions. The evidence in this repository
+(tests, evaluation records, dated deployment observations) is what the claims
+rest on; the records distinguish automated findings from human observations.
 
 ## Lessons
 

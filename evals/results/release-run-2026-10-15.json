@@ -1,0 +1,54 @@
+{
+  "studyDate": "2026-10-15",
+  "runId": "release-finalists-v1",
+  "status": "automated-collection-complete-human-audit-pending",
+  "provenance": {
+    "schemaVersion": 1,
+    "manifestHash": "14488820ca42a641150ca1273eac24342845907bc3de8abd88e98b92a199e61c",
+    "datasetHash": "be5398421e91301051d836b5f8ca8dc9913bb4adee0075c261ae81b13057f218",
+    "sourceHash": "885ffcad154564abfe20ac3525675412918fda2f1ec2e25fa97cc6dc1a668ec8",
+    "gitRevision": "fb9ce089d3259599187d36062b636216aabac84f",
+    "dirty": false,
+    "transport": "openrouter"
+  },
+  "coverage": {
+    "generationAttempts": 80,
+    "completeGenerations": 80,
+    "judgments": 80,
+    "resolvedJudgments": 79,
+    "unresolvedJudgments": 1,
+    "reusedGenerations": 0
+  },
+  "costs": {
+    "phaseRequests": 160,
+    "phaseKnownUsd": 0.16079809999999997,
+    "phaseUnknownSettlements": 1,
+    "phaseUnknownReservationsUsd": 0.027502,
+    "studyRequests": 1338,
+    "studyKnownUsd": 1.203689003,
+    "studyUnknownSettlements": 3,
+    "studyUnknownReservationsUsd": 0.0562414,
+    "totalFinalCostUsd": null
+  },
+  "rawFileDigests": {
+    "algorithm": "sha256",
+    "generations": "fb5acbf295fe8560ad487b6ed4e8465c871317a447e4f02e392083258eb60e9b",
+    "judgments": "eb90c02f708ca33433a71e770d90f05c38e489eeb3478bba331e7c8ba8bcb896",
+    "ledgerAtPhaseEnd": "213a09064c8b398396aaac422909a7ffa8d2558e632c160f5eb893fd8c927abb"
+  },
+  "humanAudit": {
+    "required": 8,
+    "prepared": 8,
+    "completed": 0,
+    "confidentPasses": 4,
+    "suspected": 4,
+    "fallbackPasses": 0,
+    "policy": "release-audit-rule-2026-10-15.md",
+    "privatePageDigest": "02375816fc0ce488b281c6b4603790fa0b23658da5fc284688b3d9a4a774576c"
+  },
+  "limitations": [
+    "Output-level evidence and blind mapping withheld until human scores are fixed.",
+    "One Argon deadline remains unresolved, with unknown billing and no retry.",
+    "Automated collection does not establish release acceptance or change Production."
+  ]
+}

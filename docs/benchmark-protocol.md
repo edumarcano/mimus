@@ -144,7 +144,9 @@ and [cascade assessment](../evals/results/development-cascade-2026-10-15.md) pre
 all failed and unresolved observations. The [difficult-case repeats](../evals/results/repeatability-2026-10-15.md)
 retain observed meaning failures; Gemini minimal and Haiku low proceed unchanged
 under the frozen release manifest. The [final audit sampling rule](../evals/results/release-audit-rule-2026-10-15.md)
-is recorded before release calls. Fresh release scoring, final human auditing, and
+is recorded before release calls. The [fresh collection record](../evals/results/release-run-2026-10-15.md)
+preserves complete generation coverage and one unresolved judgment. Fresh release
+assessment, final human auditing, and
 the shipping-model decision remain pending. The [local demo verification record](../evals/results/local-demo-verification-2026-10-15.md)
 separates automated keyboard/browser checks from maintainer Edge, 200% zoom, and
 Narrator observations, including the reported defects and their successful retests.

@@ -21,6 +21,8 @@ Notable public releases of Mimus are documented here.
 
 - Next.js App Router, TypeScript, and Tailwind CSS, hosted on Vercel.
 - Server-side OpenRouter inference with output delivered through server-sent events.
+- Gemini 3.5 Flash-Lite at minimal reasoning adopted in the runtime configuration
+  from the staged benchmark, with prompt v4 and a 2,048-token output cap.
 - Zero-data-retention endpoint routing and denial of provider data collection
   requested for every live inference call; an acknowledgement and `/privacy`
   page explain the remaining data-handling limitations.

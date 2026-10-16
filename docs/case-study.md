@@ -101,8 +101,9 @@ judgment, so it missed the style target. The eight blind human audits agreed wit
 Argon on meaning in 7/8 and style in 4/8; seven examples were Haiku and only one
 was Gemini. Both score sets remain unchanged. This limited, uneven human sample
 does not independently establish the recommended model's correctness, and
-possible bias from Argon and Gemini sharing a vendor was not measured. Runtime
-adoption remains pending. The historical corpus retains its original meaning.
+possible bias from Argon and Gemini sharing a vendor was not measured. The runtime
+configuration now adopts Gemini minimal through OpenRouter; Production activation
+is pending. The historical corpus retains its original meaning.
 
 ### One failure and its fix
 
@@ -158,6 +159,13 @@ The GLM development run completed all 40 requests and 39 passed the deterministi
 checks, but formal meaning and style scores were not committed and the original
 meaning target was not demonstrated. The Gemini results do not transfer to it, and
 nothing here claims GLM matches or beats Gemini on meaning.
+
+The staged benchmark subsequently provided comparative meaning and style scores.
+Its recommendation led to adopting `google/gemini-3.5-flash-lite` at minimal
+reasoning through the same OpenRouter adapter, with prompt v4 and the 2,048-token
+cap. This model change retains the existing privacy routing and notice version.
+The [adoption decision](decisions.md#2026-10-16-gemini-minimal-adoption-committed-configuration-production-activation-pending)
+separates the committed configuration from verification on Production.
 
 ## Testing and verification
 

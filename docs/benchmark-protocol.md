@@ -147,7 +147,8 @@ under the frozen release manifest. The [final audit sampling rule](../evals/resu
 is recorded before release calls. The [fresh collection record](../evals/results/release-run-2026-10-15.md)
 preserves complete generation coverage, one unresolved judgment, and the eight
 completed blind human audits. Gemini minimal meets the automated targets and is
-recommended for v1; runtime adoption remains pending. Exact human/Argon agreement
+recommended for v1; its configuration is now adopted in code, with Production
+activation pending. Exact human/Argon agreement
 is 7/8 for meaning and 4/8 for style, with seven Haiku examples and only one Gemini
 example. These limited labels do not independently validate the recommendation.
 The [local demo verification record](../evals/results/local-demo-verification-2026-10-15.md)

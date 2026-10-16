@@ -56,7 +56,7 @@ Mimus is a standalone application. Its scope emphasizes a complete, approachable
 | Stack | Next.js App Router, React, TypeScript, Tailwind CSS. |
 | Backend | One Next.js Node.js route: `POST /api/translate`. |
 | Active AI provider | OpenRouter, called server-side with a server-only `OPENROUTER_API_KEY`. Requests use zero data retention (`zdr: true`) and data-collection denial (`data_collection: "deny"`) routing. [S9, S10] |
-| Active model | `z-ai/glm-5.3-flash`, reasoning effort `low`, 2,048-token output cap, committed in `src/lib/server/model-config.ts`. Access, price, and endpoint eligibility are verified per deployment, not assumed. [S9, S10] |
+| Active model | `google/gemini-3.5-flash-lite`, reasoning effort `minimal`, 2,048-token output cap, committed in `src/lib/server/model-config.ts`. Access, price, and endpoint eligibility are verified per deployment, not assumed. [S9, S10] |
 | Superseded provider | Google Gemini Developer API with `gemini-3.5-flash-lite` and an AI Studio-managed key. This was the provider for the earlier release-candidate evaluation; that record is historical and lives in `evals/results/summary.md` and `docs/decisions.md`. It does not govern the active system. [S1, S3, S4] |
 | Model configuration | Model ID and model-specific parameters are versioned together in server-side code, not environment variables. |
 | Provider portability | One small internal adapter boundary. Only OpenRouter is active. Changing provider requires a reviewed notice update first. |
@@ -241,13 +241,13 @@ The active configuration has this application-owned shape:
 export const MODEL_CONFIG = {
   provider: "openrouter",
   maxOutputTokens: 2_048,
-  model: "z-ai/glm-5.3-flash",
-  reasoningEffort: "low",
+  model: "google/gemini-3.5-flash-lite",
+  reasoningEffort: "minimal",
   dataCollection: "deny",
   zdr: true,
 } as const;
 
-export const MODEL_PUBLIC_LABEL = "GLM 5.3 Flash";
+export const MODEL_PUBLIC_LABEL = "Gemini 3.5 Flash-Lite";
 ```
 
 *Superseded provider:* the earlier Google configuration (`gemini-3.5-flash-lite`,
@@ -676,7 +676,7 @@ Score **meaning** and **style** independently:
 
 Deterministic checks cover nonempty output, size bounds, completion status, and case-specific tokens only where exact preservation is meaningful. Token overlap, embeddings, a decision model, or an LLM judge are not proof of fidelity by themselves. V1 uses automated scoring with limited human calibration and audit; reports must state this limitation and preserve human, automated, and adjudicated labels separately.
 
-The benchmark compares the active GLM configuration, GPT-6 Luna, Haiku 5.5, and Gemini 3.5 Flash-Lite. Reasoning settings are compared within each model and are not treated as equivalent across model families. A 12-case screen narrows settings before the 40-case development comparison. The existing 50-case corpus and historical records remain unchanged; a separate 40-case fresh release set is used for final evaluation. The ten-case historical `holdout2` cohort has already been run on Gemini and is not fresh release evidence.
+The benchmark compares the former GLM configuration, GPT-6 Luna, Haiku 5.5, and Gemini 3.5 Flash-Lite. Reasoning settings are compared within each model and are not treated as equivalent across model families. A 12-case screen narrows settings before the 40-case development comparison. The existing 50-case corpus and historical records remain unchanged; a separate 40-case fresh release set is used for final evaluation. The ten-case historical `holdout2` cohort has already been run on Gemini and is not fresh release evidence.
 
 The evaluator study compares GPT-6 Luna and Gemini 4 Argon as LLM judges, and Jev 1.14, Microsoft-Decision-1, and Perplexity Decider V1.1 27B as decision models. Exact model identifiers and supported settings must be pinned before paid runs. Evaluators are compared on a separate challenge set of 20 source passages, each with one faithful and one deliberately flawed rewrite; 12 pairs are for calibration and 8 pairs for validation. The experiment may simulate a decision-model escalation policy. It does not add an evaluator to production, and the release set is scored by the selected LLM judge without cascade gating.
 

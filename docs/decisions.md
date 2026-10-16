@@ -180,7 +180,7 @@ change, and the Gemini evaluation was not re-run.
   for WCAG 1.4.11), guarded by `tests/theme-contrast.test.ts`. This is a computed
   check, not a new browser audit.
 
-## 2026-10-13: OpenRouter and GLM 5.3 Flash migration (Active)
+## 2026-10-13: OpenRouter and GLM 5.3 Flash migration (Model superseded; OpenRouter retained)
 
 **Decision.** The provider changed from Google Gemini to OpenRouter with
 `z-ai/glm-5.3-flash`, reasoning effort `low`, a 2,048-token output cap that
@@ -443,7 +443,7 @@ configuration, the WAF, the key, or any deployment:
   unmeasured. The app's `disabled` mode is covered by tests, which is not a deployed
   check.
 
-## 2026-10-16: Benchmark recommendation (Historical evidence; adoption pending)
+## 2026-10-16: Benchmark recommendation (Historical evidence; adopted below)
 
 The [completed staged study](../evals/results/release-run-2026-10-15.md) recommends
 `google/gemini-3.5-flash-lite` at minimal effort, shared prompt v4, and the
@@ -457,10 +457,46 @@ audit does not independently validate Gemini or settle the style disagreements.
 Human and automated labels remain separate; the frozen judge and rubric were not
 changed using release outcomes. Possible vendor-family bias is unmeasured.
 
-The recommendation does not supersede the active GLM runtime configuration.
-Model adoption remains a maintainer decision, and the separately gated
+At the time of this recommendation, GLM remained the active runtime configuration.
+The subsequent adoption decision is recorded below; the separately gated
 deployment rehearsals and release acceptance are still pending. The experimental
 decision-model cascade remains offline: development threshold selection was
 inconclusive, so no evaluator is added to production rewriting.
+
+## 2026-10-16: Gemini minimal adoption (Committed configuration; Production activation pending)
+
+**Decision.** Adopt `google/gemini-3.5-flash-lite` at `minimal` reasoning through
+OpenRouter, with the public label "Gemini 3.5 Flash-Lite". Keep prompt v4, the
+2,048-token output cap, and `provider.zdr: true`, `data_collection: "deny"`, and
+`require_parameters: true`. Sampling overrides remain unset. This supersedes the
+GLM model choice, while retaining the OpenRouter adapter and privacy notice
+`openrouter-zdr-v1`. It does not restore the historical direct Google API adapter.
+
+**Evidence and limits.** The [staged study](../evals/results/release-run-2026-10-15.md)
+found Gemini minimal the only frozen finalist meeting the automated release
+criteria: 37/40 full-meaning and 37/40 full-style scores, no meaning-0 outputs,
+and complete judgments. The eight blind audits covered only one Gemini output;
+human style disagreement and possible vendor-family bias remain unresolved.
+Historical reports and original labels remain unchanged. Adoption is not a
+guarantee of meaning preservation or a declaration that v1 is release-ready.
+
+**Activation status.** This decision changes the committed configuration.
+Production activation and deployed smoke verification are pending. The
+[local adoption checks](../evals/results/gemini-adoption-2026-10-16.md) verified
+two synthetic requests through the application handler and real OpenRouter adapter.
+Before merging,
+verify current model access, supported parameters, eligible privacy-preserving
+routes, the key's remaining allowance, and the healthy GLM rollback deployment.
+Use two local and two Production synthetic smoke requests, with a combined
+$0.10 ceiling and explicit authorization for the paid calls and Production work.
+The local pair completed after correcting the smoke harness; Production calls
+remain pending authorization. Earlier harness attempts are disclosed in the record.
+Record observed deployment and smoke results separately from this decision.
+No additional quality benchmark or human-scoring round is required for adoption.
+
+**Rollback.** If activation breaks routing, streaming, reasoning isolation, or
+output formatting, restore the verified GLM deployment using the deployment
+runbook. If it is unavailable, revert this adoption change and redeploy. Confirm
+recovery and reconcile the deployed configuration with Git.
 
 

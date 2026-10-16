@@ -1,16 +1,14 @@
 import "server-only";
 
-// Active configuration (z-ai/glm-5.3-flash with prompt v4). It is not a claim
-// that GLM met the original meaning target. It was kept for v1.0.0 and the release
-// evidence requirement was revised. See the release decision in
-// docs/decisions.md.
+// Adopted from the staged benchmark: Gemini minimal with prompt v4.
+// See docs/decisions.md for the evidence, limitations, and deployment status.
 export const MODEL_CONFIG = {
   provider: "openrouter",
   maxOutputTokens: 2_048,
-  model: "z-ai/glm-5.3-flash",
-  reasoningEffort: "low",
+  model: "google/gemini-3.5-flash-lite",
+  reasoningEffort: "minimal",
   dataCollection: "deny",
   zdr: true,
 } as const;
 
-export const MODEL_PUBLIC_LABEL = "GLM 5.3 Flash";
+export const MODEL_PUBLIC_LABEL = "Gemini 3.5 Flash-Lite";

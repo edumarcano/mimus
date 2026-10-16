@@ -857,13 +857,13 @@ A release candidate is ready when:
 - OpenRouter requests use ZDR endpoint routing and `data_collection: "deny"`, with no tools or plugins; account-level prompt logging is confirmed in the account settings, because the app does not enforce it. The visible notice matches actual processing.
 - The released model ID and model-specific settings are committed in code and match the evaluated configuration.
 - Public-launch audience, region, billing, and hosting conditions have been reviewed and recorded.
-- Production WAF enforcement, request caps, mode switch, and upstream quota errors are verified.
+- Production WAF enforcement, request caps, mode switch, and inspected safe logs are verified. Quota-error handling has automated coverage; any unverified live-provider or geographic cases are documented separately from mocked checks rather than forcing quota exhaustion on the shared key.
 - Automated checks pass, or any unmet release gate is explicitly identified as blocking completion.
 - The synthetic evaluation has been run, scores and failures are recorded, and results and limitations are reported transparently before release.
-- The repository, README, permitted live deployment, screenshots, setup instructions, and engineering case study are ready for public use and match the verified implementation.
+- The repository, README, permitted live deployment, screenshots, setup instructions, and design notes are ready for public use and match the verified implementation.
 - The Mimus name, logo/favicon assets, page metadata, privacy wording, active URLs, and release documentation are consistent; supplied PNGs have been checked for transparency, mark consistency, and legibility at their actual sizes.
 
-The case study should explain scope, the style/meaning tradeoff, one observed failure and fix, actual evaluation results, costs/limits, and the role of AI-assisted development. Do not claim production scale, user traction, perfect privacy, or guaranteed meaning preservation without evidence.
+The design notes should explain scope, the style/meaning tradeoff, one observed failure and fix, actual evaluation results, costs/limits, and the role of AI-assisted development. Do not claim production scale, user traction, perfect privacy, or guaranteed meaning preservation without evidence.
 
 ---
 

@@ -53,11 +53,56 @@ flowchart LR
 
 ## Evaluating meaning
 
-The evaluation is a set of 50 fictional cases with annotated meaning (what must be
-preserved and what must not be invented), deterministic checks, and manual 0-2
-scoring of meaning and style. Ten cases are critical: factual invention, changed
-commitments, negation, attribution, and prompt injection. A runner uses the same
-prompt builder and adapter as production, and raw runs stay out of the repository.
+The benchmark separates generation from evaluation. Its protocol includes
+the existing 50-case historical corpus, a 12-case development screen, paired
+faithful/flawed evaluator examples, and 40 fresh release cases. A selected effort
+setting for each generator is compared on development cases before two frozen
+configurations are carried to the release set. Meaning and style remain separate
+0-2 scores; failures such as invented facts, changed commitments, lost
+attribution, negation reversals, and omissions receive explicit tags.
+
+```mermaid
+flowchart LR
+  Manifest[Versioned experiment manifest] --> Runner[Offline benchmark runner]
+  Cases[Synthetic datasets] --> Runner
+  Runner --> Outputs[Generation records]
+  Outputs --> LLM[LLM judge]
+  Outputs --> Decision[Decision model]
+  Outputs --> Blind[Limited blind human review]
+  LLM --> Report[Comparison and cascade report]
+  Decision --> Report
+  Blind --> Report
+```
+
+This is an offline experiment. The decision-model cascade is simulated for
+review-cost and missed-failure tradeoffs; it is not part of production rewriting.
+Human involvement is capped at 25 outputs, with calibration, random audits of
+confident passes, and a small disagreement budget. Findings must be labeled
+automated evaluation with limited human calibration and auditing. See the
+[benchmark protocol](benchmark-protocol.md) for datasets, thresholds, and
+selection rules.
+
+The [technical pilot](../evals/results/benchmark-pilot-2026-10-15.md) and
+[initial evaluator calibration](../evals/results/evaluator-calibration-2026-10-15.md)
+have dated evidence. Calibration exposed errors in both human reviews and
+constructed references; the original scores and confirmed adjudications remain
+separate. The [validation and cascade comparison](../evals/results/evaluator-validation-2026-10-15.md)
+selects the offline evaluators and reports savings separately from correctness.
+The [development comparison](../evals/results/development-comparison-2026-10-15.md)
+advances Gemini minimal and Haiku low. The
+[difficult-case repeats](../evals/results/repeatability-2026-10-15.md) retain
+material meaning failures and fresh-judge disagreements on unchanged text. The
+[development cascade](../evals/results/development-cascade-2026-10-15.md) leaves
+threshold selection inconclusive because two LLM baselines are unresolved.
+The [fresh release comparison](../evals/results/release-run-2026-10-15.md) recommends
+Gemini minimal under the frozen automated gates: 37/40 full-meaning and 37/40
+full-style scores. Haiku low scored 38/40 and 23/40, with one noncritical unresolved
+judgment, so it missed the style target. The eight blind human audits agreed with
+Argon on meaning in 7/8 and style in 4/8; seven examples were Haiku and only one
+was Gemini. Both score sets remain unchanged. This limited, uneven human sample
+does not independently establish the recommended model's correctness, and
+possible bias from Argon and Gemini sharing a vendor was not measured. Runtime
+adoption remains pending. The historical corpus retains its original meaning.
 
 ### One failure and its fix
 
@@ -65,8 +110,10 @@ On the first Gemini model, `dev-attribution-01` ("Morgan says the client might
 renew...") dropped Morgan's attribution and turned "might renew" into "moving
 forward positively". Raising the model's reasoning level from minimal to medium
 fixed it, and a prompt rule about attribution, uncertainty, and conditions
-reinforced the fix. The case passed in every later run and scored full marks in the
-release cohort.
+reinforced the fix. In the historical October 7 release-candidate cohort, this
+case received full meaning and style scores under prompt v4 and high effort.
+That observation applies to that configuration and cohort; it does not establish
+the behavior of later configurations or the new release set.
 
 ### A failure that stayed
 
@@ -119,8 +166,13 @@ nothing here claims GLM matches or beats Gemini on meaning.
   cleanup, and the notice; component tests; and a small Playwright suite for demo
   and live flows against a mocked provider. CI runs lint, typecheck, tests, and the
   build without secrets, with end-to-end as a separate job.
-- **In the browser:** layout at 360 and 1440 px, target sizes, computed contrast,
-  reduced motion, and focus behavior.
+- **In the browser:** checks covered layout at 360 and 1440 px, target
+  sizes, computed contrast, reduced motion, and focus behavior. The
+  [dated local verification](../evals/results/local-demo-verification-2026-10-15.md)
+  also records my Edge, actual 200% zoom, and Windows Narrator checks. Narrator
+  exposed missing example-selection announcements and unread rewrite text;
+  both defects were fixed and successfully retested. These observations are
+  separate from automated browser checks and deployed provider behavior.
 - **On the deployment:** a protected Preview streamed real output, and the WAF rate
   limit was observed enforcing. On live Production, I checked a Human to Corporate
   rewrite by hand, and Chrome DevTools showed a `meta` event, 13 `delta` events, and
@@ -144,9 +196,14 @@ development requests, do not support stream cancellation. See
 The project was built with AI coding agents under written rules: a repository
 instruction file, reusable planning, implementation, regression, and review skills,
 and separate worker roles for engineering and for interface and documentation work.
-The specification was the contract, and I kept planning, scope, integration, and
-review. The agents wrote much of the code. The evidence in this repository (tests,
-evaluation records, dated deployment observations) is what the claims rest on.
+I set product priorities and the study budget, approved major choices, completed
+twenty blind reviews (twelve calibration and eight final audits) and three
+separate calibration adjudications, and performed
+the manual UI checks recorded here. Coding agents contributed substantially to
+planning, implementation, integration, automated validation, and review. I remain
+responsible for scope and final decisions. The evidence in this repository
+(tests, evaluation records, dated deployment observations) is what the claims
+rest on; the records distinguish automated findings from human observations.
 
 ## Lessons
 
@@ -156,4 +213,5 @@ evaluation records, dated deployment observations) is what the claims rest on.
 - Decide holdout rules first, and say when they are broken.
 - Read provider terms before the last milestone. They changed the architecture.
 - Do not read a log code as proof of what happened upstream.
+- A benchmark design is not a benchmark result; keep each claim tied to dated evidence.
 - A small, specific specification makes both agents and reviewers faster.

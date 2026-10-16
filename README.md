@@ -68,20 +68,34 @@ policy, not anonymity: the hosting platform and OpenRouter still process request
 metadata, and a host may cache prompts in memory. Use fictional text. The full notice
 is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
 
-## Evaluation
+## Engineering and evaluation
 
-The repository includes 50 synthetic cases, deterministic checks, and a rubric
-for manual meaning and style scoring.
+Mimus is a small AI application whose harder engineering questions are visible in
+the repository: how a streamed request is stopped or marked incomplete, how
+meaning is measured separately from style, and how a model decision accounts for
+quality, latency, and cost. The implementation, tests, dated evidence, and limits
+are linked from the [case study](docs/case-study.md).
 
-- The **Gemini** release-candidate evaluation was formally scored. It is historical
-  evidence for a previous provider and does not apply to GLM:
-  [`evals/results/summary.md`](evals/results/summary.md).
-- The **GLM** development run completed 40 of 40 requests, and 39 of 40 passed the
-  deterministic checks. Formal meaning and style scores were not committed, and the
-  original meaning target was not demonstrated:
-  [`evals/results/glm-development.md`](evals/results/glm-development.md).
+The historical corpus contains 50 synthetic cases. The new benchmark adds a
+12-case screening list, a 40-output evaluator challenge set, and 40 fresh release
+cases. Its protocol compares reasoning settings across four generators, studies
+LLM and decision-model scoring, and simulates a review cascade offline. Human
+review is limited to calibration and a small audit. The benchmark and data are
+described in [the protocol](docs/benchmark-protocol.md) and
+[evaluation guide](evals/README.md).
 
-Meaning preservation is a goal, not a guarantee for any individual result.
+The [fresh release comparison](evals/results/release-run-2026-10-15.md) recommends
+Gemini minimal: it met the frozen automated targets with 37/40 full-meaning and
+37/40 full-style scores. Haiku low scored 38/40 and 23/40, with one unresolved
+judgment. Eight blind human audits agreed with the judge on meaning in 7/8 and
+style in 4/8; only one audited output was Gemini. These are automated results with
+limited human auditing, not independently validated accuracy. Runtime adoption
+remains pending; the live configuration above is still GLM.
+The older **Gemini** release-candidate evaluation remains historical evidence for
+that configuration only ([summary](evals/results/summary.md)). The **GLM** run
+completed 40 requests and 39 passed deterministic checks, but has no committed
+formal meaning/style scores ([record](evals/results/glm-development.md)).
+Meaning preservation remains a goal, not a guarantee for any individual result.
 
 ## Run locally
 

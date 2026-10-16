@@ -30,6 +30,9 @@ Notable public releases of Mimus are documented here.
   and safeguards against treating stopped output as complete.
 - Synthetic evaluation records, automated checks, and a deployment and shutdown
   runbook. Disabled mode returned HTTP 503 with no provider call in Preview.
+- Offline multi-model and reasoning-effort benchmarks with budget reservations,
+  immutable observations, explicit reuse lineage, limited blind human reviews,
+  and a fresh release comparison. Decision-model routing is an offline experiment.
 
 ### Known limitations
 
@@ -39,4 +42,5 @@ Notable public releases of Mimus are documented here.
   third-party provider availability and account spending limits.
 - Upstream cancellation depends on the model host; billing after Stop is not
   guaranteed to end immediately. See the [deployment guide](docs/deployment.md).
-- Screen readers, Safari, and Firefox have not been separately tested.
+- Windows Narrator, Edge, and 200% zoom were manually checked, with two reported
+  accessibility defects fixed and retested. Safari and Firefox remain untested.

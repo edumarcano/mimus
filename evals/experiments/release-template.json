@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "id": "release-template",
+  "stage": "release",
+  "dataset": "evals/datasets/release-v1.jsonl",
+  "promptVersion": "4",
+  "configurations": [
+    {
+      "id": "glm-low",
+      "model": "z-ai/glm-5.3-flash",
+      "role": "generator",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.15,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "luna-none",
+      "model": "openai/gpt-6-luna",
+      "role": "generator",
+      "reasoning": {
+        "effort": "none"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "judge-luna",
+      "model": "openai/gpt-6-luna",
+      "role": "llm",
+      "reasoning": {
+        "effort": "medium"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "judge-argon",
+      "model": "google/gemini-4-argon",
+      "role": "llm",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 2,
+      "outputUsdPerMillion": 10
+    },
+    {
+      "id": "decision-jev",
+      "model": "typesafe/jev-1.14",
+      "role": "decision",
+      "reasoning": {},
+      "maxOutputTokens": 1,
+      "inputUsdPerMillion": 0.042,
+      "outputUsdPerMillion": 0
+    },
+    {
+      "id": "decision-microsoft",
+      "model": "microsoft/microsoft-decision-1",
+      "role": "decision",
+      "reasoning": {},
+      "maxOutputTokens": 1,
+      "inputUsdPerMillion": 0.042,
+      "outputUsdPerMillion": 0
+    },
+    {
+      "id": "decision-perplexity",
+      "model": "perplexity/pplx-decider-v1.1-27b",
+      "role": "decision",
+      "reasoning": {},
+      "maxOutputTokens": 1,
+      "inputUsdPerMillion": 0.02,
+      "outputUsdPerMillion": 0
+    }
+  ],
+  "repetitions": 1,
+  "seed": 20261015,
+  "targetUsd": 1,
+  "maxUsd": 3,
+  "pricingDate": "2026-10-15"
+}

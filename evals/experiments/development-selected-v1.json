@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "id": "development-selected-v1",
+  "stage": "development",
+  "dataset": "evals/cases.jsonl",
+  "promptVersion": "4",
+  "configurations": [
+    {
+      "id": "glm-low",
+      "model": "z-ai/glm-5.3-flash",
+      "role": "generator",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.15,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "luna-low",
+      "model": "openai/gpt-6-luna",
+      "role": "generator",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "haiku-low",
+      "model": "anthropic/claude-haiku-5.5",
+      "role": "generator",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "gemini-minimal",
+      "model": "google/gemini-3.5-flash-lite",
+      "role": "generator",
+      "reasoning": {
+        "effort": "minimal"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.3,
+      "outputUsdPerMillion": 2.5
+    },
+    {
+      "id": "judge-argon",
+      "model": "google/gemini-4-argon",
+      "role": "llm",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 2,
+      "outputUsdPerMillion": 10
+    },
+    {
+      "id": "decision-perplexity",
+      "model": "perplexity/pplx-decider-v1.1-27b",
+      "role": "decision",
+      "reasoning": {},
+      "maxOutputTokens": 1,
+      "inputUsdPerMillion": 0.02,
+      "outputUsdPerMillion": 0
+    }
+  ],
+  "repetitions": 1,
+  "seed": 20261015,
+  "targetUsd": 1,
+  "maxUsd": 3,
+  "pricingDate": "2026-10-15",
+  "caseIds": [
+    "dev-pair-01",
+    "dev-pair-02",
+    "dev-pair-03",
+    "dev-pair-04",
+    "dev-pair-05",
+    "dev-pair-06",
+    "dev-pair-07",
+    "dev-pair-08",
+    "dev-pair-09",
+    "dev-pair-10",
+    "dev-pair-11",
+    "dev-pair-12",
+    "dev-pair-13",
+    "dev-pair-14",
+    "dev-pair-15",
+    "dev-pair-16",
+    "dev-pair-17",
+    "dev-pair-18",
+    "dev-pair-19",
+    "dev-pair-20",
+    "dev-short-01",
+    "dev-long-01",
+    "dev-numbers-01",
+    "dev-dates-01",
+    "dev-negation-01",
+    "dev-ambiguous-01",
+    "dev-quoted-01",
+    "dev-inject-01",
+    "dev-attribution-01",
+    "dev-conditional-01",
+    "holdout-negation-01",
+    "holdout-numbers-01",
+    "holdout-dates-01",
+    "holdout-inject-01",
+    "holdout-ambiguous-01",
+    "holdout-quoted-01",
+    "holdout-tentative-01",
+    "holdout-short-01",
+    "holdout-long-01",
+    "holdout-reverse-01"
+  ]
+}

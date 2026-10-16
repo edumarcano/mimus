@@ -443,4 +443,24 @@ configuration, the WAF, the key, or any deployment:
   unmeasured. The app's `disabled` mode is covered by tests, which is not a deployed
   check.
 
+## 2026-10-16: Benchmark recommendation (Historical evidence; adoption pending)
+
+The [completed staged study](../evals/results/release-run-2026-10-15.md) recommends
+`google/gemini-3.5-flash-lite` at minimal effort, shared prompt v4, and the
+2,048-token output cap through OpenRouter. It is the only frozen finalist meeting
+the automated fresh-release targets and evidence-completeness checks. The
+comparison retains Haiku's unresolved judgment and all observed failures.
+
+The eight blind audits show 7/8 exact meaning agreement and 4/8 style agreement
+with Argon, with seven Haiku outputs and only one Gemini output. This limited
+audit does not independently validate Gemini or settle the style disagreements.
+Human and automated labels remain separate; the frozen judge and rubric were not
+changed using release outcomes. Possible vendor-family bias is unmeasured.
+
+The recommendation does not supersede the active GLM runtime configuration.
+Model adoption remains a maintainer decision, and the separately gated
+deployment rehearsals and release acceptance are still pending. The experimental
+decision-model cascade remains offline: development threshold selection was
+inconclusive, so no evaluator is added to production rewriting.
+
 

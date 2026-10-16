@@ -78,7 +78,7 @@ test.describe("live mode (mocked API)", () => {
     await expect(page.getByTestId("status")).toHaveText("Complete", {
       timeout: 30_000,
     });
-    await expect(page.getByTestId("output")).toHaveText(
+    await expect(page.getByTestId("output")).toHaveValue(
       "Streamed rewrite for e2e.",
     );
 
@@ -105,8 +105,8 @@ test.describe("live mode (mocked API)", () => {
     await page.getByRole("button", { name: "Stop" }).click();
     await expect(page.getByTestId("status")).toContainText("Stopped");
     await translate.click();
-    await expect(page.getByTestId("output")).toHaveText("NEW_RUN complete.");
-    await expect(page.getByTestId("output")).not.toContainText("OLD_RUN");
+    await expect(page.getByTestId("output")).toHaveValue("NEW_RUN complete.");
+    await expect(page.getByTestId("output")).not.toHaveValue(/OLD_RUN/);
 
     await page.getByLabel("Your text").fill("edited after complete");
     await expect(page.getByTestId("stale")).toContainText("previous input");

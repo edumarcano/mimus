@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "pilot-generators-v1",
+  "stage": "pilot",
+  "dataset": "evals/cases.jsonl",
+  "promptVersion": "4",
+  "configurations": [
+    {
+      "id": "glm-low",
+      "model": "z-ai/glm-5.3-flash",
+      "role": "generator",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.15,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "luna-none",
+      "model": "openai/gpt-6-luna",
+      "role": "generator",
+      "reasoning": {
+        "effort": "none"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "haiku-off",
+      "model": "anthropic/claude-haiku-5.5",
+      "role": "generator",
+      "reasoning": {
+        "effort": "low",
+        "enabled": false
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "gemini-minimal",
+      "model": "google/gemini-3.5-flash-lite",
+      "role": "generator",
+      "reasoning": {
+        "effort": "minimal"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.3,
+      "outputUsdPerMillion": 2.5
+    }
+  ],
+  "repetitions": 1,
+  "seed": 20261015,
+  "targetUsd": 0.1,
+  "maxUsd": 0.25,
+  "pricingDate": "2026-10-15",
+  "caseIds": [
+    "dev-conditional-01"
+  ]
+}

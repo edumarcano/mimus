@@ -62,6 +62,41 @@ afterEach(() => {
 });
 
 describe("Translator", () => {
+  it("announces selected examples and exposes the rewrite as a read-only text field", () => {
+    render(<Translator config={cfg("demo")} />);
+    for (const example of EXAMPLES.slice(0, 2)) {
+      fireEvent.click(screen.getByRole("button", { name: example.label }));
+      expect(
+        screen
+          .getByText(`${example.label} example loaded. Example — not generated.`)
+          .closest('[role="status"]'),
+      ).toBeTruthy();
+      const result = screen.getByRole("textbox", {
+        name: /rewrite$/,
+      }) as HTMLTextAreaElement;
+      expect(result.tabIndex).toBe(0);
+      expect(result.readOnly).toBe(true);
+      expect(result.disabled).toBe(false);
+      expect(result.value).toBe(example.output);
+      result.focus();
+      expect(document.activeElement).toBe(result);
+      result.select();
+      expect(result.selectionEnd - result.selectionStart).toBe(example.output.length);
+      expect(result.hasAttribute("aria-live")).toBe(false);
+    }
+  });
+
+  it("announces a live-mode example as input without claiming a generated rewrite", () => {
+    render(<Translator config={cfg("live")} />);
+    fireEvent.click(screen.getByRole("button", { name: EXAMPLES[0].label }));
+    expect(
+      screen
+        .getByText(`${EXAMPLES[0].label} example loaded into Your text.`)
+        .closest('[role="status"]'),
+    ).toBeTruthy();
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).not.toBe(EXAMPLES[0].output);
+  });
+
   it("demo mode: Translate disabled with explanation; example shows labeled output", () => {
     render(<Translator config={cfg("demo")} />);
     expect(translateBtn().disabled).toBe(true);
@@ -74,7 +109,7 @@ describe("Translator", () => {
     expect(screen.getByTestId("status").textContent).toContain(
       "Example — not generated",
     );
-    expect(screen.getByTestId("output").textContent).toBe(EXAMPLES[0].output);
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe(EXAMPLES[0].output);
     expect(translateBtn().disabled).toBe(true);
   });
 
@@ -84,7 +119,7 @@ describe("Translator", () => {
 
     fireEvent.click(screen.getByRole("button", { name: EXAMPLES[0].label }));
     expect(screen.getByTestId("status").textContent).toBe("Idle");
-    expect(screen.getByTestId("output").textContent).not.toBe(
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).not.toBe(
       EXAMPLES[0].output,
     );
     expect(translateBtn().disabled).toBe(true);
@@ -135,7 +170,7 @@ describe("Translator", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status").textContent).toBe("Complete"),
     );
-    expect(screen.getByTestId("output").textContent).toBe("Excited to share!");
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe("Excited to share!");
     const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     expect(body).toMatchObject({
       sourceStyle: "human",
@@ -158,7 +193,7 @@ describe("Translator", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status").textContent).toContain("Interrupted"),
     );
-    expect(screen.getByTestId("output").textContent).toBe("Partial");
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe("Partial");
     expect(
       (screen.getByLabelText("Your text") as HTMLTextAreaElement).value,
     ).toBe("hello there");
@@ -186,7 +221,7 @@ describe("Translator", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status").textContent).toContain("Interrupted"),
     );
-    expect(screen.getByTestId("output").textContent).toBe("Partial");
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe("Partial");
   });
 
   it("removes partial text on CONTENT_BLOCKED", async () => {
@@ -208,7 +243,7 @@ describe("Translator", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status").textContent).toContain("Blocked."),
     );
-    expect(screen.getByTestId("output").textContent).not.toContain("Partial");
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).not.toContain("Partial");
   });
 
   it("shows a safe message for a non-JSON 503 body", async () => {
@@ -277,7 +312,7 @@ const targetSel = () => screen.getByLabelText("Target style") as HTMLSelectEleme
 const btn = (name: string | RegExp) =>
   screen.getByRole("button", { name }) as HTMLButtonElement;
 const status = () => screen.getByTestId("status").textContent ?? "";
-const output = () => screen.getByTestId("output").textContent ?? "";
+const output = () => (screen.getByTestId("output") as HTMLTextAreaElement).value ?? "";
 
 function stubComplete(out: string) {
   const fetchMock = vi

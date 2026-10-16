@@ -1,0 +1,513 @@
+{
+  "studyDate": "2026-10-15",
+  "runId": "release-finalists-v1",
+  "status": "reviewed-automated-evaluation-with-limited-human-audit",
+  "provenance": {
+    "schemaVersion": 1,
+    "manifestHash": "14488820ca42a641150ca1273eac24342845907bc3de8abd88e98b92a199e61c",
+    "datasetHash": "be5398421e91301051d836b5f8ca8dc9913bb4adee0075c261ae81b13057f218",
+    "sourceHash": "885ffcad154564abfe20ac3525675412918fda2f1ec2e25fa97cc6dc1a668ec8",
+    "gitRevision": "fb9ce089d3259599187d36062b636216aabac84f",
+    "dirty": false,
+    "transport": "openrouter"
+  },
+  "coverage": {
+    "generationAttempts": 80,
+    "completeGenerations": 80,
+    "judgments": 80,
+    "resolvedJudgments": 79,
+    "unresolvedJudgments": 1,
+    "reusedGenerations": 0
+  },
+  "costs": {
+    "phaseRequests": 160,
+    "phaseKnownUsd": 0.16079809999999997,
+    "phaseUnknownSettlements": 1,
+    "phaseUnknownReservationsUsd": 0.027502,
+    "studyRequests": 1338,
+    "studyKnownUsd": 1.203689003,
+    "studyUnknownSettlements": 3,
+    "studyUnknownReservationsUsd": 0.0562414,
+    "totalFinalCostUsd": null
+  },
+  "rawFileDigests": {
+    "algorithm": "sha256",
+    "generations": "fb5acbf295fe8560ad487b6ed4e8465c871317a447e4f02e392083258eb60e9b",
+    "judgments": "eb90c02f708ca33433a71e770d90f05c38e489eeb3478bba331e7c8ba8bcb896",
+    "ledgerAtPhaseEnd": "213a09064c8b398396aaac422909a7ffa8d2558e632c160f5eb893fd8c927abb"
+  },
+  "humanAudit": {
+    "required": 8,
+    "prepared": 8,
+    "completed": 8,
+    "confidentPasses": 4,
+    "suspected": 4,
+    "fallbackPasses": 0,
+    "policy": "release-audit-rule-2026-10-15.md",
+    "privatePageDigest": "02375816fc0ce488b281c6b4603790fa0b23658da5fc284688b3d9a4a774576c",
+    "summary": {
+      "reviewed": 8,
+      "reviewSetId": "final-audit-v1",
+      "completedDate": "2026-10-16",
+      "meaningAgreement": 7,
+      "styleAgreement": 4,
+      "humanMeaning0": 0,
+      "humanMeaning1": 1,
+      "humanMeaning2": 7,
+      "humanStyle2": 8,
+      "seriousFailureSensitivity": null,
+      "modelCoverage": {
+        "haiku-low": 7,
+        "gemini-minimal": 1
+      },
+      "strata": [
+        {
+          "stratum": "confident_pass",
+          "count": 4,
+          "meaningAgreement": 4,
+          "styleAgreement": 4
+        },
+        {
+          "stratum": "suspected",
+          "count": 4,
+          "meaningAgreement": 3,
+          "styleAgreement": 0
+        }
+      ],
+      "adjudications": 0,
+      "records": [
+        {
+          "blindId": "blind-369d53f483bf",
+          "generationId": "fee7b0874d095eb95575599ec6eeaa145c6e893a68f945572e4a3ab35a5948b9",
+          "caseId": "release-v1-23",
+          "configId": "haiku-low",
+          "critical": false,
+          "stratum": "suspected",
+          "human": {
+            "meaning": 2,
+            "style": 2,
+            "tags": [],
+            "note": ""
+          },
+          "automated": {
+            "evaluatorId": "judge-argon",
+            "status": "complete",
+            "meaning": 2,
+            "style": 1,
+            "tags": [
+              "style_intensity"
+            ]
+          },
+          "meaningAgreement": true,
+          "styleAgreement": false
+        },
+        {
+          "blindId": "blind-336c35414f2a",
+          "generationId": "b34cda035684adbf6297ffc0fdc64324c7b3cff1e6947061464d64e81c479592",
+          "caseId": "release-v1-25",
+          "configId": "haiku-low",
+          "critical": true,
+          "stratum": "confident_pass",
+          "human": {
+            "meaning": 2,
+            "style": 2,
+            "tags": [],
+            "note": ""
+          },
+          "automated": {
+            "evaluatorId": "judge-argon",
+            "status": "complete",
+            "meaning": 2,
+            "style": 2,
+            "tags": []
+          },
+          "meaningAgreement": true,
+          "styleAgreement": true
+        },
+        {
+          "blindId": "blind-7ccd7a01d5e4",
+          "generationId": "f5cf45eb4cbcc1525963552097604de2d9fa7a0b06d39e09d1209f7914f2f498",
+          "caseId": "release-v1-34",
+          "configId": "haiku-low",
+          "critical": false,
+          "stratum": "suspected",
+          "human": {
+            "meaning": 2,
+            "style": 2,
+            "tags": [],
+            "note": ""
+          },
+          "automated": {
+            "evaluatorId": "judge-argon",
+            "status": "complete",
+            "meaning": 2,
+            "style": 0,
+            "tags": [
+              "style_intensity"
+            ]
+          },
+          "meaningAgreement": true,
+          "styleAgreement": false
+        },
+        {
+          "blindId": "blind-9dfe64d1831d",
+          "generationId": "85be7930b15ee0caa7a5886740965b83d8bb942c260b5a5e6cbf70fed03a89a4",
+          "caseId": "release-v1-07",
+          "configId": "haiku-low",
+          "critical": true,
+          "stratum": "suspected",
+          "human": {
+            "meaning": 1,
+            "style": 2,
+            "tags": [],
+            "note": "Weird brackets and \"passage\"."
+          },
+          "automated": {
+            "evaluatorId": "judge-argon",
+            "status": "complete",
+            "meaning": 2,
+            "style": 1,
+            "tags": [
+              "style_intensity"
+            ]
+          },
+          "meaningAgreement": false,
+          "styleAgreement": false
+        },
+        {
+          "blindId": "blind-cf7740a27a7f",
+          "generationId": "82bd971d5ac90ee36a2e60ec34fcc72e62e5b8645c389188854b640070dc25ba",
+          "caseId": "release-v1-11",
+          "configId": "haiku-low",
+          "critical": true,
+          "stratum": "suspected",
+          "human": {
+            "meaning": 2,
+            "style": 2,
+            "tags": [],
+            "note": ""
+          },
+          "automated": {
+            "evaluatorId": "judge-argon",
+            "status": "complete",
+            "meaning": 2,
+            "style": 1,
+            "tags": [
+              "style_intensity"
+            ]
+          },
+          "meaningAgreement": true,
+          "styleAgreement": false
+        },
+        {
+          "blindId": "blind-000eccd3b846",
+          "generationId": "4ef05fa67df8c0a69a88ee139b4b89114a81972339418a184351a42ff600238d",
+          "caseId": "release-v1-12",
+          "configId": "haiku-low",
+          "critical": false,
+          "stratum": "confident_pass",
+          "human": {
+            "meaning": 2,
+            "style": 2,
+            "tags": [],
+            "note": ""
+          },
+          "automated": {
+            "evaluatorId": "judge-argon",
+            "status": "complete",
+            "meaning": 2,
+            "style": 2,
+            "tags": []
+          },
+          "meaningAgreement": true,
+          "styleAgreement": true
+        },
+        {
+          "blindId": "blind-87717ae6bcd7",
+          "generationId": "2c48d8c67ed10beeaab4dc2275b49c0ee3558d8d6d2cd2d5d4ebe8169a9951f3",
+          "caseId": "release-v1-06",
+          "configId": "haiku-low",
+          "critical": false,
+          "stratum": "confident_pass",
+          "human": {
+            "meaning": 2,
+            "style": 2,
+            "tags": [],
+            "note": ""
+          },
+          "automated": {
+            "evaluatorId": "judge-argon",
+            "status": "complete",
+            "meaning": 2,
+            "style": 2,
+            "tags": []
+          },
+          "meaningAgreement": true,
+          "styleAgreement": true
+        },
+        {
+          "blindId": "blind-25fce9db2c50",
+          "generationId": "292e8088d583efedc780ab61f9b6887b15f30cf2fd71db6d32b1211d38f26079",
+          "caseId": "release-v1-04",
+          "configId": "gemini-minimal",
+          "critical": false,
+          "stratum": "confident_pass",
+          "human": {
+            "meaning": 2,
+            "style": 2,
+            "tags": [],
+            "note": ""
+          },
+          "automated": {
+            "evaluatorId": "judge-argon",
+            "status": "complete",
+            "meaning": 2,
+            "style": 2,
+            "tags": []
+          },
+          "meaningAgreement": true,
+          "styleAgreement": true
+        }
+      ]
+    },
+    "sourcePayloadSha256": "1176ec71c78e6cf4e1cfdb9dbb3a0e6977f9f2473fec738d8e182a172c932701",
+    "importedRecordsSha256": "f5a9915a014ad6089377be5d023798600951c0fe39ae56396471b6d1fe544de7",
+    "selectionProvenanceSha256": "65a9d7fdd9ec498df3e771920ffb592b625f34c4914958d5067da8a88c4268a1"
+  },
+  "limitations": [
+    "Automated scores with limited human auditing; this is not human-validated population accuracy.",
+    "The audit has seven Haiku outputs and only one Gemini output; it does not independently validate the recommended model or compare model-level human agreement.",
+    "Style agreement is 4/8. All four suspected outputs received human style 2 but automated style 0 or 1. Both labels remain unchanged; the audit does not establish which scorer is correct.",
+    "The audit contains no human meaning-0 labels, so serious-failure sensitivity cannot be estimated.",
+    "One human meaning-1 score cites a JSON wrapper; the automated judge gave meaning 2 and style 1. No score was silently adjudicated.",
+    "Argon and the Gemini generator share a vendor; possible evaluator-family bias was not measured.",
+    "One noncritical Haiku judgment is unresolved and its cost is unknown. No retry or replacement was made.",
+    "Release outputs were not used to tune the prompt, efforts, judge, or cascade. Future tuning consumes this release set as development evidence.",
+    "Production still uses GLM low. A recommendation is not adoption, deployment approval, or release acceptance.",
+    "The constructed evaluator challenge has no style-failure reference examples; style-failure sensitivity is not established."
+  ],
+  "auditCompletedDate": "2026-10-16",
+  "manifest": {
+    "schemaVersion": 1,
+    "id": "release-finalists-v1",
+    "stage": "release",
+    "dataset": "evals/datasets/release-v1.jsonl",
+    "promptVersion": "4",
+    "configurations": [
+      {
+        "id": "haiku-low",
+        "model": "anthropic/claude-haiku-5.5",
+        "role": "generator",
+        "reasoning": {
+          "effort": "low"
+        },
+        "maxOutputTokens": 2048,
+        "inputUsdPerMillion": 0.1,
+        "outputUsdPerMillion": 0.5
+      },
+      {
+        "id": "gemini-minimal",
+        "model": "google/gemini-3.5-flash-lite",
+        "role": "generator",
+        "reasoning": {
+          "effort": "minimal"
+        },
+        "maxOutputTokens": 2048,
+        "inputUsdPerMillion": 0.3,
+        "outputUsdPerMillion": 2.5
+      },
+      {
+        "id": "judge-argon",
+        "model": "google/gemini-4-argon",
+        "role": "llm",
+        "reasoning": {
+          "effort": "low"
+        },
+        "maxOutputTokens": 2048,
+        "inputUsdPerMillion": 2,
+        "outputUsdPerMillion": 10
+      }
+    ],
+    "repetitions": 1,
+    "seed": 20261015,
+    "targetUsd": 1,
+    "maxUsd": 3,
+    "pricingDate": "2026-10-15",
+    "caseIds": [
+      "release-v1-01",
+      "release-v1-02",
+      "release-v1-03",
+      "release-v1-04",
+      "release-v1-05",
+      "release-v1-06",
+      "release-v1-07",
+      "release-v1-08",
+      "release-v1-09",
+      "release-v1-10",
+      "release-v1-11",
+      "release-v1-12",
+      "release-v1-13",
+      "release-v1-14",
+      "release-v1-15",
+      "release-v1-16",
+      "release-v1-17",
+      "release-v1-18",
+      "release-v1-19",
+      "release-v1-20",
+      "release-v1-21",
+      "release-v1-22",
+      "release-v1-23",
+      "release-v1-24",
+      "release-v1-25",
+      "release-v1-26",
+      "release-v1-27",
+      "release-v1-28",
+      "release-v1-29",
+      "release-v1-30",
+      "release-v1-31",
+      "release-v1-32",
+      "release-v1-33",
+      "release-v1-34",
+      "release-v1-35",
+      "release-v1-36",
+      "release-v1-37",
+      "release-v1-38",
+      "release-v1-39",
+      "release-v1-40"
+    ]
+  },
+  "configurations": [
+    {
+      "configId": "haiku-low",
+      "model": "anthropic/claude-haiku-5.5",
+      "reasoning": {
+        "effort": "low"
+      },
+      "generated": 40,
+      "uniqueCases": 40,
+      "completeGenerations": 40,
+      "errors": 0,
+      "incomplete": 0,
+      "argonResolved": 39,
+      "argonUnresolved": 1,
+      "meaning2": 38,
+      "style2": 23,
+      "criticalCases": 10,
+      "criticalMeaning0": 0,
+      "criticalUnresolved": 0,
+      "generationCostUsd": 0.003418300000000001,
+      "argonCostUsd": null,
+      "firstContentCoverage": "40/40",
+      "p50FirstContentMs": 855,
+      "p95FirstContentMs": 1228,
+      "totalDurationCoverage": "40/40",
+      "p50DurationMs": 944,
+      "p95DurationMs": 1494,
+      "argonResolvedResponseLatencyCoverage": "39/40",
+      "p50ArgonResolvedResponseMs": 3352,
+      "p95ArgonResolvedResponseMs": 4925,
+      "numericCriteria": {
+        "meaning2AtLeast36": true,
+        "style2AtLeast32": false,
+        "zeroCriticalMeaning0": true,
+        "zeroCriticalUnresolved": true,
+        "passed": false
+      },
+      "evidenceCompleteness": {
+        "full40GenerationCoverage": true,
+        "allGenerationsComplete": true,
+        "all40ArgonJudgmentsResolved": false,
+        "freshOpenRouterTransport": true,
+        "noReuse": true,
+        "cleanPinnedProvenance": true,
+        "passed": false
+      },
+      "officialEligibleReleaseEvidence": false,
+      "eligible": false,
+      "meaningCounts": {
+        "zero": 1,
+        "one": 0,
+        "two": 38,
+        "unresolved": 1
+      }
+    },
+    {
+      "configId": "gemini-minimal",
+      "model": "google/gemini-3.5-flash-lite",
+      "reasoning": {
+        "effort": "minimal"
+      },
+      "generated": 40,
+      "uniqueCases": 40,
+      "completeGenerations": 40,
+      "errors": 0,
+      "incomplete": 0,
+      "argonResolved": 40,
+      "argonUnresolved": 0,
+      "meaning2": 37,
+      "style2": 37,
+      "criticalCases": 10,
+      "criticalMeaning0": 0,
+      "criticalUnresolved": 0,
+      "generationCostUsd": 0.0071598,
+      "argonCostUsd": 0.07434999999999999,
+      "firstContentCoverage": "40/40",
+      "p50FirstContentMs": 673,
+      "p95FirstContentMs": 925,
+      "totalDurationCoverage": "40/40",
+      "p50DurationMs": 865,
+      "p95DurationMs": 1256,
+      "argonResolvedResponseLatencyCoverage": "40/40",
+      "p50ArgonResolvedResponseMs": 2838,
+      "p95ArgonResolvedResponseMs": 4426,
+      "numericCriteria": {
+        "meaning2AtLeast36": true,
+        "style2AtLeast32": true,
+        "zeroCriticalMeaning0": true,
+        "zeroCriticalUnresolved": true,
+        "passed": true
+      },
+      "evidenceCompleteness": {
+        "full40GenerationCoverage": true,
+        "allGenerationsComplete": true,
+        "all40ArgonJudgmentsResolved": true,
+        "freshOpenRouterTransport": true,
+        "noReuse": true,
+        "cleanPinnedProvenance": true,
+        "passed": true
+      },
+      "officialEligibleReleaseEvidence": true,
+      "eligible": true,
+      "meaningCounts": {
+        "zero": 0,
+        "one": 3,
+        "two": 37,
+        "unresolved": 0
+      }
+    }
+  ],
+  "recommendation": {
+    "configId": "gemini-minimal",
+    "model": "google/gemini-3.5-flash-lite",
+    "reasoning": {
+      "effort": "minimal"
+    },
+    "promptVersion": "4",
+    "maxOutputTokens": 2048,
+    "basis": "Only finalist meeting all predeclared automated targets and evidence-completeness requirements.",
+    "ownerAdoptionDecision": "pending",
+    "runtimeConfigurationChanged": false,
+    "productionChanged": false,
+    "cascade": "offline only; threshold selection inconclusive"
+  },
+  "formatComplianceFindings": [
+    {
+      "caseId": "release-v1-07",
+      "configId": "haiku-low",
+      "finding": "JSON object wrapper violates the prompt plain-text contract; enclosed-text meaning is a separate dimension.",
+      "source": "final blind audit note and output inspection",
+      "separateMetricImplemented": false,
+      "humanScoreChanged": false
+    }
+  ]
+}

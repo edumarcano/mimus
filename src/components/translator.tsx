@@ -193,6 +193,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
     text: string;
   } | null>(null);
   const runCounter = useRef(0);
+  const [exampleNotice, setExampleNotice] = useState({ text: "", sequence: 0 });
   const abortRef = useRef<AbortController | null>(null);
   const prefsHydrated = useRef(false);
   const prevStatus = useRef(state.status);
@@ -455,6 +456,12 @@ export function Translator({ config }: { config: TranslatorConfig }) {
   function applyExample(id: string) {
     const ex = EXAMPLES.find((e) => e.id === id);
     if (!ex) return;
+    setExampleNotice((previous) => ({
+      text: liveAvailable
+        ? `${ex.label} example loaded into Your text.`
+        : `${ex.label} example loaded. Example — not generated.`,
+      sequence: previous.sequence + 1,
+    }));
     dispatch({ type: "setSourceStyle", style: ex.sourceStyle });
     if (!liveAvailable) {
       dispatch({ type: "setTargetStyle", style: ex.targetStyle });
@@ -772,22 +779,19 @@ export function Translator({ config }: { config: TranslatorConfig }) {
               Result is from your previous input
             </p>
           )}
-          <div
+          <textarea
             data-testid="output"
-            tabIndex={0}
+            readOnly
+            rows={8}
+            value={state.output}
+            placeholder="Your rewrite will appear here."
             aria-label={`${targetLabel} rewrite`}
-            className={`min-h-56 whitespace-pre-wrap break-words rounded-lg border p-3 text-base ${
+            className={`field-sizing-content min-h-56 w-full resize-y whitespace-pre-wrap break-words rounded-lg border p-3 text-base placeholder:text-ink-soft ${
               state.status === "example" || state.status === "history"
                 ? "border-dashed border-accent bg-accent-soft"
                 : "border-line bg-canvas"
             }`}
-          >
-            {state.output || (
-              <span className="text-ink-soft">
-                Your rewrite will appear here.
-              </span>
-            )}
-          </div>
+          />
           {showPartialNote && (
             <p className="mt-2 text-sm text-red-700">
               The text above is incomplete. Your input was kept; you can try again.
@@ -908,6 +912,9 @@ export function Translator({ config }: { config: TranslatorConfig }) {
 
       <div role="status" aria-live="polite" className="sr-only">
         {announcement}
+      </div>
+      <div role="status" aria-live="polite" className="sr-only">
+        <span key={exampleNotice.sequence}>{exampleNotice.text}</span>
       </div>
     </div>
   );

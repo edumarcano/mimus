@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "id": "prompt-v4",
+  "stage": "prompt",
+  "dataset": "evals/cases.jsonl",
+  "promptVersion": "4",
+  "configurations": [
+    {
+      "id": "glm-low",
+      "model": "z-ai/glm-5.3-flash",
+      "role": "generator",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.15,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "luna-none",
+      "model": "openai/gpt-6-luna",
+      "role": "generator",
+      "reasoning": {
+        "effort": "none"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "haiku-off",
+      "model": "anthropic/claude-haiku-5.5",
+      "role": "generator",
+      "reasoning": {
+        "effort": "low",
+        "enabled": false
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "gemini-minimal",
+      "model": "google/gemini-3.5-flash-lite",
+      "role": "generator",
+      "reasoning": {
+        "effort": "minimal"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.3,
+      "outputUsdPerMillion": 2.5
+    },
+    {
+      "id": "judge-luna",
+      "model": "openai/gpt-6-luna",
+      "role": "llm",
+      "reasoning": {
+        "effort": "medium"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "judge-argon",
+      "model": "google/gemini-4-argon",
+      "role": "llm",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 2,
+      "outputUsdPerMillion": 10
+    },
+    {
+      "id": "decision-jev",
+      "model": "typesafe/jev-1.14",
+      "role": "decision",
+      "reasoning": {},
+      "maxOutputTokens": 1,
+      "inputUsdPerMillion": 0.042,
+      "outputUsdPerMillion": 0
+    },
+    {
+      "id": "decision-microsoft",
+      "model": "microsoft/microsoft-decision-1",
+      "role": "decision",
+      "reasoning": {},
+      "maxOutputTokens": 1,
+      "inputUsdPerMillion": 0.042,
+      "outputUsdPerMillion": 0
+    },
+    {
+      "id": "decision-perplexity",
+      "model": "perplexity/pplx-decider-v1.1-27b",
+      "role": "decision",
+      "reasoning": {},
+      "maxOutputTokens": 1,
+      "inputUsdPerMillion": 0.02,
+      "outputUsdPerMillion": 0
+    }
+  ],
+  "repetitions": 1,
+  "seed": 20261015,
+  "targetUsd": 1,
+  "maxUsd": 3,
+  "pricingDate": "2026-10-15",
+  "caseIds": [
+    "dev-pair-01",
+    "dev-pair-03",
+    "dev-short-01",
+    "dev-long-01",
+    "dev-numbers-01",
+    "dev-dates-01",
+    "dev-negation-01",
+    "dev-ambiguous-01",
+    "dev-quoted-01",
+    "dev-inject-01",
+    "dev-attribution-01",
+    "dev-conditional-01"
+  ]
+}

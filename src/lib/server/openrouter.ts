@@ -12,8 +12,21 @@ export type ModelEvent =
   | {
       type: "finish";
       reason: "complete" | "blocked" | "length" | "other";
-      usage?: { inputTokens?: number; outputTokens?: number };
+      usage?: {
+        inputTokens?: number;
+        outputTokens?: number;
+        reasoningTokens?: number;
+        costUsd?: number;
+      };
+      provider?: string;
+      providerGenerationId?: string;
     };
+
+export type OpenRouterConfig = {
+  model: string;
+  maxOutputTokens: number;
+  reasoning: { effort?: string; enabled?: boolean };
+};
 
 export type ModelRequest = {
   systemInstruction: string;
@@ -34,12 +47,25 @@ type ChatCompletionChunk = {
   usage?: {
     prompt_tokens?: number;
     completion_tokens?: number;
+    completion_tokens_details?: { reasoning_tokens?: number };
+    cost?: number;
   };
+  id?: string;
+  provider?: string;
 };
 
 type SseStreamState = {
   finishReason: string | undefined;
-  usage: { inputTokens?: number; outputTokens?: number } | undefined;
+  usage:
+    | {
+        inputTokens?: number;
+        outputTokens?: number;
+        reasoningTokens?: number;
+        costUsd?: number;
+      }
+    | undefined;
+  provider: string | undefined;
+  providerGenerationId: string | undefined;
 };
 
 function mapFinishReason(
@@ -59,16 +85,35 @@ function mapFinishReason(
 
 function extractUsage(
   usage: ChatCompletionChunk["usage"],
-): { inputTokens?: number; outputTokens?: number } | undefined {
+):
+  | {
+      inputTokens?: number;
+      outputTokens?: number;
+      reasoningTokens?: number;
+      costUsd?: number;
+    }
+  | undefined {
   if (!usage) {
     return undefined;
   }
   const inputTokens = usage.prompt_tokens;
   const outputTokens = usage.completion_tokens;
-  if (inputTokens === undefined && outputTokens === undefined) {
+  const reasoningTokens = usage.completion_tokens_details?.reasoning_tokens;
+  const costUsd = usage.cost;
+  if (
+    inputTokens === undefined &&
+    outputTokens === undefined &&
+    reasoningTokens === undefined &&
+    costUsd === undefined
+  ) {
     return undefined;
   }
-  return { inputTokens, outputTokens };
+  return {
+    ...(inputTokens === undefined ? {} : { inputTokens }),
+    ...(outputTokens === undefined ? {} : { outputTokens }),
+    ...(reasoningTokens === undefined ? {} : { reasoningTokens }),
+    ...(costUsd === undefined ? {} : { costUsd }),
+  };
 }
 
 function mapHttpStatus(status: number): AppError {
@@ -134,6 +179,8 @@ function applyChunk(
   if (chunkUsage !== undefined) {
     state.usage = chunkUsage;
   }
+  if (chunk.provider !== undefined) state.provider = chunk.provider;
+  if (chunk.id !== undefined) state.providerGenerationId = chunk.id;
 
   return events;
 }
@@ -145,7 +192,11 @@ function finishFromState(state: SseStreamState): ModelEvent | undefined {
   return {
     type: "finish",
     reason: mapFinishReason(state.finishReason),
-    usage: state.usage,
+    ...(state.usage === undefined ? {} : { usage: state.usage }),
+    ...(state.provider === undefined ? {} : { provider: state.provider }),
+    ...(state.providerGenerationId === undefined
+      ? {}
+      : { providerGenerationId: state.providerGenerationId }),
   };
 }
 
@@ -172,7 +223,12 @@ async function* readSseEvents(
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
-  const state: SseStreamState = { finishReason: undefined, usage: undefined };
+  const state: SseStreamState = {
+    finishReason: undefined,
+    usage: undefined,
+    provider: undefined,
+    providerGenerationId: undefined,
+  };
 
   try {
     while (true) {
@@ -234,12 +290,13 @@ async function* readSseEvents(
   }
 }
 
-export async function* streamRewrite(
+export async function* streamRewriteWithConfig(
   request: ModelRequest,
   signal: AbortSignal,
+  config: OpenRouterConfig,
+  apiKey: string,
 ): AsyncIterable<ModelEvent> {
-  const { openrouterApiKey } = getServerConfig();
-  if (!openrouterApiKey) {
+  if (!apiKey) {
     throw new AppError("SERVICE_UNAVAILABLE");
   }
 
@@ -247,17 +304,17 @@ export async function* streamRewrite(
     const response = await fetch(OPENROUTER_CHAT_COMPLETIONS_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${openrouterApiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: MODEL_CONFIG.model,
+        model: config.model,
         messages: [
           { role: "system", content: request.systemInstruction },
           { role: "user", content: request.input },
         ],
-        max_tokens: MODEL_CONFIG.maxOutputTokens,
-        reasoning: { effort: MODEL_CONFIG.reasoningEffort },
+        max_tokens: config.maxOutputTokens,
+        reasoning: config.reasoning,
         provider: {
           data_collection: MODEL_CONFIG.dataCollection,
           zdr: MODEL_CONFIG.zdr,
@@ -285,4 +342,24 @@ export async function* streamRewrite(
     }
     throw mapProviderError(error, signal);
   }
+}
+
+export async function* streamRewrite(
+  request: ModelRequest,
+  signal: AbortSignal,
+): AsyncIterable<ModelEvent> {
+  const { openrouterApiKey } = getServerConfig();
+  if (!openrouterApiKey) {
+    throw new AppError("SERVICE_UNAVAILABLE");
+  }
+  yield* streamRewriteWithConfig(
+    request,
+    signal,
+    {
+      model: MODEL_CONFIG.model,
+      maxOutputTokens: MODEL_CONFIG.maxOutputTokens,
+      reasoning: { effort: MODEL_CONFIG.reasoningEffort },
+    },
+    openrouterApiKey,
+  );
 }

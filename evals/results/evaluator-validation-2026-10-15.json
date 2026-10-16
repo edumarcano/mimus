@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "runId": "evaluator-validation-v1",
+  "provenance": {
+    "schemaVersion": 1,
+    "manifestHash": "10c47a933991fa7aac5165d853b54dd3e0ef3f7a09538932a2e3ec422f30fa5d",
+    "datasetHash": "9ec30fde5ed1ca8a7e58cec4e791b4434567c0d631561590fac329ccc4ce048d",
+    "sourceHash": "9b65ea7c3e5eba58665d349175b14f5563bb50b2485542518631040685249240",
+    "gitRevision": "e00faba2368cd8d82bdac2e63f939cc6a5f0ac55",
+    "dirty": false,
+    "transport": "openrouter"
+  },
+  "rows": [
+    {
+      "evaluatorId": "judge-luna",
+      "attempts": 16,
+      "valid": 13,
+      "unresolved": 3,
+      "referenceMeaningAgreement": 11,
+      "referenceStyleAgreement": 6,
+      "referenceSeriousResolved": 6,
+      "referenceSeriousScoredPass": 0,
+      "referenceSeriousScoredMinor": 0,
+      "referenceFaithfulResolved": 7,
+      "referenceFaithfulScoredBelow2": 2,
+      "criticalUnresolved": 2,
+      "medianDurationMs": 6600,
+      "costUsd": 0.0028127,
+      "errors": [
+        {
+          "caseId": "evaluator-14-faithful",
+          "errorCode": "invalid_judgment_schema"
+        },
+        {
+          "caseId": "evaluator-17-flawed",
+          "errorCode": "invalid_judgment_schema"
+        },
+        {
+          "caseId": "evaluator-19-flawed",
+          "errorCode": "invalid_judgment_schema"
+        }
+      ]
+    },
+    {
+      "evaluatorId": "judge-argon",
+      "attempts": 16,
+      "valid": 16,
+      "unresolved": 0,
+      "referenceMeaningAgreement": 15,
+      "referenceStyleAgreement": 8,
+      "referenceSeriousResolved": 8,
+      "referenceSeriousScoredPass": 0,
+      "referenceSeriousScoredMinor": 0,
+      "referenceFaithfulResolved": 8,
+      "referenceFaithfulScoredBelow2": 1,
+      "criticalUnresolved": 0,
+      "medianDurationMs": 2708.5,
+      "costUsd": 0.03228,
+      "errors": []
+    },
+    {
+      "evaluatorId": "decision-jev",
+      "attempts": 16,
+      "valid": 16,
+      "unresolved": 0,
+      "referenceMeaningAgreement": 15,
+      "referenceStyleAgreement": 6,
+      "referenceSeriousResolved": 8,
+      "referenceSeriousScoredPass": 1,
+      "referenceSeriousScoredMinor": 0,
+      "referenceFaithfulResolved": 8,
+      "referenceFaithfulScoredBelow2": 0,
+      "criticalUnresolved": 0,
+      "medianDurationMs": 225,
+      "costUsd": 0.000826434,
+      "errors": []
+    },
+    {
+      "evaluatorId": "decision-microsoft",
+      "attempts": 16,
+      "valid": 16,
+      "unresolved": 0,
+      "referenceMeaningAgreement": 14,
+      "referenceStyleAgreement": 5,
+      "referenceSeriousResolved": 8,
+      "referenceSeriousScoredPass": 0,
+      "referenceSeriousScoredMinor": 1,
+      "referenceFaithfulResolved": 8,
+      "referenceFaithfulScoredBelow2": 1,
+      "criticalUnresolved": 0,
+      "medianDurationMs": 477.5,
+      "costUsd": 0.0006139979999999999,
+      "errors": []
+    },
+    {
+      "evaluatorId": "decision-perplexity",
+      "attempts": 16,
+      "valid": 16,
+      "unresolved": 0,
+      "referenceMeaningAgreement": 15,
+      "referenceStyleAgreement": 7,
+      "referenceSeriousResolved": 8,
+      "referenceSeriousScoredPass": 0,
+      "referenceSeriousScoredMinor": 1,
+      "referenceFaithfulResolved": 8,
+      "referenceFaithfulScoredBelow2": 0,
+      "criticalUnresolved": 0,
+      "medianDurationMs": 1150.5,
+      "costUsd": 0.0010774200000000002,
+      "errors": []
+    }
+  ],
+  "validationCostUsd": 0.037610552000000005,
+  "studyCalls": 224,
+  "studyKnownCostUsd": 0.10355283425000002,
+  "studyUnknownCosts": 0,
+  "pendingReservations": 0,
+  "notes": [
+    "Sixteen validation examples are eight paired source passages, not sixteen independent passages.",
+    "Reference agreement is not human accuracy; constructed style labels are all 2.",
+    "The rubric and configuration settings were frozen before validation. No retries were used."
+  ]
+}

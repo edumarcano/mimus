@@ -40,6 +40,8 @@ The human review budget is at most 25 outputs: 12 calibration, 8 audit, and up t
 | [`results/evaluator-validation-2026-10-15.md`](results/evaluator-validation-2026-10-15.md) | Independent evaluator comparison and diagnostic cascade | Offline evaluator choice; constructed-label limitations apply |
 | [`results/prompt-comparison-2026-10-15.md`](results/prompt-comparison-2026-10-15.md) | Shared prompt v4 versus concise candidate | Retained v4 under the predeclared gate |
 | [`results/effort-screen-2026-10-15.md`](results/effort-screen-2026-10-15.md) | Twelve reasoning configurations on twelve shared cases | Four development settings selected; judge variability and failed attempts retained |
+| [`results/development-comparison-2026-10-15.md`](results/development-comparison-2026-10-15.md) | Four selected settings on forty development cases | Gemini minimal and Haiku low advance to repeatability testing |
+| [`results/development-cascade-2026-10-15.md`](results/development-cascade-2026-10-15.md) | Independent decision/LLM routes with validation separate | Formal threshold selection inconclusive; cost and duration components reported |
 | [`results/local-demo-verification-2026-10-15.md`](results/local-demo-verification-2026-10-15.md) | Local keyboard, browser, zoom, and Narrator checks | Includes maintainer observations and corrected accessibility defects |
 
 Historical records do not establish the quality of planned benchmark

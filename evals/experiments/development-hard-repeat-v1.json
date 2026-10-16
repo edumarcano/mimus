@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "development-hard-repeat-v1",
+  "stage": "repeat",
+  "dataset": "evals/cases.jsonl",
+  "promptVersion": "4",
+  "configurations": [
+    {
+      "id": "haiku-low",
+      "model": "anthropic/claude-haiku-5.5",
+      "role": "generator",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.1,
+      "outputUsdPerMillion": 0.5
+    },
+    {
+      "id": "gemini-minimal",
+      "model": "google/gemini-3.5-flash-lite",
+      "role": "generator",
+      "reasoning": {
+        "effort": "minimal"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 0.3,
+      "outputUsdPerMillion": 2.5
+    },
+    {
+      "id": "judge-argon",
+      "model": "google/gemini-4-argon",
+      "role": "llm",
+      "reasoning": {
+        "effort": "low"
+      },
+      "maxOutputTokens": 2048,
+      "inputUsdPerMillion": 2,
+      "outputUsdPerMillion": 10
+    }
+  ],
+  "repetitions": 3,
+  "seed": 20261015,
+  "targetUsd": 1,
+  "maxUsd": 3,
+  "pricingDate": "2026-10-15",
+  "caseIds": [
+    "dev-pair-10",
+    "dev-pair-12",
+    "dev-pair-06",
+    "dev-pair-08",
+    "dev-dates-01",
+    "holdout-dates-01",
+    "holdout-tentative-01",
+    "dev-pair-01",
+    "dev-conditional-01",
+    "dev-pair-04"
+  ]
+}

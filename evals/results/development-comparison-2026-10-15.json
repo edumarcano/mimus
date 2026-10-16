@@ -1,0 +1,712 @@
+{
+  "runIds": [
+    "development-selected-v1"
+  ],
+  "provenance": [
+    {
+      "runId": "development-selected-v1",
+      "schemaVersion": 1,
+      "manifestHash": "a5dd0efab1c4d4cee032d6932d5e22a8e89f2c909d144e938bf03f008bce115c",
+      "datasetHash": "f8708fb4ac18a67da5757979aa42d89728aee931763ee1822e22310850860ee6",
+      "sourceHash": "9b65ea7c3e5eba58665d349175b14f5563bb50b2485542518631040685249240",
+      "gitRevision": "291a2541febeadcf055707858db40d39c79c4110",
+      "dirty": false,
+      "transport": "openrouter"
+    }
+  ],
+  "groups": [
+    {
+      "runId": "development-selected-v1",
+      "summary": {
+        "groups": [
+          {
+            "configId": "gemini-minimal",
+            "model": "google/gemini-3.5-flash-lite",
+            "reasoning": "{\"effort\":\"minimal\"}",
+            "configHash": "d83558f9855fe7d6b6adf85c06b0473b0ce4d2195f6b9d6cb9064a2fafbb71b0",
+            "promptVersion": "4",
+            "split": "development",
+            "repetition": 0,
+            "generated": 40,
+            "uniqueCases": 40,
+            "errors": 0,
+            "incomplete": 0,
+            "unresolved": 0,
+            "meaning2": 39,
+            "style2": 38,
+            "criticalMeaning0": 0,
+            "criticalUnresolved": 0,
+            "eligibleReleaseEvidence": false,
+            "p50FirstContentMs": 590,
+            "p95FirstContentMs": 779,
+            "p50DurationMs": 775,
+            "p95DurationMs": 1032,
+            "generationCostUsd": 0.007165300000000001,
+            "judgingCostUsd": 0.074816,
+            "humanReviews": 0,
+            "fixtureRecords": 0,
+            "reusedObservations": 12
+          },
+          {
+            "configId": "glm-low",
+            "model": "z-ai/glm-5.3-flash",
+            "reasoning": "{\"effort\":\"low\"}",
+            "configHash": "698dcb865119ee6a929b8e6496eb0f93d34c342f98bc9491b232ec46084dde05",
+            "promptVersion": "4",
+            "split": "development",
+            "repetition": 0,
+            "generated": 40,
+            "uniqueCases": 40,
+            "errors": 0,
+            "incomplete": 0,
+            "unresolved": 1,
+            "meaning2": 33,
+            "style2": 36,
+            "criticalMeaning0": 0,
+            "criticalUnresolved": 0,
+            "eligibleReleaseEvidence": false,
+            "p50FirstContentMs": 827,
+            "p95FirstContentMs": 3307,
+            "p50DurationMs": 1144,
+            "p95DurationMs": 4697,
+            "generationCostUsd": 0.0028324874999999996,
+            "judgingCostUsd": null,
+            "humanReviews": 0,
+            "fixtureRecords": 0,
+            "reusedObservations": 12
+          },
+          {
+            "configId": "haiku-low",
+            "model": "anthropic/claude-haiku-5.5",
+            "reasoning": "{\"effort\":\"low\"}",
+            "configHash": "20b4b0c9dc90a9a449fa7739d307ef38917924b44f8138878a33efd2a2859f54",
+            "promptVersion": "4",
+            "split": "development",
+            "repetition": 0,
+            "generated": 40,
+            "uniqueCases": 40,
+            "errors": 0,
+            "incomplete": 0,
+            "unresolved": 0,
+            "meaning2": 36,
+            "style2": 30,
+            "criticalMeaning0": 0,
+            "criticalUnresolved": 0,
+            "eligibleReleaseEvidence": false,
+            "p50FirstContentMs": 855,
+            "p95FirstContentMs": 1172,
+            "p50DurationMs": 1011,
+            "p95DurationMs": 1624,
+            "generationCostUsd": 0.0035850000000000005,
+            "judgingCostUsd": 0.07758999999999998,
+            "humanReviews": 0,
+            "fixtureRecords": 0,
+            "reusedObservations": 12
+          },
+          {
+            "configId": "luna-low",
+            "model": "openai/gpt-6-luna",
+            "reasoning": "{\"effort\":\"low\"}",
+            "configHash": "54849f65ef384b4cecd1d01a0de023dbf6fd06925ae561b7831d8e24059a6cad",
+            "promptVersion": "4",
+            "split": "development",
+            "repetition": 0,
+            "generated": 40,
+            "uniqueCases": 40,
+            "errors": 0,
+            "incomplete": 1,
+            "unresolved": 1,
+            "meaning2": 37,
+            "style2": 23,
+            "criticalMeaning0": 0,
+            "criticalUnresolved": 1,
+            "eligibleReleaseEvidence": false,
+            "p50FirstContentMs": 1333,
+            "p95FirstContentMs": 2660,
+            "p50DurationMs": 1609,
+            "p95DurationMs": 3040,
+            "generationCostUsd": 0.0019388999999999995,
+            "judgingCostUsd": 0.07488800000000001,
+            "humanReviews": 0,
+            "fixtureRecords": 0,
+            "reusedObservations": 11
+          }
+        ],
+        "evaluatorValidation": [],
+        "humanAgreement": []
+      }
+    }
+  ],
+  "newLedgerCostUsd": null,
+  "newDispatches": 431,
+  "recordCount": 480,
+  "analysis": {
+    "state": "analysis-ready",
+    "source": {
+      "runId": "development-selected-v1",
+      "promptVersion": "4",
+      "sourceManifestHash": "a5dd0efab1c4d4cee032d6932d5e22a8e89f2c909d144e938bf03f008bce115c",
+      "officialSummary": "evals\\results\\raw\\benchmark\\development-selected-v1\\summary.json"
+    },
+    "priorityRule": [
+      "fewer criticalBad",
+      "more meaning2",
+      "more style2",
+      "more completed generations",
+      "known then lower generation cost",
+      "lower p50 TTFT",
+      "lower p50 total duration",
+      "incumbent GLM-low only as a complete tie-break",
+      "configId ascending"
+    ],
+    "configurations": [
+      {
+        "configId": "gemini-minimal",
+        "model": "google/gemini-3.5-flash-lite",
+        "reasoning": {
+          "effort": "minimal"
+        },
+        "promptVersion": "4",
+        "total": 40,
+        "completed": 40,
+        "incomplete": 0,
+        "argonComplete": 40,
+        "argonUnresolved": 0,
+        "decisionComplete": 40,
+        "decisionUnresolved": 0,
+        "meaning0": 0,
+        "meaning1": 1,
+        "meaning2": 39,
+        "styleBelow2": 2,
+        "style2": 38,
+        "decisionMeaning0": 0,
+        "decisionMeaning1": 6,
+        "decisionMeaning2": 34,
+        "decisionStyleBelow2": 1,
+        "decisionStyle2": 39,
+        "decisionCriticalBad": 0,
+        "criticalCases": 6,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 0,
+        "criticalBad": 0,
+        "generationCostUsd": 0.007165300000000001,
+        "argonJudgingCostUsd": 0.074816,
+        "decisionJudgingCostUsd": 0.0027724200000000003,
+        "p50FirstContentMs": 590,
+        "p95FirstContentMs": 779,
+        "p50TotalMs": 775,
+        "p95TotalMs": 1032,
+        "firstContentTimingCoverage": "40/40",
+        "totalTimingCoverage": "40/40",
+        "selectionP50FirstContentMs": 590,
+        "selectionP50TotalMs": 775,
+        "p50ArgonObservedMs": 3269,
+        "p95ArgonObservedMs": 4581,
+        "p50DecisionObservedMs": 1131,
+        "p95DecisionObservedMs": 2078,
+        "argonLowerBoundDurations": 0,
+        "resolvedMeaningDenominator": 40
+      },
+      {
+        "configId": "haiku-low",
+        "model": "anthropic/claude-haiku-5.5",
+        "reasoning": {
+          "effort": "low"
+        },
+        "promptVersion": "4",
+        "total": 40,
+        "completed": 40,
+        "incomplete": 0,
+        "argonComplete": 40,
+        "argonUnresolved": 0,
+        "decisionComplete": 40,
+        "decisionUnresolved": 0,
+        "meaning0": 3,
+        "meaning1": 1,
+        "meaning2": 36,
+        "styleBelow2": 10,
+        "style2": 30,
+        "decisionMeaning0": 0,
+        "decisionMeaning1": 4,
+        "decisionMeaning2": 36,
+        "decisionStyleBelow2": 9,
+        "decisionStyle2": 31,
+        "decisionCriticalBad": 0,
+        "criticalCases": 6,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 0,
+        "criticalBad": 0,
+        "generationCostUsd": 0.0035850000000000005,
+        "argonJudgingCostUsd": 0.07758999999999998,
+        "decisionJudgingCostUsd": 0.0028175200000000004,
+        "p50FirstContentMs": 855,
+        "p95FirstContentMs": 1172,
+        "p50TotalMs": 1011,
+        "p95TotalMs": 1624,
+        "firstContentTimingCoverage": "40/40",
+        "totalTimingCoverage": "40/40",
+        "selectionP50FirstContentMs": 855,
+        "selectionP50TotalMs": 1011,
+        "p50ArgonObservedMs": 3241,
+        "p95ArgonObservedMs": 4928,
+        "p50DecisionObservedMs": 1137,
+        "p95DecisionObservedMs": 1624,
+        "argonLowerBoundDurations": 0,
+        "resolvedMeaningDenominator": 40
+      },
+      {
+        "configId": "glm-low",
+        "model": "z-ai/glm-5.3-flash",
+        "reasoning": {
+          "effort": "low"
+        },
+        "promptVersion": "4",
+        "total": 40,
+        "completed": 40,
+        "incomplete": 0,
+        "argonComplete": 39,
+        "argonUnresolved": 1,
+        "decisionComplete": 40,
+        "decisionUnresolved": 0,
+        "meaning0": 1,
+        "meaning1": 5,
+        "meaning2": 33,
+        "styleBelow2": 3,
+        "style2": 36,
+        "decisionMeaning0": 2,
+        "decisionMeaning1": 6,
+        "decisionMeaning2": 32,
+        "decisionStyleBelow2": 3,
+        "decisionStyle2": 37,
+        "decisionCriticalBad": 0,
+        "criticalCases": 6,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 0,
+        "criticalBad": 0,
+        "generationCostUsd": 0.0028324874999999996,
+        "argonJudgingCostUsd": null,
+        "decisionJudgingCostUsd": 0.0028307200000000005,
+        "p50FirstContentMs": 827,
+        "p95FirstContentMs": 3307,
+        "p50TotalMs": 1144,
+        "p95TotalMs": 4697,
+        "firstContentTimingCoverage": "40/40",
+        "totalTimingCoverage": "40/40",
+        "selectionP50FirstContentMs": 827,
+        "selectionP50TotalMs": 1144,
+        "p50ArgonObservedMs": 3188,
+        "p95ArgonObservedMs": 4797,
+        "p50DecisionObservedMs": 1115,
+        "p95DecisionObservedMs": 2005,
+        "argonLowerBoundDurations": 1,
+        "resolvedMeaningDenominator": 39
+      },
+      {
+        "configId": "luna-low",
+        "model": "openai/gpt-6-luna",
+        "reasoning": {
+          "effort": "low"
+        },
+        "promptVersion": "4",
+        "total": 40,
+        "completed": 39,
+        "incomplete": 1,
+        "argonComplete": 39,
+        "argonUnresolved": 1,
+        "decisionComplete": 39,
+        "decisionUnresolved": 1,
+        "meaning0": 0,
+        "meaning1": 2,
+        "meaning2": 37,
+        "styleBelow2": 16,
+        "style2": 23,
+        "decisionMeaning0": 0,
+        "decisionMeaning1": 4,
+        "decisionMeaning2": 35,
+        "decisionStyleBelow2": 17,
+        "decisionStyle2": 22,
+        "decisionCriticalBad": 1,
+        "criticalCases": 6,
+        "criticalMeaning0": 0,
+        "criticalUnresolved": 1,
+        "criticalBad": 1,
+        "generationCostUsd": 0.0019388999999999995,
+        "argonJudgingCostUsd": 0.07488800000000001,
+        "decisionJudgingCostUsd": 0.0026489399999999994,
+        "p50FirstContentMs": 1333,
+        "p95FirstContentMs": 2660,
+        "p50TotalMs": 1609,
+        "p95TotalMs": 3040,
+        "firstContentTimingCoverage": "40/40",
+        "totalTimingCoverage": "40/40",
+        "selectionP50FirstContentMs": 1333,
+        "selectionP50TotalMs": 1609,
+        "p50ArgonObservedMs": 3475,
+        "p95ArgonObservedMs": 4877,
+        "p50DecisionObservedMs": 1112,
+        "p95DecisionObservedMs": 6446,
+        "argonLowerBoundDurations": 0,
+        "resolvedMeaningDenominator": 39
+      }
+    ],
+    "leaders": [
+      "gemini-minimal",
+      "haiku-low"
+    ],
+    "pairedAgreement": {
+      "comparison": "Perplexity decision labels versus Argon labels; neither is human ground truth.",
+      "exactMeaning": {
+        "numerator": 134,
+        "denominator": 158,
+        "value": 0.8481012658227848
+      },
+      "exactStyle": {
+        "numerator": 135,
+        "denominator": 158,
+        "value": 0.8544303797468354
+      },
+      "passFailMeaning": {
+        "numerator": 137,
+        "denominator": 158,
+        "value": 0.8670886075949367
+      },
+      "passFailStyle": {
+        "numerator": 141,
+        "denominator": 158,
+        "value": 0.8924050632911392
+      },
+      "resolvedPairs": 158,
+      "unresolvedPairs": 2
+    },
+    "cascadeInputIntegrity": {
+      "totalPairs": 160,
+      "decisionProbabilityComplete": 159,
+      "decisionProbabilityMissingOrInvalid": 0,
+      "argonProbabilityComplete": 158,
+      "bothProbabilityComplete": 158,
+      "unresolvedPairs": 2,
+      "argonProbabilityMissingOrInvalid": 0,
+      "routingEligibleCompleteGenerations": 159,
+      "recoveredLowerBoundDurations": 1,
+      "durationSavingsEligible": false,
+      "note": "Recovered deadline durations are lower bounds, not observed latency. Do not use them as exact timing or savings inputs."
+    },
+    "difficultCases": [
+      {
+        "caseId": "dev-pair-10",
+        "critical": false,
+        "criticalBadCount": 0,
+        "meaning0Count": 1,
+        "unresolvedCount": 0,
+        "meaning1Count": 1,
+        "styleBelow2Count": 1,
+        "maxGenDurationMs": 950,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      },
+      {
+        "caseId": "dev-pair-12",
+        "critical": false,
+        "criticalBadCount": 0,
+        "meaning0Count": 1,
+        "unresolvedCount": 0,
+        "meaning1Count": 0,
+        "styleBelow2Count": 0,
+        "maxGenDurationMs": 3142,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      },
+      {
+        "caseId": "dev-pair-06",
+        "critical": false,
+        "criticalBadCount": 0,
+        "meaning0Count": 1,
+        "unresolvedCount": 0,
+        "meaning1Count": 0,
+        "styleBelow2Count": 0,
+        "maxGenDurationMs": 1563,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      },
+      {
+        "caseId": "dev-pair-08",
+        "critical": false,
+        "criticalBadCount": 0,
+        "meaning0Count": 0,
+        "unresolvedCount": 0,
+        "meaning1Count": 1,
+        "styleBelow2Count": 0,
+        "maxGenDurationMs": 939,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      },
+      {
+        "caseId": "dev-dates-01",
+        "critical": false,
+        "criticalBadCount": 0,
+        "meaning0Count": 0,
+        "unresolvedCount": 0,
+        "meaning1Count": 0,
+        "styleBelow2Count": 1,
+        "maxGenDurationMs": 1511,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      },
+      {
+        "caseId": "holdout-dates-01",
+        "critical": false,
+        "criticalBadCount": 0,
+        "meaning0Count": 0,
+        "unresolvedCount": 0,
+        "meaning1Count": 0,
+        "styleBelow2Count": 1,
+        "maxGenDurationMs": 1321,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      },
+      {
+        "caseId": "holdout-tentative-01",
+        "critical": false,
+        "criticalBadCount": 0,
+        "meaning0Count": 0,
+        "unresolvedCount": 0,
+        "meaning1Count": 0,
+        "styleBelow2Count": 1,
+        "maxGenDurationMs": 1257,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      },
+      {
+        "caseId": "dev-pair-01",
+        "critical": true,
+        "criticalBadCount": 0,
+        "meaning0Count": 0,
+        "unresolvedCount": 0,
+        "meaning1Count": 0,
+        "styleBelow2Count": 1,
+        "maxGenDurationMs": 1199,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      },
+      {
+        "caseId": "dev-conditional-01",
+        "critical": true,
+        "criticalBadCount": 0,
+        "meaning0Count": 0,
+        "unresolvedCount": 0,
+        "meaning1Count": 0,
+        "styleBelow2Count": 1,
+        "maxGenDurationMs": 1178,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      },
+      {
+        "caseId": "dev-pair-04",
+        "critical": false,
+        "criticalBadCount": 0,
+        "meaning0Count": 0,
+        "unresolvedCount": 0,
+        "meaning1Count": 0,
+        "styleBelow2Count": 1,
+        "maxGenDurationMs": 1045,
+        "hasUnknownGenDuration": false,
+        "leaderConfigs": [
+          "gemini-minimal",
+          "haiku-low"
+        ]
+      }
+    ],
+    "repeatManifestCandidate": {
+      "schemaVersion": 1,
+      "id": "development-hard-repeat-v1",
+      "stage": "repeat",
+      "dataset": "evals/cases.jsonl",
+      "promptVersion": "4",
+      "configurations": [
+        {
+          "id": "haiku-low",
+          "model": "anthropic/claude-haiku-5.5",
+          "role": "generator",
+          "reasoning": {
+            "effort": "low"
+          },
+          "maxOutputTokens": 2048,
+          "inputUsdPerMillion": 0.1,
+          "outputUsdPerMillion": 0.5
+        },
+        {
+          "id": "gemini-minimal",
+          "model": "google/gemini-3.5-flash-lite",
+          "role": "generator",
+          "reasoning": {
+            "effort": "minimal"
+          },
+          "maxOutputTokens": 2048,
+          "inputUsdPerMillion": 0.3,
+          "outputUsdPerMillion": 2.5
+        },
+        {
+          "id": "judge-argon",
+          "model": "google/gemini-4-argon",
+          "role": "llm",
+          "reasoning": {
+            "effort": "low"
+          },
+          "maxOutputTokens": 2048,
+          "inputUsdPerMillion": 2,
+          "outputUsdPerMillion": 10
+        }
+      ],
+      "repetitions": 3,
+      "seed": 20261015,
+      "targetUsd": 1,
+      "maxUsd": 3,
+      "pricingDate": "2026-10-15",
+      "caseIds": [
+        "dev-pair-10",
+        "dev-pair-12",
+        "dev-pair-06",
+        "dev-pair-08",
+        "dev-dates-01",
+        "holdout-dates-01",
+        "holdout-tentative-01",
+        "dev-pair-01",
+        "dev-conditional-01",
+        "dev-pair-04"
+      ]
+    },
+    "recoveryEvidence": [
+      {
+        "judgment": {
+          "schemaVersion": 1,
+          "kind": "judgment",
+          "id": "a3e90f3fedc30391a8e3b2276b8729d2485b76e55b223730a7cc509c9dd6bdc2",
+          "runId": "development-selected-v1",
+          "generationId": "b40108217621a884c70688d84cd7e0164a772ad946cb0b04e0d2510005ab0c7d",
+          "evaluatorId": "judge-argon",
+          "evaluator": {
+            "id": "judge-argon",
+            "model": "google/gemini-4-argon",
+            "role": "llm",
+            "reasoning": {
+              "effort": "low"
+            },
+            "maxOutputTokens": 2048,
+            "inputUsdPerMillion": 2,
+            "outputUsdPerMillion": 10
+          },
+          "rubricVersion": "1",
+          "date": "2026-10-16T01:54:36.154Z",
+          "durationMs": 45000,
+          "status": "unresolved",
+          "meaning": null,
+          "style": null,
+          "tags": [],
+          "evidence": [
+            "Recovered interrupted judgment. Duration is the configured 45000ms deadline lower bound, not an observed response time; no response or billing was available."
+          ],
+          "probabilities": null,
+          "usage": null,
+          "costUsd": null,
+          "estimatedCostUsd": 0.027254,
+          "errorCode": "EVALUATOR_DEADLINE_ABORTED_RECOVERED",
+          "recovery": {
+            "jobId": "a3e90f3fedc30391a8e3b2276b8729d2485b76e55b223730a7cc509c9dd6bdc2",
+            "generationId": "b40108217621a884c70688d84cd7e0164a772ad946cb0b04e0d2510005ab0c7d",
+            "runId": "development-selected-v1",
+            "recoveredAt": "2026-10-16T01:54:36.154Z",
+            "reason": "The runner private 45000ms deadline aborted the request; evaluateOutput rethrew the aborted signal and the CLI exited before recording a judgment or settlement.",
+            "durationSource": "configured_deadline_lower_bound",
+            "responseTimingObserved": false,
+            "billingObserved": false,
+            "providerRequestRetried": false
+          }
+        },
+        "durationTreatment": "lower-bound; excluded from observed judge latency percentiles and savings calculations"
+      }
+    ],
+    "limitations": [
+      "Development comparison only; no release-readiness claim.",
+      "Automated scores are comparisons, not human ground truth.",
+      "The repeat manifest is a candidate printed for review and is not written or executed."
+    ]
+  },
+  "charges": {
+    "newDispatches": 431,
+    "reportedKnownCostUsd": 0.3234529000000005,
+    "unknownCostSettlements": 1,
+    "groups": [
+      {
+        "configuration": "gemini-minimal",
+        "requests": 28,
+        "reportedKnownCostUsd": 0.004891500000000001,
+        "unknownSettlements": 0
+      },
+      {
+        "configuration": "haiku-low",
+        "requests": 28,
+        "reportedKnownCostUsd": 0.0024559,
+        "unknownSettlements": 0
+      },
+      {
+        "configuration": "luna-low",
+        "requests": 29,
+        "reportedKnownCostUsd": 0.0013641999999999999,
+        "unknownSettlements": 0
+      },
+      {
+        "configuration": "glm-low",
+        "requests": 28,
+        "reportedKnownCostUsd": 0.0019356999999999998,
+        "unknownSettlements": 0
+      },
+      {
+        "configuration": "judge-argon",
+        "requests": 159,
+        "reportedKnownCostUsd": 0.3017360000000002,
+        "unknownSettlements": 1
+      },
+      {
+        "configuration": "decision-perplexity",
+        "requests": 159,
+        "reportedKnownCostUsd": 0.011069600000000002,
+        "unknownSettlements": 0
+      }
+    ]
+  },
+  "studyAtPhaseEnd": {
+    "asOf": "2026-10-16T02:28:23.993Z",
+    "dispatches": 1078,
+    "reportedKnownCostUsd": 0.9173613029999991,
+    "unknownCostSettlements": 2,
+    "retainedUnknownReservationsUsd": 0.028739400000000002,
+    "pendingReservations": 0
+  }
+}

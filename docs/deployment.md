@@ -447,17 +447,20 @@ and opt-in; see [`evals/README.md`](../evals/README.md).
 
 The [dated local demo check](../evals/results/local-demo-verification-2026-10-15.md)
 records keyboard editing, clearing, sample activation, visible focus, and style
-swap behavior, plus current draft-PR CI evidence. It does not substitute for a
-screen reader, another browser, actual browser zoom, or deployed provider checks.
+swap behavior, plus draft-PR CI evidence. Its follow-up records the maintainer's
+Edge, actual 200% zoom, and Windows Narrator checks, including the two defects and
+successful retests after correction. These local observations do not substitute
+for deployed provider checks. The [read-only deployment check](../evals/results/deployment-readiness-2026-10-15.md)
+records the existing rule and live notice without changing either.
 
 The benchmark is offline and does not alter Production settings, request
 processing, logging, privacy routing, or persistence. No live model comparisons
 are implied by the benchmark datasets or protocol. Paid provider runs require a
 separate approval after their preflight cost estimate is reviewed.
 
-The following checks still need dated evidence before v1 portfolio claims are
-made: a screen-reader pass, a second-browser review, 200% zoom behavior, the
-Preview and Production header-scoped WAF deny rehearsals, Production disabled
+The following operational checks still need dated evidence before corresponding
+v1 portfolio claims are made: the Preview and Production header-scoped WAF deny
+rehearsals, Production disabled
 mode and restoration, and one live cancellation correlation. WAF publishes,
 Production interruption, and live cancellation each have separate approval gates
 in the runbook above. Application-side cancellation does not prove that an

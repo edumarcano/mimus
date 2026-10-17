@@ -24,6 +24,13 @@ export type EvalCase = {
 };
 
 const SPLIT_VALUES = new Set<EvalSplit>(["development", "holdout", "all"]);
+const KNOWN_OPTIONS = new Set([
+  "--live",
+  "--include-holdout",
+  "--split",
+  "--limit",
+  "--ids",
+]);
 
 export function parseEvalArgs(argv: string[]): ParsedEvalArgs {
   let live = false;
@@ -32,13 +39,28 @@ export function parseEvalArgs(argv: string[]): ParsedEvalArgs {
   let limit: number | undefined;
   let ids: string[] | undefined;
   let parseError: string | undefined;
+  const seenOptions = new Set<string>();
 
   const fail = (message: string) => {
-    parseError = message;
+    parseError ??= message;
   };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
+    if (!arg.startsWith("--")) {
+      fail(`Unexpected argument: ${arg}`);
+      continue;
+    }
+    if (!KNOWN_OPTIONS.has(arg)) {
+      fail(`Unknown option: ${arg}`);
+      continue;
+    }
+    if (seenOptions.has(arg)) {
+      fail(`Repeated option: ${arg}`);
+      continue;
+    }
+    seenOptions.add(arg);
+
     if (arg === "--live") {
       live = true;
       continue;
@@ -58,9 +80,9 @@ export function parseEvalArgs(argv: string[]): ParsedEvalArgs {
     }
     if (arg === "--limit") {
       const raw = argv[++i];
-      const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
-      if (!Number.isInteger(parsed) || parsed <= 0) {
-        fail("Invalid --limit; pass a positive integer.");
+      const parsed = raw && /^\d+$/.test(raw) ? Number(raw) : Number.NaN;
+      if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+        fail("Invalid --limit; pass a safe positive integer.");
       } else {
         limit = parsed;
       }

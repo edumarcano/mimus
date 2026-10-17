@@ -74,7 +74,9 @@ Tab traversal was not machine-verified. Keyboard, zoom, and live use were report
 as normal.
 
 **Not verified then:** screen readers, Safari, Firefox, and real cancellation
-behavior. These remain unverified (see [dated deployment checks](#2026-10-14-dated-deployment-checks)).
+behavior. Later [local demo checks](../evals/results/local-demo-verification-2026-10-15.md)
+and [Production verification](../evals/results/production-verification-2026-10-16.md)
+establish their own narrower observations; Safari and Firefox remain untested.
 
 ## 2026-10-07: Google terms review (Superseded: provider changed)
 
@@ -147,15 +149,6 @@ all-at-once appearance is provider behavior, not a client bug, and no artificial
 typewriter effect was added. This is a single sample and cannot separate queue
 latency from reasoning time.
 
-## 2026-10-07: Merge scope (Historical evidence)
-
-PR #4 was merged as the Milestone 4 code and evidence while Production stayed in
-demo mode with no environment variables. Deployed streaming, the geolocation
-header, client abort, the 60-second limit, and the terms questions moved to a
-separate effort, with the condition that none of them be assumed until recorded.
-The 9/10 critical-case result was accepted for the Gemini release candidate, not
-treated as passed.
-
 ## 2026-10-12: Mimus rebrand (Active)
 
 The product was renamed from Parlance to Mimus. The model configuration, prompt
@@ -166,8 +159,8 @@ change, and the Gemini evaluation was not re-run.
   `PARLANCE_DEV_ALLOW_LOCAL_LIVE` became `MIMUS_*` with no legacy fallback.
   Leftover old names are ignored, so a stale deployment fails closed to demo.
 - **Browser storage:** `parlance:*` keys move once to `mimus:*` on first load
-  (the value is copied only if the new key is empty; the legacy key is always
-  removed). Values and the history toggle are not altered.
+  (current keys take precedence). Failed transfers now retain the legacy value
+  for a later retry. Values and the history toggle are not altered.
 - **Assets:** the brand PNGs were checked for real alpha, correct text, and 16/32
   px legibility. The standalone mark's wing is slightly more elongated than the
   bird in the horizontal logos; the mark is the source for favicons and icons.
@@ -245,103 +238,42 @@ not the release-candidate denominator. See
 cap do not prove meaning preservation. The app cannot enforce account-level prompt
 logging. The US allowlist is a visitor restriction, not data residency.
 
-## 2026-10-14: Dated deployment checks
-
-Dated checks at `main` commit `4988df4`, when Production was an examples-only
-demo. These observations do not describe the later live deployment.
-
-### Post-merge cleanup
-
-- The five branch-scoped Preview variables were deleted, and their absence was
-  independently verified.
-- The dedicated Preview OpenRouter key was revoked. This is reported, not observed.
-- `vercel env ls` for the project returned no environment variables in any
-  environment (read-only check, earlier on 2026-10-14). Production therefore ran
-  the demo default at that time. Later that day, the live variables were added
-  (see the dated activation record below).
-
-### Production smoke test (verified; demo build, superseded by activation)
-
-On 2026-10-14 against `https://mimus-rewrite.vercel.app` at `4988df4`, using `curl`
-and the Cursor browser, while Production was in demo mode:
-
-- The page title is "Mimus" with the expected description. `og:image` and
-  `twitter:image` resolve to the canonical origin, and `/favicon.ico`, `/icon.png`,
-  `/apple-icon.png`, and `/opengraph-image.png` return 200 with image types.
-- `/privacy` returns 200 and shows `openrouter-zdr-v1`, the OpenRouter notice, and
-  the back link.
-- One synthetic `POST /api/translate` returned 503, `Cache-Control: no-store`, and the
-  `SERVICE_UNAVAILABLE` JSON envelope.
-- In the browser at 360 and 1440 px: the Mimus logo, tagline, and demo banner show;
-  an example chip fills the input and labels the result "Example — not generated";
-  Translate stays disabled; there is no horizontal overflow.
-
-A read-only `vercel firewall rules list` and `inspect` showed the custom rule
-"Rate limit translate API" enabled on the current project: `POST` to a path
-starting with `/api/translate`, keyed by IP, fixed 60-second window, limit 5, action
-rate limit. This confirms the rule exists and is configured as intended. Its
-enforcement was observed on 2026-10-13 (above).
-
-**Access limitations.** Function logs were not inspected. The footer "Source on
-GitHub" link returns 404 while the repository is private (at the time of this check).
+## Cancellation and spending safeguards (Active)
 
 ### Cancellation: what is and is not known
 
-These are four separate questions, and only the first two have evidence.
+Stop aborts the browser fetch and marks incomplete output canceled. The route
+combines client disconnect and a 45-second deadline into the upstream abort signal,
+and cancels the upstream body when parsing stops early. Vercel cancellation is
+enabled only for the translate route.
 
-1. *Browser abort.* Stop aborts the client fetch and the UI marks the output
-   canceled. Verified by unit and end-to-end tests and manual use.
-2. *Application propagation.* The route combines the client-abort signal (from
-   `request.signal` and the stream's `cancel()`) and the 45-second deadline into one
-   signal that aborts the upstream `fetch`. A client disconnect is logged as status
-   499 with no error code, separate from a deadline `UPSTREAM_TIMEOUT` (504). When
-   parsing stops early, the upstream body is cancelled. Verified in code and mocked
-   tests only.
-3. *Vercel delivery.* `vercel.json` opts only `src/app/api/translate/route.ts` into
-   `supportsCancellation: true`. The branch Preview's deployment record shows this
-   setting, and the local build output matches it (verified 2026-10-14). That is
-   configuration evidence, not delivery evidence: no live disconnect has been
-   observed on Vercel. The one earlier Preview attempt was inconclusive: the request
-   cut off locally logged 200 with 50 output tokens. Before this fix, a canceled
-   request was logged as `UPSTREAM_TIMEOUT`, which conflated a disconnect with a
-   deadline. A live test that aborts right after the first `delta`, and correlates the
-   request ID with Vercel logs and OpenRouter activity, is prepared in
-   [`deployment.md`](deployment.md#5-live-cancellation-test--prepared-needs-approval-spends-provider-credits).
-   It has not been run, and it needs approval because it spends provider credits. If
-   generation finishes before the abort, the result is recorded as inconclusive.
-4. *Upstream termination and billing.* OpenRouter documents (checked 2026-10-14)
-   that aborting a stream stops processing and billing only for supported hosts,
-   and lists InferenceNet, which served 33 of 40 requests in the development run, as
-   not supported. For unsupported hosts, the documentation says the model continues
-   and the full response is billed. Neither the app nor Vercel logs can show what a
-   specific request cost after an abort; OpenRouter's own activity record could.
-   Cancellation therefore does not guarantee an end to provider billing, on any host.
+The [October 16 Production test](../evals/results/production-verification-2026-10-16.md)
+correlated a client abort after the first delta with application status 499, then
+completed a resubmission. The outer HTTP status was already 200. This establishes
+application-side disconnect handling, not provider termination or billing cessation.
+An earlier Preview attempt was inconclusive and must not count as a successful
+cancellation check.
 
-**Impact.** Stop may not stop spend on some hosts. This is bounded per request by
-input size and the output cap, and in total only by the key's spending limit (next
-section). It does not block public live access if the risk is accepted.
+OpenRouter's streaming documentation reviewed on October 14 described cancellation
+as host-dependent; some hosts continue generating and bill the full response.
+Neither browser Stop nor a 499 application log proves upstream billing stopped.
+Per-request size limits and a capped key bound exposure; the
+[verification procedure](deployment.md#activation-and-verification) keeps those
+observations separate.
 
 ### Spend exposure
 
-- The 2,048-token output cap and the 3,000-character input limit bound the cost of
-  one request, not total spend. Host prices differ (the OpenRouter listing on
-  2026-10-14 showed roughly $0.036-$0.15 per million input and $0.15-$1.60 per
-  million output tokens), so any dollar figure is illustrative.
-- The WAF limit of five requests per IP per 60 seconds slows one client. It is
-  regional and per IP, so it does not stop distributed abuse and is not a budget.
-- The primary safeguards are a dedicated Production key with a spending limit,
-  prepaid credit with auto top-up off, and regular review of OpenRouter activity.
-  The Production key limit is $1 per month, confirmed in the account settings and
-  not independently verified. The limit caps spending within its monthly
-  accounting period. It does not cap cumulative lifetime spending, does not
-  guarantee zero additional charges, and does not replace activity monitoring. The
-  exact reset date is not recorded here.
-- `GET /api/v1/key` reports the remaining key limit and usage. An exhausted limit
-  returns 402, or 403 for budget blocks. The adapter maps 402 and 429 to
-  `SERVICE_QUOTA_EXHAUSTED`, and 401, 403, and other failures to
-  `SERVICE_UNAVAILABLE`. Both fail closed, and neither is a kill switch.
-- OpenRouter's terms make the account holder responsible for all charges on its
-  keys, authorized or not.
+- The 2,048-token output cap and 3,000-code-point input limit bound one request,
+  not total spending. Host prices and key allowances must be checked at use time.
+- Five requests per IP per minute slows one client but does not stop distributed
+  abuse. Regional WAF counters are not a budget control.
+- Use a dedicated capped key, prepaid credit with auto-recharge off, and regular
+  activity review. A monthly limit is not a lifetime cap or a guarantee of zero
+  additional charges. The app cannot enforce account settings.
+- The adapter maps 402 and 429 to `SERVICE_QUOTA_EXHAUSTED`, and 401, 403, and other
+  failures to `SERVICE_UNAVAILABLE`. Error mapping is not a kill switch.
+- OpenRouter's terms reviewed on October 14 made the account holder responsible
+  for charges on its keys, authorized or not.
 
 ### Provider and hosting notes (historical research)
 
@@ -372,76 +304,6 @@ confirmed in the account. The terms wording was recorded during research and was
 not re-checked in the final review. Confirm it against the current text before
 deciding.
 
-## 2026-10-14: Production activation (historical evidence)
-
-These observations were recorded during the October 14 live activation and are
-not a continuing release or model-selection decision.
-
-**Verified in a read-only check during release finalization:**
-
-- `vercel env ls` lists exactly five variables: `OPENROUTER_API_KEY`, `MIMUS_MODE`,
-  `APP_ORIGIN`, `MIMUS_LIVE_COUNTRIES`, and `MIMUS_DEV_ALLOW_LOCAL_LIVE`. All are
-  scoped to Production only, and none exists in Preview or Development. Values are
-  hidden and were not inspected.
-- A `GET /` on `https://mimus-rewrite.vercel.app` returned 200 with the live-mode
-  notice (`openrouter-zdr-v1`). No inference request was sent.
-- `vercel firewall rules list` showed the "Rate limit translate API" rule enabled
-  (5 requests per 60 seconds) and no deny rule.
-
-**Reported (not independently verified):**
-
-- Live GLM rewriting works on `https://mimus-rewrite.vercel.app`. A Human to
-  Corporate, Balanced rewrite preserved the Friday meeting rescheduling and the
-  unfinished-report reason.
-- Chrome DevTools showed real SSE streaming: a `meta` event, 13 `delta` events, and
-  a successful `done` event in about 724 ms. For short, fast responses the page may
-  not look streamed.
-
-**Account settings (confirmed in the account, not independently verified):** a
-$1/month Production key limit, with auto-recharge disabled, and the OpenRouter
-privacy and ZDR settings applied. The app cannot enforce them. The
-[spend analysis](#spend-exposure) still applies: the monthly key limit caps spending
-within its monthly accounting period, not cumulative lifetime spending, and it does
-not replace activity monitoring. The per-request limits and the WAF are not budget
-controls.
-
-**Not verified:** function-log contents for live Production requests (Hobby keeps
-logs for one hour, and they were not inspected), non-US region rejection, whether
-Vercel delivers a client disconnect, and whether OpenRouter hosts stop billing after
-Stop. The header-scoped WAF deny rehearsal and the live cancellation test are prepared
-([`deployment.md`](deployment.md#3-header-scoped-waf-deny-rehearsal--prepared-needs-approval-for-each-publish)
-and [runbook section 5](deployment.md#5-live-cancellation-test--prepared-needs-approval-spends-provider-credits)),
-and neither has been run. Other provider-policy conditions (model-host terms, regions, hosting) have not
-been separately reviewed. The
-[historical notes](#provider-and-hosting-notes-historical-research) remain
-the reference.
-
-**Screenshots.** The images in the README and `docs/assets/screenshots/` were
-captured in demo mode with prewritten examples. They are not evidence of live
-inference, and they are labeled that way.
-
-### Shutdown readiness (not rehearsed)
-
-Reviewed 2026-10-14 with read-only operations, without changing Production
-configuration, the WAF, the key, or any deployment:
-
-- The runbook's CLI command forms (`firewall rules add`, `reorder`, `remove`, `diff`,
-  `publish`, plus `promote` and `rollback`) exist in the installed Vercel CLI (62.5.0).
-  They were checked in `--help` output and against Vercel's CLI reference, and not executed.
-- Custom rules are configured per project, but an `environment` condition
-  (`preview` or `production`) limits a rule to one environment. A header-scoped deny
-  rule can therefore be rehearsed on Preview first and then on Production, with a
-  separate approval for each publish. The existing rate-limit rule has no environment
-  condition, so it applies to Preview too. The earlier statement that a Preview cannot
-  isolate a deny rule was wrong, and this entry replaces it.
-- After the activation redeploy, the previous Production deployment may itself be a
-  live build. Rollback is therefore **not** a guaranteed way to disable inference,
-  and the runbook does not rely on it.
-- The emergency shutdown rehearsal has **not** been performed and is not verified.
-  Publish timing, key revocation effect, and a `disabled` redeploy on Vercel are all
-  unmeasured. The app's `disabled` mode is covered by tests, which is not a deployed
-  check.
-
 ## 2026-10-16: Benchmark recommendation (Historical evidence; adopted below)
 
 The [completed staged study](../evals/results/release-run-2026-10-15.md) recommends
@@ -457,8 +319,8 @@ Human and automated labels remain separate; the frozen judge and rubric were not
 changed using release outcomes. Possible vendor-family bias is unmeasured.
 
 At the time of this recommendation, GLM remained the active runtime configuration.
-The subsequent adoption decision is recorded below; the separately gated
-deployment rehearsals and release acceptance are still pending. The experimental
+The subsequent adoption decision and Production observations are recorded below;
+they do not establish release readiness. The experimental
 decision-model cascade remains offline: development threshold selection was
 inconclusive, so no evaluator is added to production rewriting.
 
@@ -479,18 +341,26 @@ human style disagreement and possible vendor-family bias remain unresolved.
 Historical reports and original labels remain unchanged. Adoption is not a
 guarantee of meaning preservation or a declaration that v1 is release-ready.
 
-**Activation status.** PR #16 was merged at
-`a013c79779ae19616b0710fb3ff02d34e980e158` and deployed to Production. The
-[local checks](../evals/results/gemini-adoption-2026-10-16.md) and
-[Production verification](../evals/results/production-verification-2026-10-16.md)
-record actual requests, costs, streaming, and inspected metadata-only logs. Both
-Production streams completed, but Academic Maximum changed a relative 6% decrease
-to six percentage points. The maintainer explicitly accepted leaving that known
-meaning defect for now; the prompt and scores are unchanged. This is a mixed
-quality observation, not a fully passing meaning check. No additional quality
-benchmark or human-scoring round is required for adoption. The subsequent
-operational rehearsals and remaining publication gates are recorded in the
-[release checklist](release-checklist.md).
+**Integration and Production observations.** Local checks on October 16 exercised
+in-process route handling with the real adapter over loopback, rather than HTTP
+through Next.js or Vercel. Human → Academic Maximum and Corporate → Human Balanced
+both completed `meta`/`delta`/`done` streams, with first deltas at 718/562 ms and total
+durations of 1,029/1,046 ms. Reported costs for the retained pair totaled $0.0004659.
+Inspected logs contained allowlisted metadata without text, keys, or reasoning.
+Informal inspection found numerical and conditional facts preserved in these samples;
+this was not another quality evaluation. Two earlier harness attempts did not
+produce retained quality observations, including one faulty assertion requiring a
+literal numeral where a word preserved the amount. Their individual charges were
+not recovered; the retained pair is not a complete billing total.
+
+Revision `a013c79` was subsequently deployed. The
+[Production record](../evals/results/production-verification-2026-10-16.md)
+contains the actual HTTP requests, costs, streams, and inspected metadata-only
+logs. Both streams completed, but Academic Maximum changed a relative 6% decrease
+to six percentage points. The maintainer accepted retaining this known meaning
+defect. The prompt and scores remain unchanged; this is a mixed quality
+observation, not a fully passing meaning check. No additional scoring round or
+prompt tuning was part of adoption.
 
 **Rollback.** The initial adoption preflight identified the then-current GLM
 deployment as its rollback candidate. Subsequent operational redeployments
@@ -499,28 +369,19 @@ Use the deployment runbook to select a currently eligible, verified healthy
 deployment, or redeploy a reviewed known-good revision. Confirm recovery and
 reconcile the deployed configuration with Git.
 
-## 2026-10-16: Release preparation and operational follow-up
+## 2026-10-16: Operational follow-up (Historical evidence)
 
-The maintainer approved completing the remaining operational checks and accepted
-leaving the percentage-versus-percentage-point meaning defect for now. The
-[Production record](../evals/results/production-verification-2026-10-16.md) records
-Preview/Production header-scoped WAF deny rehearsals and cleanup, live rate-limit
-enforcement, Production disabled-mode/restoration, a client abort correlated to
-application status 499, and a completed resubmission. These observations supersede
-the corresponding unverified statuses in the older dated records; they do not
-establish provider-side billing cessation or key-revocation behavior.
+The [Production record](../evals/results/production-verification-2026-10-16.md)
+records Preview/Production header-scoped WAF deny rehearsals and cleanup,
+rate-limit enforcement, disabled-mode/restoration, application status 499 after
+client abort, and a completed resubmission. These supersede older pending labels
+for those checks. They do not establish real non-US rejection, upstream quota
+exhaustion, provider billing cessation, or key-revocation behavior. Full emergency
+shutdown remains unrehearsed.
 
-The [release audit](../evals/results/release-audit-2026-10-16.md) records clean-source
-no-key setup, public file/history review, an unpatched dev-tool advisory, and open
-privacy questions. The maintainer approved retaining existing Git
-author attribution. No history rewrite was made. A signed-in OpenRouter notice
-announces a Google Safety Retention change effective October 18; its effect on
-the current privacy contract requires clarification rather than an assumed
-account-setting change.
-
-The [release checklist](release-checklist.md) is the current disposition of
-completed work, accepted limitations, remaining evidence gaps, and publication
-decisions. Release notes are drafted; no tag, GitHub release, or repository
-visibility change was published by this preparation work.
-
-
+The [deployment guide](deployment.md) holds reusable procedures, the dated
+[development dependency exception](deployment.md#dependency-exception), and the
+unresolved [Google retention follow-up](deployment.md#privacy-follow-up). The
+[temporary checklist](release-checklist.md) tracks the remaining release gates;
+[CHANGELOG](../CHANGELOG.md) is the release-note source. Experimental records and
+original human/automated labels remain unchanged.

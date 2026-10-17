@@ -46,7 +46,6 @@ The human review budget is at most 25 outputs: 12 calibration, 8 audit, and up t
 | [`results/release-audit-rule-2026-10-15.md`](results/release-audit-rule-2026-10-15.md) | Final eight-review sampling rule | Frozen before release calls; blind scores remain separate |
 | [`results/release-run-2026-10-15.md`](results/release-run-2026-10-15.md) | Fresh release comparison and eight blind audits | Gemini minimal meets automated targets; adopted in the runtime configuration and deployed on Production; audit style disagreement and limited model coverage retained |
 | [`results/production-verification-2026-10-16.md`](results/production-verification-2026-10-16.md) | Production smoke checks and operational rehearsals | Streaming and application-side cancellation verified; numerical meaning defect accepted; provider billing remains separate |
-| [`results/release-audit-2026-10-16.md`](results/release-audit-2026-10-16.md) | Clean source setup, public-file/history review, and dependency/provider checks | No-key setup passed; remaining decisions tracked in the release checklist |
 | [`results/local-demo-verification-2026-10-15.md`](results/local-demo-verification-2026-10-15.md) | Local keyboard, browser, zoom, and Narrator checks | Includes maintainer observations and corrected accessibility defects |
 
 Historical records do not establish the quality of planned benchmark

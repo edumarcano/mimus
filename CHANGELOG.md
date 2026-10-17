@@ -12,8 +12,11 @@ Notable public releases of Mimus are documented here.
 - Separated browser streaming and history presentation from the main translator.
 - Added gated browser streaming and accessibility checks, consistent formatting,
   and offline verification of the published release evidence.
-- Updated compatible dependencies; the current verification record distinguishes
-  production audit results from any accepted development-only advisory.
+- Updated compatible dependencies; the dated
+  [development-only advisory exception](docs/deployment.md#dependency-exception)
+  records the remaining tooling exposure.
+- Consolidated operational documentation and removed redundant preparation reports;
+  retained experimental and deployed verification evidence.
 
 ### Features
 

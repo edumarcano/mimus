@@ -14,6 +14,41 @@ function sse(chunks: string[]): ReadableStream<Uint8Array> {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("streamRewriteWithConfig", () => {
+  it("applies explicitly supplied provider preferences", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      body: sse(["data: [DONE]\n\n"]),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    for await (const _event of streamRewriteWithConfig(
+      { systemInstruction: "system", input: "text" },
+      new AbortController().signal,
+      {
+        model: "google/gemini-3.5-flash-lite",
+        maxOutputTokens: 2_048,
+        reasoning: { effort: "minimal" },
+        providerPreferences: {
+          only: ["google-vertex"],
+          dataCollection: "deny",
+          zdr: false,
+          requireParameters: true,
+        },
+      },
+      "live-key",
+    ))
+      void _event;
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(init.body as string).provider).toEqual({
+      only: ["google-vertex"],
+      data_collection: "deny",
+      zdr: false,
+      require_parameters: true,
+    });
+  });
+
   it("uses the supplied config and exposes only non-content finish metadata", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

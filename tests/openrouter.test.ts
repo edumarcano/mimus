@@ -112,8 +112,9 @@ describe("streamRewrite", () => {
     expect(body.max_tokens).toBe(2048);
     expect(body.reasoning).toEqual({ effort: "minimal" });
     expect(body.provider).toEqual({
+      only: ["google-vertex"],
       data_collection: "deny",
-      zdr: true,
+      zdr: false,
       require_parameters: true,
     });
     expect(body.require_parameters).toBeUndefined();

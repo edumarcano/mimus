@@ -1,7 +1,7 @@
-export const NOTICE_VERSION = "openrouter-zdr-v1";
+export const NOTICE_VERSION = "openrouter-vertex-safety-v1";
 
 export const NOTICE_TEXT =
-  "Text is sent to OpenRouter to generate a rewrite. OpenRouter routes each request to a third-party model host that it classifies as not storing prompts and not using them for training. OpenRouter still records request metadata, may categorize prompts anonymously, and a host may cache prompt text in memory. This routing is not anonymity. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser.";
+  "Your text is sent through OpenRouter to Google Vertex AI, which generates the rewrite. Mimus routes requests only to Google Vertex endpoints. OpenRouter records request metadata and may categorize prompts anonymously. Google may retain prompts and responses for safety and abuse monitoring, and flagged content may be reviewed by people. Under Google's applicable policies, this content is not used to train or fine-tune models without permission or instruction. Provider caching may occur. This is not anonymity. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser.";
 
 export const NOTICE_AVAILABILITY =
   "For adults only. Live generation is currently limited to approved regions and is intended as a writing experiment.";
@@ -18,8 +18,14 @@ export const OPENROUTER_TERMS_URL = "https://openrouter.ai/terms";
 
 export const OPENROUTER_PRIVACY_URL = "https://openrouter.ai/privacy";
 
-export const OPENROUTER_ZDR_URL =
-  "https://openrouter.ai/docs/guides/features/zdr";
+export const OPENROUTER_LOGGING_URL =
+  "https://openrouter.ai/docs/guides/privacy/provider-logging";
+
+export const GOOGLE_DATA_GOVERNANCE_URL =
+  "https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention";
+
+export const GOOGLE_ABUSE_MONITORING_URL =
+  "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/abuse-monitoring";
 
 export type PrivacySection = {
   id: string;
@@ -30,11 +36,11 @@ export type PrivacySection = {
 export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
   {
     id: "live-routing",
-    title: "What live mode sends to OpenRouter",
+    title: "What live mode sends to OpenRouter and Google",
     paragraphs: [
       NOTICE_TEXT,
-      "Live generation uses the OpenRouter API with provider preferences that require zero data retention endpoints and deny data collection. Mimus does not pin a single model host, so the terms of the host that serves a given request can vary. OpenRouter's terms and privacy policy, and its description of zero data retention routing, apply to that request.",
-      "Zero data retention routing describes how eligible endpoints handle prompts. It is not anonymity, and it does not mean that nobody can see the text. Do not submit personal, sensitive, or confidential information.",
+      "OpenRouter receives the request and routes it only to Google Vertex endpoints. OpenRouter content logging is disabled for Mimus; OpenRouter may record request metadata under its policies. Google Vertex may retain prompts and responses for safety and abuse monitoring, and flagged content may receive human review. Google states that it does not use customer data to train or fine-tune models without permission or instruction. Provider caching may occur under the applicable service terms.",
+      "These provider controls do not make a request anonymous. Do not submit personal, sensitive, or confidential information.",
     ],
   },
   {

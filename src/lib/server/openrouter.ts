@@ -26,6 +26,14 @@ export type OpenRouterConfig = {
   model: string;
   maxOutputTokens: number;
   reasoning: { effort?: string; enabled?: boolean };
+  providerPreferences?: OpenRouterProviderPreferences;
+};
+
+export type OpenRouterProviderPreferences = {
+  only?: readonly string[];
+  dataCollection: "deny";
+  zdr: boolean;
+  requireParameters: true;
 };
 
 export type ModelRequest = {
@@ -298,6 +306,12 @@ export async function* streamRewriteWithConfig(
     throw new AppError("SERVICE_UNAVAILABLE");
   }
 
+  const providerPreferences = config.providerPreferences ?? {
+    dataCollection: "deny" as const,
+    zdr: true,
+    requireParameters: true as const,
+  };
+
   try {
     const response = await fetch(OPENROUTER_CHAT_COMPLETIONS_URL, {
       method: "POST",
@@ -314,9 +328,12 @@ export async function* streamRewriteWithConfig(
         max_tokens: config.maxOutputTokens,
         reasoning: config.reasoning,
         provider: {
-          data_collection: MODEL_CONFIG.dataCollection,
-          zdr: MODEL_CONFIG.zdr,
-          require_parameters: true,
+          ...(providerPreferences.only === undefined
+            ? {}
+            : { only: providerPreferences.only }),
+          data_collection: providerPreferences.dataCollection,
+          zdr: providerPreferences.zdr,
+          require_parameters: providerPreferences.requireParameters,
         },
         stream: true,
         stream_options: { include_usage: true },
@@ -357,6 +374,7 @@ export async function* streamRewrite(
       model: MODEL_CONFIG.model,
       maxOutputTokens: MODEL_CONFIG.maxOutputTokens,
       reasoning: { effort: MODEL_CONFIG.reasoningEffort },
+      providerPreferences: MODEL_CONFIG.providerPreferences,
     },
     openrouterApiKey,
   );

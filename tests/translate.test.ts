@@ -131,6 +131,24 @@ describe("createTranslateHandler", () => {
     expect(adapter).not.toHaveBeenCalled();
   });
 
+  it("rejects acknowledgement for the previous ZDR notice version", async () => {
+    const adapter = vi.fn(adapterFrom([]));
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter,
+    });
+
+    const response = await handler(
+      postRequest(validBody({ privacyNoticeVersion: "openrouter-zdr-v1" })),
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      error: { code: "NOTICE_CHANGED" },
+    });
+    expect(adapter).not.toHaveBeenCalled();
+  });
+
   it("returns 503 in demo mode without calling adapter", async () => {
     const adapter = vi.fn(adapterFrom([]));
     const handler = createTranslateHandler({

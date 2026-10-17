@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { MAX_INPUT_CODE_POINTS, countCodePoints } from "../src/lib/limits";
+import { INTENSITIES, STYLE_IDS } from "../src/lib/styles";
 
 // These are sanitized publication schemas, deliberately separate from internal run records.
 type ObjectRecord = Record<string, unknown>;
@@ -214,9 +216,31 @@ export function verifyPublishedInputs(inputs: PublishedInputs) {
       c.split === "release" && typeof c.critical === "boolean",
       "Invalid release case",
     );
-    string(c.text, "case.text");
-    string(c.sourceStyle, "case.sourceStyle");
-    string(c.targetStyle, "case.targetStyle");
+    const text = string(c.text, "case.text");
+    check(
+      text.trim().length > 0,
+      "case.text: must contain non-whitespace text",
+    );
+    check(
+      countCodePoints(text) <= MAX_INPUT_CODE_POINTS,
+      `case.text: exceeds ${MAX_INPUT_CODE_POINTS} code points`,
+    );
+    const sourceStyle = string(c.sourceStyle, "case.sourceStyle");
+    const targetStyle = string(c.targetStyle, "case.targetStyle");
+    check(
+      STYLE_IDS.some((style) => style === sourceStyle),
+      "Invalid case.sourceStyle",
+    );
+    check(
+      STYLE_IDS.some((style) => style === targetStyle),
+      "Invalid case.targetStyle",
+    );
+    check(sourceStyle !== targetStyle, "Case styles must be distinct");
+    const intensity = string(c.intensity, "case.intensity");
+    check(
+      INTENSITIES.some((level) => level === intensity),
+      "Invalid case.intensity",
+    );
     strings(c.mustPreserve, "case.mustPreserve");
     strings(c.mustNotInvent, "case.mustNotInvent");
     return c;
@@ -513,6 +537,11 @@ export function verifyPublishedInputs(inputs: PublishedInputs) {
     },
     recommendation,
     "recommendation",
+  );
+  check(
+    configurations.find((config) => config.configId === recommendedConfig.id)
+      ?.numericCriteria.passed === true,
+    "Recommended generator does not meet recomputed numerical targets",
   );
   const audit = object(summary.humanAudit, "humanAudit");
   const auditSummary = object(audit.summary, "humanAudit.summary");

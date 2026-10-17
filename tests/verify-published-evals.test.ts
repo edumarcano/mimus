@@ -59,6 +59,32 @@ describe("published release evidence verification", () => {
     expect(() => verifyPublishedInputs(inputs)).not.toThrow();
   });
 
+  it.each(["unknown style", "identical styles"])(
+    "rejects %s even when aggregate direction coverage stays at twenty",
+    (mutation) => {
+      const inputs = fixture();
+      const cases = inputs.dataset.map(record);
+      for (const item of cases) {
+        if (mutation === "unknown style") {
+          if (item.sourceStyle === "human") item.sourceStyle = "unknown";
+          if (item.targetStyle === "human") item.targetStyle = "unknown";
+        } else if (
+          item.sourceStyle === "human" &&
+          item.targetStyle === "linkedin"
+        ) {
+          item.targetStyle = "human";
+        }
+      }
+      expect(
+        new Set(cases.map((item) => `${item.sourceStyle}->${item.targetStyle}`))
+          .size,
+      ).toBe(20);
+      expect(() => verifyPublishedInputs(inputs)).toThrow(
+        mutation === "unknown style" ? /Invalid case\./ : /must be distinct/,
+      );
+    },
+  );
+
   it("enforces the input code-point limit and treats ignored Human intensity as a valid request value", () => {
     const inputs = fixture();
     const humanTarget = inputs.dataset.find(

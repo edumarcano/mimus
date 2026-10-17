@@ -49,6 +49,24 @@ describe("evaluate CLI helpers", () => {
     expect(streamRewrite).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["unknown option", ["--live", "--limti", "5"]],
+    ["unexpected positional argument", ["--live", "extra"]],
+    ["malformed limit", ["--live", "--limit", "5oops"]],
+    ["decimal limit", ["--live", "--limit", "1.5"]],
+    ["unsafe integer limit", ["--live", "--limit", "9007199254740992"]],
+    ["repeated flag", ["--live", "--live"]],
+    ["repeated value option", ["--live", "--limit", "1", "--limit", "2"]],
+  ])("rejects %s before any adapter call", async (_description, argv) => {
+    const streamRewrite = vi.fn(async function* (): AsyncIterable<ModelEvent> {
+      yield { type: "delta", text: "nope" };
+    });
+    const code = await runEvaluation(argv, { streamRewrite });
+    expect(code).toBe(1);
+    expect(parseEvalArgs(argv).parseError).toBeDefined();
+    expect(streamRewrite).not.toHaveBeenCalled();
+  });
+
   it("missing --live does not call a fake adapter", async () => {
     const streamRewrite = vi.fn(async function* (): AsyncIterable<ModelEvent> {
       yield { type: "delta", text: "nope" };
@@ -65,6 +83,30 @@ describe("evaluate CLI helpers", () => {
     const code = await runEvaluation(["--live", "--ids", "no-such-case"], {
       streamRewrite,
     });
+    expect(code).toBe(1);
+    expect(streamRewrite).not.toHaveBeenCalled();
+  });
+
+  it("rejects every unmatched id before a limit can hide it or call the adapter", async () => {
+    const streamRewrite = vi.fn(async function* (): AsyncIterable<ModelEvent> {
+      yield { type: "delta", text: "nope" };
+    });
+    const code = await runEvaluation(
+      ["--live", "--ids", "dev-negation-01,no-such-case", "--limit", "1"],
+      { streamRewrite },
+    );
+    expect(code).toBe(1);
+    expect(streamRewrite).not.toHaveBeenCalled();
+  });
+
+  it("rejects an id outside the selected split before any adapter call", async () => {
+    const streamRewrite = vi.fn(async function* (): AsyncIterable<ModelEvent> {
+      yield { type: "delta", text: "nope" };
+    });
+    const code = await runEvaluation(
+      ["--live", "--split", "development", "--ids", "holdout2-injection-memo"],
+      { streamRewrite },
+    );
     expect(code).toBe(1);
     expect(streamRewrite).not.toHaveBeenCalled();
   });
@@ -125,5 +167,25 @@ describe("evaluate CLI helpers", () => {
     expect(streamRewrite).toHaveBeenCalledTimes(2);
     // Spacing applies between requests, not before the first.
     expect(sleeps).toEqual([REQUEST_INTERVAL_MS]);
+  });
+
+  it("keeps a valid positive limit applied to the selected split", async () => {
+    const streamRewrite = vi.fn(async function* (): AsyncIterable<ModelEvent> {
+      yield { type: "delta", text: "ok" };
+      yield { type: "finish", reason: "complete" };
+    });
+    const writes: string[] = [];
+    const code = await runEvaluation(["--live", "--limit", "1"], {
+      streamRewrite,
+      gitRevision: () => "test",
+      gitPorcelain: () => "",
+      readTransport: () => "test-transport",
+      writeRaw: (_filePath, line) => {
+        writes.push(line);
+      },
+    });
+    expect(code).toBe(0);
+    expect(streamRewrite).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(writes[0]!).caseId).toBe("dev-pair-01");
   });
 });

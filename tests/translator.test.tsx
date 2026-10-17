@@ -931,10 +931,80 @@ describe("Translator privacy and history", () => {
     expect(output()).toBe("SAVED_OUT");
 
     fireEvent.click(screen.getByRole("button", { name: "Clear history" }));
-    expect(JSON.parse(storage.getItem("mimus:history:v1") ?? "[]")).toEqual([]);
+    expect(storage.getItem("mimus:history:v1")).toBeNull();
 
     fireEvent.click(screen.getByLabelText(/Save completed rewrites/));
-    expect(JSON.parse(storage.getItem("mimus:history:v1") ?? "[]")).toEqual([]);
+    expect(storage.getItem("mimus:history:v1")).toBeNull();
+  });
+
+  it("warns when clearing history fails and clears the in-memory list", () => {
+    const storage = memoryStorage();
+    const entry = addEntry(
+      [],
+      {
+        text: "hello",
+        sourceStyle: "human",
+        targetStyle: "linkedin",
+        effectiveIntensity: "balanced",
+      },
+      "saved output",
+    )[0];
+    storage.setItem(HISTORY_STORAGE_KEY, JSON.stringify([entry]));
+    storage.removeItem = () => {
+      throw new Error("denied");
+    };
+    vi.stubGlobal("localStorage", storage);
+
+    render(<Translator config={cfg("live", "available")} />);
+    fireEvent.click(screen.getByRole("button", { name: "Clear history" }));
+
+    expect(
+      screen.getByText(
+        "Couldn't delete saved history from this browser. Saved entries may remain and reappear after reload.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Load" })).toBeNull();
+    expect(storage.getItem(HISTORY_STORAGE_KEY)).toBe(JSON.stringify([entry]));
+  });
+
+  it("warns when opting out cannot delete stored history", async () => {
+    const storage = memoryStorage();
+    const entry = addEntry(
+      [],
+      {
+        text: "hello",
+        sourceStyle: "human",
+        targetStyle: "linkedin",
+        effectiveIntensity: "balanced",
+      },
+      "saved output",
+    )[0];
+    storage.setItem(HISTORY_STORAGE_KEY, JSON.stringify([entry]));
+    storage.removeItem = () => {
+      throw new Error("denied");
+    };
+    vi.stubGlobal("localStorage", storage);
+
+    render(<Translator config={cfg("live", "available")} />);
+    const saveToggle = screen.getByLabelText(
+      /Save completed rewrites/,
+    ) as HTMLInputElement;
+    expect(saveToggle.checked).toBe(false);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Load" })).toBeTruthy(),
+    );
+    fireEvent.click(saveToggle);
+    expect(saveToggle.checked).toBe(true);
+    fireEvent.click(saveToggle);
+
+    expect(saveToggle.checked).toBe(false);
+    expect(
+      screen.getByText(
+        "Couldn't delete saved history from this browser. Saved entries may remain and reappear after reload.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Load" })).toBeNull();
+    expect(storage.getItem(HISTORY_STORAGE_KEY)).toBe(JSON.stringify([entry]));
   });
 
   it("restores preferences after mount", async () => {

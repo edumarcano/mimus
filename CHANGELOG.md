@@ -6,6 +6,12 @@ Notable public releases of Mimus are documented here.
 
 ### Fixes and maintenance
 
+- Rejected invalid evaluation options and unmatched case IDs before provider calls,
+  and strengthened release-evidence case validation and recommendation checks.
+- Removed saved history keys when clearing or opting out, with explicit warnings
+  when browser storage prevents deletion.
+- Documented browser-test installation and clarified historical verification and
+  Swap behavior for incomplete results.
 - Enforced the output limit on the first stream delta as well as later deltas.
 - Kept browser interactions usable when storage is denied, and preserved legacy
   saved data when migration cannot complete.

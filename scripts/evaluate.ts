@@ -96,6 +96,19 @@ export async function runEvaluation(
     return 1;
   }
 
+  const allCases = loadCases();
+  const splitCases = filterCasesBySplit(allCases, args.split);
+  if (args.ids && args.ids.length > 0) {
+    const availableIds = new Set(splitCases.map((evalCase) => evalCase.id));
+    const unmatchedIds = args.ids.filter((id) => !availableIds.has(id));
+    if (unmatchedIds.length > 0) {
+      console.error(
+        `Unknown case id(s) for the ${args.split} split: ${unmatchedIds.join(", ")}. No provider call was made.`,
+      );
+      return 1;
+    }
+  }
+
   const porcelain = (deps.gitPorcelain ?? defaultGitPorcelain)();
   const dirtyFiles = parseDirtyTrackedFiles(porcelain);
   const dirty = dirtyFiles.length > 0;
@@ -116,18 +129,10 @@ export async function runEvaluation(
   const gitRevision = (deps.gitRevision ?? defaultGitRevision)();
   const transport = (deps.readTransport ?? defaultTransport)();
 
-  const allCases = loadCases();
   const filtered = applyLimit(
-    filterCasesByIds(filterCasesBySplit(allCases, args.split), args.ids),
+    filterCasesByIds(splitCases, args.ids),
     args.limit,
   );
-
-  if (args.ids && args.ids.length > 0 && filtered.length === 0) {
-    console.error(
-      "No development cases matched --ids. No provider call was made.",
-    );
-    return 1;
-  }
 
   const resultsDir = path.join(process.cwd(), "evals", "results", "raw");
   mkdirSync(resultsDir, { recursive: true });

@@ -2,6 +2,7 @@ import type { RequestSnapshot } from "./translator-state";
 import {
   browserStorage,
   safeGetItem,
+  safeRemoveItem,
   safeSetItem,
   type StorageLike,
 } from "./storage";
@@ -79,7 +80,7 @@ export function saveHistory(
 export function clearHistory(
   storage: StorageLike | null = browserStorage("localStorage"),
 ): boolean {
-  return saveHistory([], storage);
+  return safeRemoveItem(storage, HISTORY_STORAGE_KEY);
 }
 
 export function addEntry(

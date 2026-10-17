@@ -5,6 +5,7 @@ import {
   verifyPublishedInputs,
   type PublishedInputs,
 } from "../scripts/verify-published-evals";
+import { MAX_INPUT_CODE_POINTS } from "../src/lib/limits";
 
 type RecordValue = Record<string, unknown>;
 function record(value: unknown): RecordValue {
@@ -27,6 +28,77 @@ function publishedConfig(inputs: PublishedInputs, id: unknown): RecordValue {
 }
 
 describe("published release evidence verification", () => {
+  it.each([
+    ["unknown source style", (c: RecordValue) => (c.sourceStyle = "unknown")],
+    ["unknown target style", (c: RecordValue) => (c.targetStyle = "unknown")],
+    ["identical styles", (c: RecordValue) => (c.targetStyle = c.sourceStyle)],
+    ["invalid intensity", (c: RecordValue) => (c.intensity = "extreme")],
+    ["whitespace-only text", (c: RecordValue) => (c.text = " \n\t ")],
+    ["empty required annotations", (c: RecordValue) => (c.mustPreserve = [])],
+    [
+      "whitespace required annotation",
+      (c: RecordValue) => (c.mustNotInvent = [" \t "]),
+    ],
+    ["non-array preserve tokens", (c: RecordValue) => (c.preserveTokens = "x")],
+    [
+      "whitespace preserve token",
+      (c: RecordValue) => (c.preserveTokens = [" \t "]),
+    ],
+    ["non-string theme", (c: RecordValue) => (c.themes = [42])],
+    ["whitespace theme", (c: RecordValue) => (c.themes = ["  "])],
+  ])("rejects release cases with %s", (_name, change) => {
+    const inputs = fixture();
+    change(record(inputs.dataset[0]));
+    expect(() => verifyPublishedInputs(inputs)).toThrow();
+  });
+
+  it("accepts empty optional annotation arrays", () => {
+    const inputs = fixture();
+    record(inputs.dataset[0]).preserveTokens = [];
+    record(inputs.dataset[0]).themes = [];
+    expect(() => verifyPublishedInputs(inputs)).not.toThrow();
+  });
+
+  it.each(["unknown style", "identical styles"])(
+    "rejects %s even when aggregate direction coverage stays at twenty",
+    (mutation) => {
+      const inputs = fixture();
+      const cases = inputs.dataset.map(record);
+      for (const item of cases) {
+        if (mutation === "unknown style") {
+          if (item.sourceStyle === "human") item.sourceStyle = "unknown";
+          if (item.targetStyle === "human") item.targetStyle = "unknown";
+        } else if (
+          item.sourceStyle === "human" &&
+          item.targetStyle === "linkedin"
+        ) {
+          item.targetStyle = "human";
+        }
+      }
+      expect(
+        new Set(cases.map((item) => `${item.sourceStyle}->${item.targetStyle}`))
+          .size,
+      ).toBe(20);
+      expect(() => verifyPublishedInputs(inputs)).toThrow(
+        mutation === "unknown style" ? /Invalid case\./ : /must be distinct/,
+      );
+    },
+  );
+
+  it("enforces the input code-point limit and treats ignored Human intensity as a valid request value", () => {
+    const inputs = fixture();
+    const humanTarget = inputs.dataset.find(
+      (value) => record(value).targetStyle === "human",
+    );
+    if (!humanTarget) throw new Error("Expected a Human-target release case");
+    record(humanTarget).intensity = "maximum";
+    record(inputs.dataset[0]).text = "😀".repeat(MAX_INPUT_CODE_POINTS);
+    expect(() => verifyPublishedInputs(inputs)).not.toThrow();
+
+    record(inputs.dataset[0]).text = "😀".repeat(MAX_INPUT_CODE_POINTS + 1);
+    expect(() => verifyPublishedInputs(inputs)).toThrow(/case.text: exceeds/);
+  });
+
   it.each([undefined, 42, {}])(
     "rejects malformed unresolved error metadata (%s)",
     (errorCode) => {
@@ -245,6 +317,25 @@ describe("published release evidence verification", () => {
     const inputs = fixture();
     change(inputs);
     expect(() => verifyPublishedInputs(inputs)).toThrow();
+  });
+
+  it("rejects a recommendation that fails recomputed numerical targets", () => {
+    const inputs = fixture();
+    const recommendation = record(record(inputs.summary).recommendation);
+    const manifest = record(inputs.manifest);
+    if (!Array.isArray(manifest.configurations))
+      throw new Error("Expected manifest configurations");
+    const haiku = manifest.configurations
+      .map(record)
+      .find((config) => config.id === "haiku-low");
+    if (!haiku) throw new Error("Expected Haiku finalist configuration");
+    recommendation.configId = "haiku-low";
+    recommendation.model = haiku.model;
+    recommendation.reasoning = haiku.reasoning;
+    recommendation.maxOutputTokens = haiku.maxOutputTokens;
+    expect(() => verifyPublishedInputs(inputs)).toThrow(
+      /does not meet recomputed numerical targets/,
+    );
   });
 
   it("propagates unknown reported generation costs rather than substituting estimates or zero", () => {

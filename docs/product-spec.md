@@ -130,7 +130,7 @@ Disable text/style mutation controls while a request is active. Permit at most o
 
 When Swap moves output longer than the input limit into the textarea, show the over-limit state and require editing before submission. Never silently truncate text.
 
-A canceled, blocked, failed, truncated, or interrupted result is not a completed translation. Do not enable normal Copy/Swap/Regenerate actions or save it to history. Users can still select visible non-blocked partial text manually.
+A canceled, blocked, failed, truncated, or interrupted result is not a completed translation. Disable Copy and Regenerate, never move partial output into input through Swap, and do not save it to history. While idle, Swap may still exchange the selectors, retain input, and clear incomplete output as described above. Users can still select visible non-blocked partial text manually.
 
 ---
 
@@ -531,7 +531,7 @@ The application processes text transiently to obtain a rewrite. It must not inte
 
 Allowlisted operational logs may contain request ID, model ID, prompt version, style IDs, duration, status/error code, and aggregate token counts. Exclude prompt/output text, provider error objects, raw IP addresses, authorization headers, and full request objects. Document hosting/provider processing separately; "no app database" does not mean "no third-party processing."
 
-Preferences may use versioned `localStorage` keys. History is explicitly opt-in and off by default. Save only completed results, their input and style snapshot, and timestamp; trim oldest entries beyond 10. Provide Clear history and an off toggle that also deletes stored history. No sync or automatic resubmission. Validate stored data and tolerate corrupt JSON, unavailable storage, and quota errors.
+Preferences may use versioned `localStorage` keys. History is explicitly opt-in and off by default. Save only completed results, their input and style snapshot, and timestamp; trim oldest entries beyond 10. Provide Clear history and an off toggle that also deletes stored history. If deletion fails, clear the in-memory list and warn that saved entries may remain and reappear after reload. No sync or automatic resubmission. Validate stored data and tolerate corrupt JSON, unavailable storage, and quota errors.
 
 Keep first-use acknowledgement in session memory or `sessionStorage`, tied to the notice version. Do not store birth dates or add identity accounts. Explain that browser history is not encrypted storage and is unsuitable for shared devices.
 
@@ -869,7 +869,7 @@ The design notes should explain scope, the style/meaning tradeoff, one observed 
 
 ## References and verification notes
 
-Reference baseline: **October 6, 2026**. Current account access and deployment behavior remain unverified. These support external service facts, not claims that the app has been built or tested. Recheck terms, model access, limits, prices, SDK behavior, and dashboard settings before deployment. Project-owned defaults in this spec remain deliberate choices rather than provider guarantees.
+Reference baseline: **October 6, 2026**. Account access and deployment behavior were unverified at that baseline. These references support external service facts; later implementation and deployment observations are recorded separately in [decisions](decisions.md) and the [October 16 Production record](../evals/results/production-verification-2026-10-16.md). Recheck terms, model access, limits, prices, SDK behavior, and dashboard settings before deployment. Project-owned defaults in this spec remain deliberate choices rather than provider guarantees.
 
 *Historical references [S1]–[S4], [S11]–[S12], and [S15] support the superseded Gemini provider; they are kept for the historical record.*
 

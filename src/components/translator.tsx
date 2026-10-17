@@ -83,6 +83,9 @@ const PARTIAL_STATUSES: readonly TranslatorStatus[] = [
   "failed",
 ];
 
+const HISTORY_DELETE_FAILURE_NOTE =
+  "Couldn't delete saved history from this browser. Saved entries may remain and reappear after reload.";
+
 const selectClass =
   "min-h-11 w-full min-w-0 rounded-lg border border-control-line bg-white px-3 text-base text-ink disabled:bg-canvas disabled:opacity-60";
 const secondaryButton =
@@ -352,7 +355,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
       if (!clearHistory()) {
         dispatch({
           type: "setStorageNote",
-          message: "Couldn't save to this browser.",
+          message: HISTORY_DELETE_FAILURE_NOTE,
         });
       }
       dispatch({ type: "setHistoryEntries", entries: [] });
@@ -716,7 +719,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
           if (!clearHistory())
             dispatch({
               type: "setStorageNote",
-              message: "Couldn't save to this browser.",
+              message: HISTORY_DELETE_FAILURE_NOTE,
             });
           dispatch({ type: "setHistoryEntries", entries: [] });
         }}

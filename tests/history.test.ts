@@ -102,11 +102,26 @@ describe("history", () => {
     expect(clearHistory(throwing)).toBe(false);
   });
 
-  it("clears history when toggled off via save", () => {
+  it("removes history without depending on setItem", () => {
     const storage = memoryStorage();
     const entries = addEntry([], snapshot, "saved");
     expect(saveHistory(entries, storage)).toBe(true);
+    storage.setItem = () => {
+      throw new Error("quota");
+    };
     expect(clearHistory(storage)).toBe(true);
-    expect(storage.getItem("mimus:history:v1")).toBe(JSON.stringify([]));
+    expect(storage.getItem("mimus:history:v1")).toBeNull();
+  });
+
+  it("reports deletion failure without replacing the saved value", () => {
+    const storage = memoryStorage();
+    const entries = addEntry([], snapshot, "saved");
+    expect(saveHistory(entries, storage)).toBe(true);
+    storage.removeItem = () => {
+      throw new Error("denied");
+    };
+
+    expect(clearHistory(storage)).toBe(false);
+    expect(loadHistory(storage)).toEqual(entries);
   });
 });

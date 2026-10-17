@@ -1,5 +1,10 @@
 import type { RequestSnapshot } from "./translator-state";
-import { safeGetItem, safeSetItem, type StorageLike } from "./storage";
+import {
+  browserStorage,
+  safeGetItem,
+  safeSetItem,
+  type StorageLike,
+} from "./storage";
 import { INTENSITIES, isDistinctPair, STYLE_IDS } from "./styles";
 
 export const HISTORY_STORAGE_KEY = "mimus:history:v1";
@@ -59,19 +64,21 @@ export function parseHistory(raw: string | null): HistoryEntry[] {
 }
 
 export function loadHistory(
-  storage: StorageLike = localStorage,
+  storage: StorageLike | null = browserStorage("localStorage"),
 ): HistoryEntry[] {
   return parseHistory(safeGetItem(storage, HISTORY_STORAGE_KEY));
 }
 
 export function saveHistory(
   entries: HistoryEntry[],
-  storage: StorageLike = localStorage,
+  storage: StorageLike | null = browserStorage("localStorage"),
 ): boolean {
   return safeSetItem(storage, HISTORY_STORAGE_KEY, JSON.stringify(entries));
 }
 
-export function clearHistory(storage: StorageLike = localStorage): boolean {
+export function clearHistory(
+  storage: StorageLike | null = browserStorage("localStorage"),
+): boolean {
   return saveHistory([], storage);
 }
 

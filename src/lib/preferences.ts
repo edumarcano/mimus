@@ -1,4 +1,10 @@
-import { safeGetItem, safeParseJson, safeSetItem, type StorageLike } from "./storage";
+import {
+  browserStorage,
+  safeGetItem,
+  safeParseJson,
+  safeSetItem,
+  type StorageLike,
+} from "./storage";
 import {
   INTENSITIES,
   isDistinctPair,
@@ -16,8 +22,6 @@ export type Preferences = {
   rememberedIntensity: Intensity;
   historyEnabled: boolean;
 };
-
-export type PreferencesPatch = Partial<Preferences>;
 
 function isStyleId(value: unknown): value is StyleId {
   return (
@@ -51,14 +55,14 @@ export function isPreferences(value: unknown): value is Preferences {
 }
 
 export function loadPreferences(
-  storage: StorageLike = localStorage,
+  storage: StorageLike | null = browserStorage("localStorage"),
 ): Preferences | null {
   return safeParseJson(safeGetItem(storage, PREFS_STORAGE_KEY), isPreferences);
 }
 
 export function savePreferences(
   prefs: Preferences,
-  storage: StorageLike = localStorage,
+  storage: StorageLike | null = browserStorage("localStorage"),
 ): boolean {
   return safeSetItem(storage, PREFS_STORAGE_KEY, JSON.stringify(prefs));
 }

@@ -1,22 +1,33 @@
 export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
+export function browserStorage(
+  kind: "localStorage" | "sessionStorage",
+): StorageLike | null {
+  try {
+    return typeof window === "undefined" ? null : window[kind];
+  } catch {
+    return null;
+  }
+}
+
 export function safeGetItem(
-  storage: StorageLike,
+  storage: StorageLike | null,
   key: string,
 ): string | null {
   try {
-    return storage.getItem(key);
+    return storage?.getItem(key) ?? null;
   } catch {
     return null;
   }
 }
 
 export function safeSetItem(
-  storage: StorageLike,
+  storage: StorageLike | null,
   key: string,
   value: string,
 ): boolean {
   try {
+    if (!storage) return false;
     storage.setItem(key, value);
     return true;
   } catch {
@@ -24,8 +35,12 @@ export function safeSetItem(
   }
 }
 
-export function safeRemoveItem(storage: StorageLike, key: string): boolean {
+export function safeRemoveItem(
+  storage: StorageLike | null,
+  key: string,
+): boolean {
   try {
+    if (!storage) return false;
     storage.removeItem(key);
     return true;
   } catch {
@@ -54,19 +69,24 @@ export type StorageMigrationPair = {
 };
 
 export function migrateStorageKeys(
-  storage: StorageLike,
+  storage: StorageLike | null,
   pairs: readonly StorageMigrationPair[],
-): void {
+): boolean {
+  if (!storage) return false;
+  let complete = true;
   for (const { legacy, current } of pairs) {
-    const legacyValue = safeGetItem(storage, legacy);
-    if (legacyValue === null) {
-      continue;
+    try {
+      const legacyValue = storage.getItem(legacy);
+      if (legacyValue === null) continue;
+      if (storage.getItem(current) === null) {
+        storage.setItem(current, legacyValue);
+      }
+      storage.removeItem(legacy);
+    } catch {
+      complete = false;
     }
-    if (safeGetItem(storage, current) === null) {
-      safeSetItem(storage, current, legacyValue);
-    }
-    safeRemoveItem(storage, legacy);
   }
+  return complete;
 }
 
 let legacyStorageMigrated = false;
@@ -80,21 +100,20 @@ const SESSION_STORAGE_MIGRATIONS: readonly StorageMigrationPair[] = [
   { legacy: "parlance:ack", current: "mimus:ack" },
 ];
 
-export function migrateLegacyStorage(): void {
+export function migrateLegacyStorage(): boolean {
   if (legacyStorageMigrated || typeof window === "undefined") {
-    return;
+    return true;
   }
-  legacyStorageMigrated = true;
-  try {
-    migrateStorageKeys(localStorage, LOCAL_STORAGE_MIGRATIONS);
-  } catch {
-    // localStorage unavailable
-  }
-  try {
-    migrateStorageKeys(sessionStorage, SESSION_STORAGE_MIGRATIONS);
-  } catch {
-    // sessionStorage unavailable
-  }
+  const localComplete = migrateStorageKeys(
+    browserStorage("localStorage"),
+    LOCAL_STORAGE_MIGRATIONS,
+  );
+  const sessionComplete = migrateStorageKeys(
+    browserStorage("sessionStorage"),
+    SESSION_STORAGE_MIGRATIONS,
+  );
+  legacyStorageMigrated = localComplete && sessionComplete;
+  return legacyStorageMigrated;
 }
 
 /** @internal Resets one-time migration guard for tests. */

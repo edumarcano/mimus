@@ -110,7 +110,9 @@ export async function runEvaluation(
 
   const adapter = deps.streamRewrite ?? streamRewrite;
   const now = deps.now ?? (() => Date.now());
-  const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  const sleep =
+    deps.sleep ??
+    ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
   const gitRevision = (deps.gitRevision ?? defaultGitRevision)();
   const transport = (deps.readTransport ?? defaultTransport)();
 

@@ -99,7 +99,12 @@ describe("validateTranslateRequest", () => {
   it("normalizes human target intensity and preserves internal whitespace", () => {
     const text = "  hello   world  ";
     const result = validateTranslateRequest(
-      base({ targetStyle: "human", sourceStyle: "linkedin", intensity: "maximum", text }),
+      base({
+        targetStyle: "human",
+        sourceStyle: "linkedin",
+        intensity: "maximum",
+        text,
+      }),
     );
     expect(result.ok).toBe(true);
     if (result.ok) {

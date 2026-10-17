@@ -15,7 +15,10 @@ import {
 
 const liveCtx = { mode: "live" as const, maxInputCodePoints: 3000 };
 
-function reduce(state: TranslatorState, ...actions: Parameters<typeof translatorReducer>[1][]) {
+function reduce(
+  state: TranslatorState,
+  ...actions: Parameters<typeof translatorReducer>[1][]
+) {
   return actions.reduce((s, a) => translatorReducer(s, a), state);
 }
 
@@ -49,7 +52,12 @@ describe("translatorReducer", () => {
 
   it("stop keeps partial output as canceled", () => {
     const state = reduce(
-      { ...INITIAL_TRANSLATOR_STATE, status: "generating", runId: 1, output: "part" },
+      {
+        ...INITIAL_TRANSLATOR_STATE,
+        status: "generating",
+        runId: 1,
+        output: "part",
+      },
       { type: "stop", runId: 1 },
     );
     expect(state.status).toBe("canceled");
@@ -58,14 +66,24 @@ describe("translatorReducer", () => {
 
   it("late delta and done after stop cannot extend or complete the result", () => {
     const stopped = reduce(
-      { ...INITIAL_TRANSLATOR_STATE, status: "generating", runId: 1, output: "part" },
+      {
+        ...INITIAL_TRANSLATOR_STATE,
+        status: "generating",
+        runId: 1,
+        output: "part",
+      },
       { type: "stop", runId: 1 },
     );
     const late = reduce(
       stopped,
       { type: "delta", runId: 1, text: " late" },
       { type: "done", runId: 1 },
-      { type: "streamError", runId: 1, code: "INCOMPLETE_OUTPUT", message: "x" },
+      {
+        type: "streamError",
+        runId: 1,
+        code: "INCOMPLETE_OUTPUT",
+        message: "x",
+      },
     );
     expect(late.status).toBe("canceled");
     expect(late.output).toBe("part");
@@ -74,7 +92,12 @@ describe("translatorReducer", () => {
   it("maps stream errors to blocked, truncated, and failed", () => {
     expect(
       reduce(
-        { ...INITIAL_TRANSLATOR_STATE, status: "generating", runId: 1, output: "x" },
+        {
+          ...INITIAL_TRANSLATOR_STATE,
+          status: "generating",
+          runId: 1,
+          output: "x",
+        },
         {
           type: "streamError",
           runId: 1,
@@ -86,7 +109,12 @@ describe("translatorReducer", () => {
 
     expect(
       reduce(
-        { ...INITIAL_TRANSLATOR_STATE, status: "generating", runId: 1, output: "x" },
+        {
+          ...INITIAL_TRANSLATOR_STATE,
+          status: "generating",
+          runId: 1,
+          output: "x",
+        },
         {
           type: "streamError",
           runId: 1,
@@ -98,7 +126,12 @@ describe("translatorReducer", () => {
 
     expect(
       reduce(
-        { ...INITIAL_TRANSLATOR_STATE, status: "generating", runId: 1, output: "" },
+        {
+          ...INITIAL_TRANSLATOR_STATE,
+          status: "generating",
+          runId: 1,
+          output: "",
+        },
         {
           type: "streamError",
           runId: 1,
@@ -110,7 +143,12 @@ describe("translatorReducer", () => {
 
     expect(
       reduce(
-        { ...INITIAL_TRANSLATOR_STATE, status: "generating", runId: 1, output: "x" },
+        {
+          ...INITIAL_TRANSLATOR_STATE,
+          status: "generating",
+          runId: 1,
+          output: "x",
+        },
         {
           type: "streamError",
           runId: 1,
@@ -123,7 +161,12 @@ describe("translatorReducer", () => {
 
   it("maps pre-stream CONTENT_BLOCKED to blocked without partial", () => {
     const state = reduce(
-      { ...INITIAL_TRANSLATOR_STATE, status: "generating", runId: 1, output: "partial" },
+      {
+        ...INITIAL_TRANSLATOR_STATE,
+        status: "generating",
+        runId: 1,
+        output: "partial",
+      },
       { type: "failure", runId: 1, code: "CONTENT_BLOCKED", message: "nope" },
     );
     expect(state.status).toBe("blocked");
@@ -132,7 +175,12 @@ describe("translatorReducer", () => {
 
   it("interrupted keeps partial output", () => {
     const state = reduce(
-      { ...INITIAL_TRANSLATOR_STATE, status: "generating", runId: 1, output: "part" },
+      {
+        ...INITIAL_TRANSLATOR_STATE,
+        status: "generating",
+        runId: 1,
+        output: "part",
+      },
       { type: "interrupted", runId: 1 },
     );
     expect(state.status).toBe("interrupted");
@@ -140,7 +188,12 @@ describe("translatorReducer", () => {
   });
 
   it("clear resets finished results to idle", () => {
-    for (const status of ["complete", "failed", "canceled", "example"] as const) {
+    for (const status of [
+      "complete",
+      "failed",
+      "canceled",
+      "example",
+    ] as const) {
       const cleared = translatorReducer(
         { ...INITIAL_TRANSLATOR_STATE, status, text: "x", output: "y" },
         { type: "clear" },

@@ -87,11 +87,16 @@ export function parseEvalArgs(argv: string[]): ParsedEvalArgs {
 }
 
 /** Returns a refusal reason code, or null when provider calls may proceed. */
-export function providerCallRefusal(args: ParsedEvalArgs): "no-live" | "holdout" | null {
+export function providerCallRefusal(
+  args: ParsedEvalArgs,
+): "no-live" | "holdout" | null {
   if (!args.live) {
     return "no-live";
   }
-  if ((args.split === "holdout" || args.split === "all") && !args.includeHoldout) {
+  if (
+    (args.split === "holdout" || args.split === "all") &&
+    !args.includeHoldout
+  ) {
     return "holdout";
   }
   return null;

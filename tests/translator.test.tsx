@@ -62,13 +62,103 @@ afterEach(() => {
 });
 
 describe("Translator", () => {
+  it("renews acknowledgement in memory when session storage is denied", async () => {
+    vi.spyOn(window, "sessionStorage", "get").mockImplementation(() => {
+      throw new DOMException("denied", "SecurityError");
+    });
+    try {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              error: {
+                code: "NOTICE_CHANGED",
+                message: "Review the updated notice.",
+              },
+            }),
+            { status: 409, headers: { "Content-Type": "application/json" } },
+          ),
+        ),
+      );
+      render(<Translator config={cfg("live")} />);
+      await fillAndSubmit();
+      await waitFor(() =>
+        expect(screen.getByLabelText(/I am an adult/)).toHaveProperty(
+          "checked",
+          false,
+        ),
+      );
+      expect(translateBtn().disabled).toBe(true);
+      expect(screen.getByTestId("status").textContent).toContain(
+        "Review the updated notice.",
+      );
+      fireEvent.click(screen.getByLabelText(/I am an adult/));
+      expect(translateBtn().disabled).toBe(true);
+      expect(screen.getByText(/Refresh the page to review it/)).toBeTruthy();
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+  it("keeps generation and history usable in memory when storage getters throw", async () => {
+    vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
+      throw new DOMException("denied", "SecurityError");
+    });
+    vi.spyOn(window, "sessionStorage", "get").mockImplementation(() => {
+      throw new DOMException("denied", "SecurityError");
+    });
+    try {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          sseResponse([
+            encodeSseEvent("delta", { text: "In-memory rewrite" }),
+            encodeSseEvent("done", {
+              requestId: "r",
+              finishReason: "complete",
+              durationMs: 1,
+            }),
+          ]),
+        ),
+      );
+      render(<Translator config={cfg("live")} />);
+      screen.getByText("History in this browser").closest("details")!.open =
+        true;
+      fireEvent.click(
+        screen.getByLabelText("Save completed rewrites in this browser"),
+      );
+      await fillAndSubmit();
+      await waitFor(() =>
+        expect(screen.getByTestId("status").textContent).toBe("Complete"),
+      );
+      expect(
+        screen.getByLabelText("Save completed rewrites in this browser"),
+      ).toHaveProperty("checked", true);
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", { name: "Load", hidden: true }),
+        ).toBeTruthy(),
+      );
+      expect(screen.getByText("Couldn't save to this browser.")).toBeTruthy();
+      fireEvent.click(
+        screen.getByRole("button", { name: "Clear history", hidden: true }),
+      );
+      expect(
+        screen.queryByRole("button", { name: "Load", hidden: true }),
+      ).toBeNull();
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
   it("announces selected examples and exposes the rewrite as a read-only text field", () => {
     render(<Translator config={cfg("demo")} />);
     for (const example of EXAMPLES.slice(0, 2)) {
       fireEvent.click(screen.getByRole("button", { name: example.label }));
       expect(
         screen
-          .getByText(`${example.label} example loaded. Example — not generated.`)
+          .getByText(
+            `${example.label} example loaded. Example — not generated.`,
+          )
           .closest('[role="status"]'),
       ).toBeTruthy();
       const result = screen.getByRole("textbox", {
@@ -81,7 +171,9 @@ describe("Translator", () => {
       result.focus();
       expect(document.activeElement).toBe(result);
       result.select();
-      expect(result.selectionEnd - result.selectionStart).toBe(example.output.length);
+      expect(result.selectionEnd - result.selectionStart).toBe(
+        example.output.length,
+      );
       expect(result.hasAttribute("aria-live")).toBe(false);
     }
   });
@@ -94,7 +186,9 @@ describe("Translator", () => {
         .getByText(`${EXAMPLES[0].label} example loaded into Your text.`)
         .closest('[role="status"]'),
     ).toBeTruthy();
-    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).not.toBe(EXAMPLES[0].output);
+    expect(
+      (screen.getByTestId("output") as HTMLTextAreaElement).value,
+    ).not.toBe(EXAMPLES[0].output);
   });
 
   it("demo mode: Translate disabled with explanation; example shows labeled output", () => {
@@ -109,7 +203,9 @@ describe("Translator", () => {
     expect(screen.getByTestId("status").textContent).toContain(
       "Example — not generated",
     );
-    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe(EXAMPLES[0].output);
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe(
+      EXAMPLES[0].output,
+    );
     expect(translateBtn().disabled).toBe(true);
   });
 
@@ -119,9 +215,9 @@ describe("Translator", () => {
 
     fireEvent.click(screen.getByRole("button", { name: EXAMPLES[0].label }));
     expect(screen.getByTestId("status").textContent).toBe("Idle");
-    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).not.toBe(
-      EXAMPLES[0].output,
-    );
+    expect(
+      (screen.getByTestId("output") as HTMLTextAreaElement).value,
+    ).not.toBe(EXAMPLES[0].output);
     expect(translateBtn().disabled).toBe(true);
 
     fireEvent.click(screen.getByLabelText(/I am an adult/));
@@ -139,7 +235,9 @@ describe("Translator", () => {
     fireEvent.change(screen.getByLabelText("Your text"), {
       target: { value: "a".repeat(3001) },
     });
-    expect(screen.getByTestId("counter").textContent).toContain("over the limit");
+    expect(screen.getByTestId("counter").textContent).toContain(
+      "over the limit",
+    );
     expect(translateBtn().disabled).toBe(true);
   });
 
@@ -170,7 +268,9 @@ describe("Translator", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status").textContent).toBe("Complete"),
     );
-    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe("Excited to share!");
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe(
+      "Excited to share!",
+    );
     const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     expect(body).toMatchObject({
       sourceStyle: "human",
@@ -184,16 +284,20 @@ describe("Translator", () => {
   it("shows Interrupted when the stream ends without a terminal event", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        sseResponse([encodeSseEvent("delta", { text: "Partial" })]),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          sseResponse([encodeSseEvent("delta", { text: "Partial" })]),
+        ),
     );
     render(<Translator config={cfg("live")} />);
     await fillAndSubmit();
     await waitFor(() =>
       expect(screen.getByTestId("status").textContent).toContain("Interrupted"),
     );
-    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe("Partial");
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe(
+      "Partial",
+    );
     expect(
       (screen.getByLabelText("Your text") as HTMLTextAreaElement).value,
     ).toBe("hello there");
@@ -203,7 +307,9 @@ describe("Translator", () => {
     const enc = new TextEncoder();
     const stream = new ReadableStream<Uint8Array>({
       start(controller) {
-        controller.enqueue(enc.encode(encodeSseEvent("delta", { text: "Partial" })));
+        controller.enqueue(
+          enc.encode(encodeSseEvent("delta", { text: "Partial" })),
+        );
         setTimeout(() => controller.error(new TypeError("network")), 0);
       },
     });
@@ -221,7 +327,9 @@ describe("Translator", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status").textContent).toContain("Interrupted"),
     );
-    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe("Partial");
+    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).toBe(
+      "Partial",
+    );
   });
 
   it("removes partial text on CONTENT_BLOCKED", async () => {
@@ -243,7 +351,9 @@ describe("Translator", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status").textContent).toContain("Blocked."),
     );
-    expect((screen.getByTestId("output") as HTMLTextAreaElement).value).not.toContain("Partial");
+    expect(
+      (screen.getByTestId("output") as HTMLTextAreaElement).value,
+    ).not.toContain("Partial");
   });
 
   it("shows a safe message for a non-JSON 503 body", async () => {
@@ -270,7 +380,11 @@ describe("Translator", () => {
 const enc = new TextEncoder();
 const delta = (text: string) => encodeSseEvent("delta", { text });
 const done = () =>
-  encodeSseEvent("done", { requestId: "r", finishReason: "complete", durationMs: 1 });
+  encodeSseEvent("done", {
+    requestId: "r",
+    finishReason: "complete",
+    durationMs: 1,
+  });
 
 function controlledStream() {
   let ctrl!: ReadableStreamDefaultController<Uint8Array>;
@@ -306,13 +420,17 @@ function controlledStream() {
   };
 }
 
-const textarea = () => screen.getByLabelText("Your text") as HTMLTextAreaElement;
-const sourceSel = () => screen.getByLabelText("Source style") as HTMLSelectElement;
-const targetSel = () => screen.getByLabelText("Target style") as HTMLSelectElement;
+const textarea = () =>
+  screen.getByLabelText("Your text") as HTMLTextAreaElement;
+const sourceSel = () =>
+  screen.getByLabelText("Source style") as HTMLSelectElement;
+const targetSel = () =>
+  screen.getByLabelText("Target style") as HTMLSelectElement;
 const btn = (name: string | RegExp) =>
   screen.getByRole("button", { name }) as HTMLButtonElement;
 const status = () => screen.getByTestId("status").textContent ?? "";
-const output = () => (screen.getByTestId("output") as HTMLTextAreaElement).value ?? "";
+const output = () =>
+  (screen.getByTestId("output") as HTMLTextAreaElement).value ?? "";
 
 function stubComplete(out: string) {
   const fetchMock = vi
@@ -355,8 +473,12 @@ describe("Translator workflow", () => {
     fireEvent.change(targetSel(), { target: { value: "human" } });
     expect(translateBtn().disabled).toBe(true);
     expect(screen.getByText("Choose a different target style.")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: /Human · Result/ })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: /Human · Source/ })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: /Human · Result/ }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: /Human · Source/ }),
+    ).toBeTruthy();
   });
 
   it("disables intensity for Human target and restores it afterwards", () => {
@@ -364,11 +486,17 @@ describe("Translator workflow", () => {
     fireEvent.change(sourceSel(), { target: { value: "corporate" } });
     fireEvent.click(screen.getByLabelText("Maximum"));
     fireEvent.change(targetSel(), { target: { value: "human" } });
-    expect((screen.getByLabelText("Subtle") as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByLabelText("Subtle") as HTMLInputElement).disabled).toBe(
+      true,
+    );
     expect(screen.getByText("Plain English keeps it direct.")).toBeTruthy();
     fireEvent.change(targetSel(), { target: { value: "startup" } });
-    expect((screen.getByLabelText("Maximum") as HTMLInputElement).checked).toBe(true);
-    expect((screen.getByLabelText("Maximum") as HTMLInputElement).disabled).toBe(false);
+    expect((screen.getByLabelText("Maximum") as HTMLInputElement).checked).toBe(
+      true,
+    );
+    expect(
+      (screen.getByLabelText("Maximum") as HTMLInputElement).disabled,
+    ).toBe(false);
   });
 
   it("sends the chosen styles and intensity", async () => {
@@ -381,12 +509,14 @@ describe("Translator workflow", () => {
     fireEvent.click(screen.getByLabelText(/I am an adult/));
     fireEvent.click(translateBtn());
     await waitFor(() => expect(status()).toBe("Complete"));
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toMatchObject({
-      text: "hello",
-      sourceStyle: "academic",
-      targetStyle: "startup",
-      intensity: "maximum",
-    });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toMatchObject(
+      {
+        text: "hello",
+        sourceStyle: "academic",
+        targetStyle: "startup",
+        intensity: "maximum",
+      },
+    );
   });
 
   it("Swap moves a fresh complete result into the input", async () => {
@@ -412,7 +542,9 @@ describe("Translator workflow", () => {
     await completeRun("b".repeat(3001));
     fireEvent.click(btn(/Swap/));
     expect(textarea().value.length).toBe(3001);
-    expect(screen.getByTestId("counter").textContent).toContain("over the limit");
+    expect(screen.getByTestId("counter").textContent).toContain(
+      "over the limit",
+    );
     expect(translateBtn().disabled).toBe(true);
   });
 
@@ -425,11 +557,15 @@ describe("Translator workflow", () => {
     expect(textarea().disabled).toBe(true);
     expect(sourceSel().disabled).toBe(true);
     expect(targetSel().disabled).toBe(true);
-    expect((screen.getByLabelText("Subtle") as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByLabelText("Subtle") as HTMLInputElement).disabled).toBe(
+      true,
+    );
     expect(btn(/Swap/).disabled).toBe(true);
     expect(btn("Clear").disabled).toBe(true);
     expect(btn(EXAMPLES[0].label).disabled).toBe(true);
-    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).disabled).toBe(true);
+    expect(
+      (screen.getByLabelText(/I am an adult/) as HTMLInputElement).disabled,
+    ).toBe(true);
     expect(btn("Stop").disabled).toBe(false);
     s.close();
   });
@@ -505,7 +641,9 @@ describe("Translator workflow", () => {
     const fetchMock = await completeRun("OUT");
     fireEvent.click(btn("Regenerate"));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-    expect(fetchMock.mock.calls[1][1].body).toBe(fetchMock.mock.calls[0][1].body);
+    expect(fetchMock.mock.calls[1][1].body).toBe(
+      fetchMock.mock.calls[0][1].body,
+    );
     expect(fetchMock.mock.calls[1][1].body).not.toContain("OUT");
     await waitFor(() => expect(status()).toBe("Complete"));
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -516,7 +654,9 @@ describe("Translator workflow", () => {
     stubClipboard(writeText);
     await completeRun("OUT");
     fireEvent.click(btn("Copy result"));
-    await waitFor(() => expect(screen.getByTestId("copy-note").textContent).toContain("Copied"));
+    await waitFor(() =>
+      expect(screen.getByTestId("copy-note").textContent).toContain("Copied"),
+    );
     expect(writeText).toHaveBeenLastCalledWith("OUT");
     fireEvent.click(btn("Copy both"));
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(2));
@@ -530,7 +670,9 @@ describe("Translator workflow", () => {
     await completeRun("OUT");
     fireEvent.click(btn("Copy result"));
     await waitFor(() =>
-      expect(screen.getByTestId("copy-note").textContent).toContain("Couldn't copy"),
+      expect(screen.getByTestId("copy-note").textContent).toContain(
+        "Couldn't copy",
+      ),
     );
   });
 
@@ -542,8 +684,16 @@ describe("Translator workflow", () => {
     fireEvent.change(textarea(), { target: { value: "hi" } });
     fireEvent.click(screen.getByLabelText(/I am an adult/));
 
-    fireEvent.keyDown(textarea(), { key: "Enter", ctrlKey: true, isComposing: true });
-    fireEvent.keyDown(textarea(), { key: "Enter", ctrlKey: true, keyCode: 229 });
+    fireEvent.keyDown(textarea(), {
+      key: "Enter",
+      ctrlKey: true,
+      isComposing: true,
+    });
+    fireEvent.keyDown(textarea(), {
+      key: "Enter",
+      ctrlKey: true,
+      keyCode: 229,
+    });
     fireEvent.keyDown(textarea(), { key: "Enter" });
     expect(fetchMock).not.toHaveBeenCalled();
 
@@ -563,7 +713,9 @@ describe("Translator workflow", () => {
     expect(textarea().value).toBe(ex.input);
     expect(status()).toContain("Example — not generated");
     expect(output()).toBe(ex.output);
-    expect(screen.getByTestId("direction").textContent).toContain("LinkedIn → Human");
+    expect(screen.getByTestId("direction").textContent).toContain(
+      "LinkedIn → Human",
+    );
   });
 
   it("live example chip sets only the source style", () => {
@@ -580,7 +732,12 @@ describe("Translator workflow", () => {
       "fetch",
       vi.fn().mockResolvedValue(
         new Response(
-          JSON.stringify({ error: { code: "CONTENT_BLOCKED", message: "Can't help with that." } }),
+          JSON.stringify({
+            error: {
+              code: "CONTENT_BLOCKED",
+              message: "Can't help with that.",
+            },
+          }),
           { status: 422, headers: { "Content-Type": "application/json" } },
         ),
       ),
@@ -664,16 +821,16 @@ describe("Translator privacy and history", () => {
   it("restores acknowledgement from sessionStorage only on version match", () => {
     sessionStorage.setItem("mimus:ack", "v-test");
     render(<Translator config={cfg("live", "available")} />);
-    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
-      true,
-    );
+    expect(
+      (screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked,
+    ).toBe(true);
 
     cleanup();
     sessionStorage.setItem("mimus:ack", "old-version");
     render(<Translator config={cfg("live", "available")} />);
-    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
-      false,
-    );
+    expect(
+      (screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked,
+    ).toBe(false);
   });
 
   it("409 NOTICE_CHANGED clears acknowledgement and blocks resubmit", async () => {
@@ -695,15 +852,15 @@ describe("Translator privacy and history", () => {
     render(<Translator config={cfg("live", "available")} />);
     fireEvent.change(textarea(), { target: { value: "hello" } });
     await waitFor(() =>
-      expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
-        true,
-      ),
+      expect(
+        (screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked,
+      ).toBe(true),
     );
     fireEvent.click(translateBtn());
     await waitFor(() => expect(status()).toContain("Notice changed"));
-    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
-      false,
-    );
+    expect(
+      (screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked,
+    ).toBe(false);
     expect(sessionStorage.getItem("mimus:ack")).toBeNull();
     expect(translateBtn().disabled).toBe(true);
     expect(screen.getByText(/Refresh the page/)).toBeTruthy();
@@ -751,7 +908,8 @@ describe("Translator privacy and history", () => {
     stubComplete("SAVED_OUT");
     render(<Translator config={cfg("live", "available")} />);
     expect(
-      (screen.getByLabelText(/Save completed rewrites/) as HTMLInputElement).checked,
+      (screen.getByLabelText(/Save completed rewrites/) as HTMLInputElement)
+        .checked,
     ).toBe(false);
 
     await fillAndSubmit();
@@ -773,14 +931,10 @@ describe("Translator privacy and history", () => {
     expect(output()).toBe("SAVED_OUT");
 
     fireEvent.click(screen.getByRole("button", { name: "Clear history" }));
-    expect(JSON.parse(storage.getItem("mimus:history:v1") ?? "[]")).toEqual(
-      [],
-    );
+    expect(JSON.parse(storage.getItem("mimus:history:v1") ?? "[]")).toEqual([]);
 
     fireEvent.click(screen.getByLabelText(/Save completed rewrites/));
-    expect(JSON.parse(storage.getItem("mimus:history:v1") ?? "[]")).toEqual(
-      [],
-    );
+    expect(JSON.parse(storage.getItem("mimus:history:v1") ?? "[]")).toEqual([]);
   });
 
   it("restores preferences after mount", async () => {
@@ -807,9 +961,9 @@ describe("Translator privacy and history", () => {
     render(<Translator config={cfg("live", "available")} />);
     expect(sessionStorage.getItem("parlance:ack")).toBeNull();
     expect(sessionStorage.getItem(ACK_STORAGE_KEY)).toBe("v-test");
-    expect((screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked).toBe(
-      true,
-    );
+    expect(
+      (screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked,
+    ).toBe(true);
   });
 
   it("migrates legacy preferences without overwriting newer keys", async () => {
@@ -849,10 +1003,7 @@ describe("Translator privacy and history", () => {
       },
       "legacy-out",
     )[0];
-    localStorage.setItem(
-      "parlance:history:v1",
-      JSON.stringify([entry]),
-    );
+    localStorage.setItem("parlance:history:v1", JSON.stringify([entry]));
     render(<Translator config={cfg("live", "available")} />);
     expect(localStorage.getItem("parlance:history:v1")).toBeNull();
     expect(localStorage.getItem(HISTORY_STORAGE_KEY)).toContain("legacy-out");

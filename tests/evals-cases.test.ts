@@ -65,7 +65,9 @@ describe("evals/cases.jsonl", () => {
       expect(item.id.length).toBeGreaterThan(0);
       expect(ids.has(item.id)).toBe(false);
       ids.add(item.id);
-      expect(item.split === "development" || item.split === "holdout").toBe(true);
+      expect(item.split === "development" || item.split === "holdout").toBe(
+        true,
+      );
       expect(typeof item.critical).toBe("boolean");
       expect(item.text.length).toBeGreaterThan(0);
       expect(STYLE_IDS).toContain(item.sourceStyle);

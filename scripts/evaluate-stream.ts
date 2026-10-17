@@ -3,12 +3,7 @@ import type { ModelEvent } from "../src/lib/server/openrouter";
 import { AppError } from "../src/lib/server/errors";
 
 export type NormalizedCompletion =
-  | "complete"
-  | "incomplete"
-  | "blocked"
-  | "length"
-  | "error"
-  | "interrupted";
+  "complete" | "incomplete" | "blocked" | "length" | "error" | "interrupted";
 
 export type StreamRunResult = {
   outputText: string;

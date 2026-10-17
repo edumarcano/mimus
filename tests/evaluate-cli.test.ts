@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  parseEvalArgs,
-  providerCallRefusal,
-} from "../scripts/evaluate-cli";
+import { parseEvalArgs, providerCallRefusal } from "../scripts/evaluate-cli";
 import type { ModelEvent } from "@/lib/server/openrouter";
 import { REQUEST_INTERVAL_MS, runEvaluation } from "../scripts/evaluate";
 

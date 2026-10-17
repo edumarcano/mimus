@@ -1,0 +1,15 @@
+node_modules/
+.next/
+.local/
+.vercel/
+coverage/
+playwright-report/
+test-results/
+evals/
+docs/
+.agents/
+.codex/
+.cursor/
+package-lock.json
+next-env.d.ts
+*.tsbuildinfo

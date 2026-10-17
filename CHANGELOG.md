@@ -4,6 +4,17 @@ Notable public releases of Mimus are documented here.
 
 ## Unreleased
 
+### Fixes and maintenance
+
+- Enforced the output limit on the first stream delta as well as later deltas.
+- Kept browser interactions usable when storage is denied, and preserved legacy
+  saved data when migration cannot complete.
+- Separated browser streaming and history presentation from the main translator.
+- Added gated browser streaming and accessibility checks, consistent formatting,
+  and offline verification of the published release evidence.
+- Updated compatible dependencies; the current verification record distinguishes
+  production audit results from any accepted development-only advisory.
+
 ### Features
 
 - Five styles: Human, LinkedIn, Corporate, Startup Founder, and Academic, with

@@ -50,8 +50,10 @@ describe("isAllowedOrigin", () => {
     ).toBe(false);
 
     expect(
-      isAllowedOrigin(new Request("http://localhost:3000/api/translate"), config)
-        .ok,
+      isAllowedOrigin(
+        new Request("http://localhost:3000/api/translate"),
+        config,
+      ).ok,
     ).toBe(false);
   });
 });
@@ -61,9 +63,9 @@ describe("checkRegion", () => {
     const config = liveConfig();
     vi.stubEnv("NODE_ENV", "production");
 
-    expect(checkRegion(ctx("http://example.com/api/translate"), config).ok).toBe(
-      false,
-    );
+    expect(
+      checkRegion(ctx("http://example.com/api/translate"), config).ok,
+    ).toBe(false);
 
     expect(
       checkRegion(

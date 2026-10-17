@@ -4,6 +4,15 @@ Status reconciled on October 16, 2026. This is an evidence checklist, not a
 release announcement. The application version is prepared as 1.0.0; no release
 tag, GitHub release, or repository visibility change has been published.
 
+## Maintenance candidate
+
+The maintenance changes were prepared from `b7b4bdc`. The
+[maintenance verification record](../evals/results/maintenance-verification-2026-10-16.md)
+tracks current local checks and pending demo gates. The deployed baseline and
+historical observations below do not establish deployment of this candidate.
+Public visibility, GitHub About/topics, tags, and release publication are excluded
+from this preparation; the maintainer will handle publication separately.
+
 ## Completed engineering and verification
 
 | Area | Result and evidence |
@@ -37,11 +46,18 @@ remains a goal rather than a guarantee.
 - **Development dependency advisory:** the online audit found one unpatched
   `braces` denial-of-service advisory propagated through five dev-tool packages.
   It is outside the production dependency tree; potential lint/CI availability
-  exposure remains. Review the dated audit and its upstream status before release.
+  exposure remains. Compatible updates to Next.js/its lint configuration did not
+  remove it. During planning, the maintainer authorized a bounded development-only
+  exception if compatible remediation remained unavailable. That exception applies;
+  the current online production audit is clean. Recheck upstream when updating the
+  toolchain; do not describe the full audit as clean. See the maintenance record.
 - **Upcoming Google retention change:** the signed-in OpenRouter interface
   announces a Google Safety Retention change effective October 18. Reconcile its
   effect with the app's ZDR privacy contract and eligible routes before public
-  release. No account setting was changed during this audit.
+  release. Current public catalogs list eligible Vertex routes and the request
+  still enforces ZDR, but account-specific effects of the announcement have not
+  been verified. The browser integration could not initialize; no account setting
+  was changed. This remains a demo-readiness gate.
 - **Publication approval:** review the final diff and notes, merge the preparation
   PR, select the actual release commit, then explicitly authorize the `v1.0.0` tag,
   GitHub release, and GitHub repository visibility change. Do not publish this

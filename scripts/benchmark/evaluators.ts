@@ -22,12 +22,16 @@ export class EvaluationDeadlineError extends Error {
 
 const FAILURE_TAG_DEFINITIONS: Record<FailureTag, string> = {
   invention: "The rewrite adds a factual claim not supported by the source.",
-  commitment: "The rewrite changes certainty, modality, conditions, or commitments.",
-  attribution: "The rewrite changes or removes who said, did, or believes something.",
+  commitment:
+    "The rewrite changes certainty, modality, conditions, or commitments.",
+  attribution:
+    "The rewrite changes or removes who said, did, or believes something.",
   negation: "The rewrite reverses or weakens a negation.",
   omission: "The rewrite omits material information from the source.",
-  numbers_dates: "The rewrite changes a material number, date, amount, or time.",
-  instruction_handling: "The rewrite follows instructions embedded in the source as if they were evaluator instructions.",
+  numbers_dates:
+    "The rewrite changes a material number, date, amount, or time.",
+  instruction_handling:
+    "The rewrite follows instructions embedded in the source as if they were evaluator instructions.",
   style_intensity: "The rewrite misses the requested style or intensity.",
   incomplete: "The generated rewrite is truncated or incomplete.",
 };
@@ -59,17 +63,23 @@ function finiteNonnegative(value: unknown): number | undefined {
 }
 
 function probability(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1
+  return typeof value === "number" &&
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= 1
     ? value
     : undefined;
 }
 
-function readScoreProbabilities(value: unknown): ScoreProbabilities | undefined {
+function readScoreProbabilities(
+  value: unknown,
+): ScoreProbabilities | undefined {
   if (!isRecord(value)) return undefined;
   const p0 = probability(value["0"]);
   const p1 = probability(value["1"]);
   const p2 = probability(value["2"]);
-  if (p0 === undefined || p1 === undefined || p2 === undefined) return undefined;
+  if (p0 === undefined || p1 === undefined || p2 === undefined)
+    return undefined;
   if (Math.abs(p0 + p1 + p2 - 1) > 0.001) return undefined;
   return { "0": p0, "1": p1, "2": p2 };
 }
@@ -77,7 +87,11 @@ function readScoreProbabilities(value: unknown): ScoreProbabilities | undefined 
 function scoreFromProbabilities(probabilities: ScoreProbabilities): Score {
   // Ordinal levels must be selected by the most likely bucket. A probability-
   // weighted mean can produce fractional labels and is not an ordinal score.
-  if (probabilities["0"] >= probabilities["1"] && probabilities["0"] >= probabilities["2"]) return 0;
+  if (
+    probabilities["0"] >= probabilities["1"] &&
+    probabilities["0"] >= probabilities["2"]
+  )
+    return 0;
   if (probabilities["1"] >= probabilities["2"]) return 1;
   return 2;
 }
@@ -86,7 +100,20 @@ function makeJudgmentBase(
   generation: GenerationRecord,
   evaluator: BenchmarkConfig,
   startedAt: number,
-): Omit<JudgmentRecord, "status" | "meaning" | "style" | "tags" | "evidence" | "probabilities" | "usage" | "costUsd" | "errorCode" | "provider" | "providerGenerationId"> {
+): Omit<
+  JudgmentRecord,
+  | "status"
+  | "meaning"
+  | "style"
+  | "tags"
+  | "evidence"
+  | "probabilities"
+  | "usage"
+  | "costUsd"
+  | "errorCode"
+  | "provider"
+  | "providerGenerationId"
+> {
   return {
     schemaVersion: 1,
     kind: "judgment",
@@ -102,17 +129,24 @@ function makeJudgmentBase(
   };
 }
 
-export function estimateMaximumCost(generation: GenerationRecord, evaluator: BenchmarkConfig): number {
+export function estimateMaximumCost(
+  generation: GenerationRecord,
+  evaluator: BenchmarkConfig,
+): number {
   const state = makeLlmUserState(generation);
-  const additionalQuestions = evaluator.role === "decision"
-    ? JSON.stringify(decisionQuestions())
-    : "";
+  const additionalQuestions =
+    evaluator.role === "decision" ? JSON.stringify(decisionQuestions()) : "";
   const requestTextBytes = new TextEncoder().encode(
     `${JUDGE_INSTRUCTIONS}\n${state}${additionalQuestions}`,
   ).byteLength;
-  const maxInputTokens = (requestTextBytes + 1024) * (evaluator.role === "decision" ? 16 : 1);
+  const maxInputTokens =
+    (requestTextBytes + 1024) * (evaluator.role === "decision" ? 16 : 1);
   const maxOutputTokens = evaluator.maxOutputTokens;
-  return (maxInputTokens * evaluator.inputUsdPerMillion + maxOutputTokens * evaluator.outputUsdPerMillion) / 1_000_000;
+  return (
+    (maxInputTokens * evaluator.inputUsdPerMillion +
+      maxOutputTokens * evaluator.outputUsdPerMillion) /
+    1_000_000
+  );
 }
 
 function unresolved(
@@ -141,13 +175,20 @@ function unresolved(
 
 function abortIfRequested(signal: AbortSignal): void {
   if (signal.aborted) {
-    throw signal.reason ?? new DOMException("The operation was aborted", "AbortError");
+    throw (
+      signal.reason ??
+      new DOMException("The operation was aborted", "AbortError")
+    );
   }
 }
 function cleanUsage(usage: unknown): JudgmentRecord["usage"] {
   if (!isRecord(usage)) return null;
-  const inputTokens = finiteNonnegative(usage.input_tokens ?? usage.prompt_tokens);
-  const outputTokens = finiteNonnegative(usage.output_tokens ?? usage.completion_tokens);
+  const inputTokens = finiteNonnegative(
+    usage.input_tokens ?? usage.prompt_tokens,
+  );
+  const outputTokens = finiteNonnegative(
+    usage.output_tokens ?? usage.completion_tokens,
+  );
   const reasoningTokens = finiteNonnegative(
     isRecord(usage.completion_tokens_details)
       ? usage.completion_tokens_details.reasoning_tokens
@@ -159,7 +200,8 @@ function cleanUsage(usage: unknown): JudgmentRecord["usage"] {
     outputTokens === undefined &&
     reasoningTokens === undefined &&
     costUsd === undefined
-  ) return null;
+  )
+    return null;
   return {
     ...(inputTokens === undefined ? {} : { inputTokens }),
     ...(outputTokens === undefined ? {} : { outputTokens }),
@@ -168,24 +210,44 @@ function cleanUsage(usage: unknown): JudgmentRecord["usage"] {
   };
 }
 
-function providerMetadata(response: JsonRecord): Pick<JudgmentRecord, "provider" | "providerGenerationId"> {
+function providerMetadata(
+  response: JsonRecord,
+): Pick<JudgmentRecord, "provider" | "providerGenerationId"> {
   return {
-    ...(typeof response.provider === "string" ? { provider: response.provider } : {}),
-    ...(typeof response.id === "string" ? { providerGenerationId: response.id } : {}),
+    ...(typeof response.provider === "string"
+      ? { provider: response.provider }
+      : {}),
+    ...(typeof response.id === "string"
+      ? { providerGenerationId: response.id }
+      : {}),
   };
 }
 
 function validTags(value: unknown): FailureTag[] | undefined {
-  if (!Array.isArray(value) || !value.every((tag) => FAILURE_TAGS.includes(tag as FailureTag))) return undefined;
+  if (
+    !Array.isArray(value) ||
+    !value.every((tag) => FAILURE_TAGS.includes(tag as FailureTag))
+  )
+    return undefined;
   return [...new Set(value as FailureTag[])];
 }
 
-function validEvidence(value: unknown, generation: GenerationRecord): string[] | undefined {
-  if (!Array.isArray(value) || !value.every((item) => typeof item === "string" && item.length > 0)) return undefined;
+function validEvidence(
+  value: unknown,
+  generation: GenerationRecord,
+): string[] | undefined {
+  if (
+    !Array.isArray(value) ||
+    !value.every((item) => typeof item === "string" && item.length > 0)
+  )
+    return undefined;
   const source = generation.case.text;
   const output = generation.outputText;
   const evidence = value as string[];
-  if (!evidence.every((quote) => source.includes(quote) || output.includes(quote))) return undefined;
+  if (
+    !evidence.every((quote) => source.includes(quote) || output.includes(quote))
+  )
+    return undefined;
   return evidence;
 }
 
@@ -195,23 +257,59 @@ function judgmentFromLlm(
   evaluator: BenchmarkConfig,
   startedAt: number,
 ): JudgmentRecord {
-  if (!isRecord(payload)) return unresolved(generation, evaluator, startedAt, "invalid_response", payload);
-  const choice = Array.isArray(payload.choices) ? payload.choices[0] : undefined;
+  if (!isRecord(payload))
+    return unresolved(
+      generation,
+      evaluator,
+      startedAt,
+      "invalid_response",
+      payload,
+    );
+  const choice = Array.isArray(payload.choices)
+    ? payload.choices[0]
+    : undefined;
   if (!isRecord(choice) || choice.finish_reason !== "stop") {
-    return unresolved(generation, evaluator, startedAt, "incomplete_response", payload);
+    return unresolved(
+      generation,
+      evaluator,
+      startedAt,
+      "incomplete_response",
+      payload,
+    );
   }
   const message = isRecord(choice.message) ? choice.message : undefined;
   if (!message || message.refusal || typeof message.content !== "string") {
-    return unresolved(generation, evaluator, startedAt, "refused_or_missing_content", payload);
+    return unresolved(
+      generation,
+      evaluator,
+      startedAt,
+      "refused_or_missing_content",
+      payload,
+    );
   }
   let parsed: unknown;
   try {
     parsed = JSON.parse(message.content);
   } catch {
-    return unresolved(generation, evaluator, startedAt, "invalid_judgment_json", payload);
+    return unresolved(
+      generation,
+      evaluator,
+      startedAt,
+      "invalid_judgment_json",
+      payload,
+    );
   }
-  if (!isRecord(parsed)) return unresolved(generation, evaluator, startedAt, "invalid_judgment_schema", payload);
-  const meaningProbabilities = readScoreProbabilities(parsed.meaningProbabilities);
+  if (!isRecord(parsed))
+    return unresolved(
+      generation,
+      evaluator,
+      startedAt,
+      "invalid_judgment_schema",
+      payload,
+    );
+  const meaningProbabilities = readScoreProbabilities(
+    parsed.meaningProbabilities,
+  );
   const styleProbabilities = readScoreProbabilities(parsed.styleProbabilities);
   const tags = validTags(parsed.tags);
   const evidence = validEvidence(parsed.evidence, generation);
@@ -220,9 +318,18 @@ function judgmentFromLlm(
     !styleProbabilities ||
     !tags ||
     !evidence ||
-    ((scoreFromProbabilities(meaningProbabilities) < 2 || scoreFromProbabilities(styleProbabilities) < 2 || tags.length > 0) && evidence.length === 0)
+    ((scoreFromProbabilities(meaningProbabilities) < 2 ||
+      scoreFromProbabilities(styleProbabilities) < 2 ||
+      tags.length > 0) &&
+      evidence.length === 0)
   ) {
-    return unresolved(generation, evaluator, startedAt, "invalid_judgment_schema", payload);
+    return unresolved(
+      generation,
+      evaluator,
+      startedAt,
+      "invalid_judgment_schema",
+      payload,
+    );
   }
   const usage = cleanUsage(payload.usage);
   const provider = providerMetadata(payload);
@@ -234,8 +341,18 @@ function judgmentFromLlm(
     tags,
     evidence,
     probabilities: {
-      ...Object.fromEntries(Object.entries(meaningProbabilities).map(([key, value]) => [`meaning_${key}`, value])),
-      ...Object.fromEntries(Object.entries(styleProbabilities).map(([key, value]) => [`style_${key}`, value])),
+      ...Object.fromEntries(
+        Object.entries(meaningProbabilities).map(([key, value]) => [
+          `meaning_${key}`,
+          value,
+        ]),
+      ),
+      ...Object.fromEntries(
+        Object.entries(styleProbabilities).map(([key, value]) => [
+          `style_${key}`,
+          value,
+        ]),
+      ),
       meaningPass: meaningProbabilities["2"],
       stylePass: styleProbabilities["2"],
       seriousFailure: meaningProbabilities["0"],
@@ -257,7 +374,10 @@ function makeLlmUserState(generation: GenerationRecord): string {
     rewrite: generation.outputText,
     sourceStyle: generation.case.sourceStyle,
     targetStyle: generation.case.targetStyle,
-    intensity: effectiveIntensity(generation.case.targetStyle, generation.case.intensity),
+    intensity: effectiveIntensity(
+      generation.case.targetStyle,
+      generation.case.intensity,
+    ),
     styleGuidance: styleGuidance(generation),
     mustPreserve: generation.case.mustPreserve,
     mustNotInvent: generation.case.mustNotInvent,
@@ -268,8 +388,14 @@ function makeLlmUserState(generation: GenerationRecord): string {
 function styleGuidance(generation: GenerationRecord) {
   const c = generation.case;
   const profile = STYLE_PROFILES[c.targetStyle];
-  return { behavior: profile.writingBehavior, boundary: profile.boundary,
-    intensity: c.targetStyle === "human" ? "Intensity does not apply; write direct natural plain English." : profile.intensityGuidance[c.intensity] };
+  return {
+    behavior: profile.writingBehavior,
+    boundary: profile.boundary,
+    intensity:
+      c.targetStyle === "human"
+        ? "Intensity does not apply; write direct natural plain English."
+        : profile.intensityGuidance[c.intensity],
+  };
 }
 
 async function evaluateWithLlm(
@@ -281,7 +407,10 @@ async function evaluateWithLlm(
 ): Promise<JudgmentRecord> {
   const response = await fetch(CHAT_URL, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
       model: evaluator.model,
       messages: [
@@ -291,7 +420,11 @@ async function evaluateWithLlm(
       max_tokens: evaluator.maxOutputTokens,
       reasoning: evaluator.reasoning,
       response_format: { type: "json_object" },
-      provider: { zdr: true, data_collection: "deny", require_parameters: true },
+      provider: {
+        zdr: true,
+        data_collection: "deny",
+        require_parameters: true,
+      },
     }),
     signal,
   });
@@ -319,13 +452,23 @@ function decisionQuestions(): JsonRecord {
   const questions: JsonRecord = {
     meaning: {
       type: "score",
-      instructions: "How faithfully does rewrite preserve source meaning? Consider mustPreserve and mustNotInvent.",
-      criteria: [SCORE_LEVELS.meaning["0"], SCORE_LEVELS.meaning["1"], SCORE_LEVELS.meaning["2"]],
+      instructions:
+        "How faithfully does rewrite preserve source meaning? Consider mustPreserve and mustNotInvent.",
+      criteria: [
+        SCORE_LEVELS.meaning["0"],
+        SCORE_LEVELS.meaning["1"],
+        SCORE_LEVELS.meaning["2"],
+      ],
     },
     style: {
       type: "score",
-      instructions: "How well does rewrite match the requested target style and intensity?",
-      criteria: [SCORE_LEVELS.style["0"], SCORE_LEVELS.style["1"], SCORE_LEVELS.style["2"]],
+      instructions:
+        "How well does rewrite match the requested target style and intensity?",
+      criteria: [
+        SCORE_LEVELS.style["0"],
+        SCORE_LEVELS.style["1"],
+        SCORE_LEVELS.style["2"],
+      ],
     },
   };
   for (const tag of FAILURE_TAGS) {
@@ -342,7 +485,9 @@ function decisionQuestions(): JsonRecord {
 }
 
 function noulProbability(answer: unknown): number | undefined {
-  return isRecord(answer) && answer.type === "noul" ? probability(answer.noul) : undefined;
+  return isRecord(answer) && answer.type === "noul"
+    ? probability(answer.noul)
+    : undefined;
 }
 
 function judgmentFromDecision(
@@ -351,29 +496,70 @@ function judgmentFromDecision(
   evaluator: BenchmarkConfig,
   startedAt: number,
 ): JudgmentRecord {
-  if (!isRecord(payload) || !isRecord(payload.answers)) return unresolved(generation, evaluator, startedAt, "invalid_response", payload);
+  if (!isRecord(payload) || !isRecord(payload.answers))
+    return unresolved(
+      generation,
+      evaluator,
+      startedAt,
+      "invalid_response",
+      payload,
+    );
   const answers = payload.answers;
   const meaning = isRecord(answers.meaning) ? answers.meaning : undefined;
   const style = isRecord(answers.style) ? answers.style : undefined;
-  if (!meaning || meaning.type !== "score" || !style || style.type !== "score") {
-    return unresolved(generation, evaluator, startedAt, "invalid_decision_schema", payload);
+  if (
+    !meaning ||
+    meaning.type !== "score" ||
+    !style ||
+    style.type !== "score"
+  ) {
+    return unresolved(
+      generation,
+      evaluator,
+      startedAt,
+      "invalid_decision_schema",
+      payload,
+    );
   }
   const meaningProbabilities = readScoreProbabilities(meaning.probabilities);
   const styleProbabilities = readScoreProbabilities(style.probabilities);
   if (!meaningProbabilities || !styleProbabilities) {
-    return unresolved(generation, evaluator, startedAt, "invalid_decision_probabilities", payload);
+    return unresolved(
+      generation,
+      evaluator,
+      startedAt,
+      "invalid_decision_probabilities",
+      payload,
+    );
   }
   const tagProbabilities: Record<string, number> = {};
   const tags: FailureTag[] = [];
   for (const tag of FAILURE_TAGS) {
     const chance = noulProbability(answers[`tag_${tag}`]);
-    if (chance === undefined) return unresolved(generation, evaluator, startedAt, "invalid_decision_probabilities", payload);
+    if (chance === undefined)
+      return unresolved(
+        generation,
+        evaluator,
+        startedAt,
+        "invalid_decision_probabilities",
+        payload,
+      );
     tagProbabilities[`tag_${tag}`] = chance;
     if (chance >= 0.5) tags.push(tag);
   }
   const probabilities = {
-    ...Object.fromEntries(Object.entries(meaningProbabilities).map(([key, value]) => [`meaning_${key}`, value])),
-    ...Object.fromEntries(Object.entries(styleProbabilities).map(([key, value]) => [`style_${key}`, value])),
+    ...Object.fromEntries(
+      Object.entries(meaningProbabilities).map(([key, value]) => [
+        `meaning_${key}`,
+        value,
+      ]),
+    ),
+    ...Object.fromEntries(
+      Object.entries(styleProbabilities).map(([key, value]) => [
+        `style_${key}`,
+        value,
+      ]),
+    ),
     meaningPass: meaningProbabilities["2"],
     stylePass: styleProbabilities["2"],
     seriousFailure: meaningProbabilities["0"],
@@ -409,19 +595,29 @@ async function evaluateWithDecision(
     rewrite: generation.outputText,
     sourceStyle: generation.case.sourceStyle,
     targetStyle: generation.case.targetStyle,
-    intensity: effectiveIntensity(generation.case.targetStyle, generation.case.intensity),
+    intensity: effectiveIntensity(
+      generation.case.targetStyle,
+      generation.case.intensity,
+    ),
     styleGuidance: styleGuidance(generation),
     mustPreserve: generation.case.mustPreserve,
     mustNotInvent: generation.case.mustNotInvent,
   };
   const response = await fetch(DECISIONS_URL, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
       model: evaluator.model,
       state,
       questions: decisionQuestions(),
-      provider: { zdr: true, data_collection: "deny", require_parameters: true },
+      provider: {
+        zdr: true,
+        data_collection: "deny",
+        require_parameters: true,
+      },
     }),
     signal,
   });
@@ -455,20 +651,38 @@ export async function evaluateOutput(
   const startedAt = Date.now();
   abortIfRequested(signal);
   if (generation.normalizedCompletion !== "complete" || generation.errorCode) {
-    return { ...unresolved(generation,evaluator,startedAt,"incomplete_generation"), costUsd:0, estimatedCostUsd:0 };
+    return {
+      ...unresolved(generation, evaluator, startedAt, "incomplete_generation"),
+      costUsd: 0,
+      estimatedCostUsd: 0,
+    };
   }
-  if (!apiKey) return unresolved(generation, evaluator, startedAt, "missing_api_key");
+  if (!apiKey)
+    return unresolved(generation, evaluator, startedAt, "missing_api_key");
   try {
     if (evaluator.role === "decision") {
-      return await evaluateWithDecision(generation, evaluator, apiKey, signal, startedAt);
+      return await evaluateWithDecision(
+        generation,
+        evaluator,
+        apiKey,
+        signal,
+        startedAt,
+      );
     }
-    return await evaluateWithLlm(generation, evaluator, apiKey, signal, startedAt);
+    return await evaluateWithLlm(
+      generation,
+      evaluator,
+      apiKey,
+      signal,
+      startedAt,
+    );
   } catch (error) {
     if (signal.reason instanceof EvaluationDeadlineError) {
       return unresolved(generation, evaluator, startedAt, "request_deadline");
     }
     abortIfRequested(signal);
-    const name = isRecord(error) && typeof error.name === "string" ? error.name : "";
+    const name =
+      isRecord(error) && typeof error.name === "string" ? error.name : "";
     return unresolved(
       generation,
       evaluator,

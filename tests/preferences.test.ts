@@ -40,12 +40,8 @@ describe("preferences", () => {
   });
 
   it("rejects invalid enums and same-pair styles", () => {
-    expect(
-      isPreferences({ ...valid, sourceStyle: "not-a-style" }),
-    ).toBe(false);
-    expect(
-      isPreferences({ ...valid, intensity: "loud" }),
-    ).toBe(false);
+    expect(isPreferences({ ...valid, sourceStyle: "not-a-style" })).toBe(false);
+    expect(isPreferences({ ...valid, intensity: "loud" })).toBe(false);
     expect(
       isPreferences({ ...valid, sourceStyle: "human", targetStyle: "human" }),
     ).toBe(false);

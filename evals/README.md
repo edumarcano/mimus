@@ -115,6 +115,27 @@ rules were frozen; see the [release comparison](results/release-run-2026-10-15.m
 Published results are reviewed summaries. Benchmark examples are fictional
 synthetic text, never user input.
 
+## Verify published release evidence offline
+
+```bash
+npm run eval:verify
+npm run --silent eval:verify -- --json
+```
+
+This read-only command loads the committed release dataset, frozen finalist
+manifest, sanitized observations, and structured report. It recomputes coverage,
+meaning/style scores, critical-case results, numerical release targets, latency,
+reported costs, and agreement between the separate human and automated labels.
+Missing records, malformed data, or mismatched totals cause a nonzero exit.
+It requires no key, loads no environment file, writes nothing, and makes no
+network request. CI runs it alongside the ordinary checks.
+
+A successful check establishes consistency of these published records. It does
+not independently validate model accuracy, reproduce private raw-file hashes or
+billing ledgers, establish final charges, or rerun the original experiment.
+Unknown reported costs remain unknown. Human labels never overwrite automated
+scores. Earlier reports retain their historical meaning.
+
 ## Benchmark tooling
 
 `npm run eval` remains the historical single-model runner. `npm run benchmark`

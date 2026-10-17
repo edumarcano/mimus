@@ -83,9 +83,7 @@ function mapFinishReason(
   return "other";
 }
 
-function extractUsage(
-  usage: ChatCompletionChunk["usage"],
-):
+function extractUsage(usage: ChatCompletionChunk["usage"]):
   | {
       inputTokens?: number;
       outputTokens?: number;

@@ -3,8 +3,7 @@ import "server-only";
 import type { ServerConfig } from "./config";
 
 export type OriginCheckResult =
-  | { ok: true }
-  | { ok: false; reason: "missing" | "mismatch" };
+  { ok: true } | { ok: false; reason: "missing" | "mismatch" };
 
 export function isAllowedOrigin(
   request: Request,
@@ -52,8 +51,7 @@ export function isLocalLiveBypass(
 }
 
 export type RegionCheckResult =
-  | { ok: true }
-  | { ok: false; reason: "missing" | "not_allowlisted" };
+  { ok: true } | { ok: false; reason: "missing" | "not_allowlisted" };
 
 export function checkRegion(
   ctx: PolicyContext,

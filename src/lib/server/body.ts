@@ -3,8 +3,7 @@ import "server-only";
 import { MAX_BODY_BYTES } from "../limits";
 
 export type ReadBodyResult =
-  | { ok: true; text: string }
-  | { ok: false; code: "INPUT_TOO_LARGE" | "EMPTY" };
+  { ok: true; text: string } | { ok: false; code: "INPUT_TOO_LARGE" | "EMPTY" };
 
 export async function readBoundedJsonBody(
   body: ReadableStream<Uint8Array> | null,

@@ -66,12 +66,16 @@ npm run eval -- --live --ids dev-negation-01,dev-inject-01      # specific cases
 ```
 
 - Without `--live`, the runner makes no provider call and exits with code 1.
+- Unknown arguments, repeated options, and malformed limits fail before provider
+  calls. `--limit` accepts only a safe positive integer.
 - Development runs default to `--split development`. The holdout split, or `all`,
   also requires `--include-holdout` and a clean git tree for the prompt, styles,
   model configuration, and OpenRouter adapter.
 - Requests are paced about 4.2 seconds apart. This is a conservative development
   interval, not an OpenRouter requirement. A rate or quota error stops the run and
-  is recorded instead of retried. Unknown `--ids` fail before any provider call.
+  is recorded instead of retried. Every requested `--ids` value must exist in the
+  selected split, even when a limit would exclude it; otherwise the run fails
+  before any provider call.
 - The runner reads `OPENROUTER_API_KEY` from `.env.local` when it exists, or from
   the shell. Use a capped evaluation key.
 - Raw JSONL output goes to ignored `evals/results/raw/` and records the model,
@@ -125,6 +129,8 @@ This read-only command loads the committed release dataset, frozen finalist
 manifest, sanitized observations, and structured report. It recomputes coverage,
 meaning/style scores, critical-case results, numerical release targets, latency,
 reported costs, and agreement between the separate human and automated labels.
+It validates release-case styles, intensities, and input limits, and checks that
+the recommended configuration meets the recomputed numerical targets.
 Missing records, malformed data, or mismatched totals cause a nonzero exit.
 It requires no key, loads no environment file, writes nothing, and makes no
 network request. CI runs it alongside the ordinary checks.

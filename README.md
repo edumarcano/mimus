@@ -114,8 +114,13 @@ development only). Live requests cost money on your OpenRouter account.
 ```bash
 npm run format:check && npm run lint && npm run typecheck && npm test
 npm run eval:verify && npm run build
+npx playwright install chromium
 npm run test:e2e   # Playwright, mocked browser/API; no provider calls
 ```
+
+On Linux, use `npx playwright install --with-deps chromium` to install the
+browser's system dependencies as well. Stop the development server before running
+browser tests so Playwright starts its own configured demo and mocked-live servers.
 
 Use `npm run format` to format source, tests, scripts, and active configuration.
 Frozen evaluation data and published records are excluded.

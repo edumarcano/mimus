@@ -110,8 +110,7 @@ export function createTranslateHandler(deps: TranslateHandlerDeps) {
       }
       logged = true;
       const status =
-        options.status ??
-        (options.code ? ERROR_STATUS[options.code] : 200);
+        options.status ?? (options.code ? ERROR_STATUS[options.code] : 200);
       logOnce({
         requestId,
         model: MODEL_CONFIG.model,
@@ -220,7 +219,10 @@ export function createTranslateHandler(deps: TranslateHandlerDeps) {
     // UPSTREAM_TIMEOUT.
     const clientAbort = new AbortController();
     const deadlineController = new AbortController();
-    const deadlineTimer = setTimeout(() => deadlineController.abort(), deadlineMs);
+    const deadlineTimer = setTimeout(
+      () => deadlineController.abort(),
+      deadlineMs,
+    );
     const upstreamSignal = combineAbortSignals([
       clientAbort.signal,
       deadlineController.signal,
@@ -271,7 +273,9 @@ export function createTranslateHandler(deps: TranslateHandlerDeps) {
         return preStreamError("INCOMPLETE_OUTPUT", requestId);
       }
 
-      const handlePreStreamFinish = (event: Extract<ModelEvent, { type: "finish" }>) => {
+      const handlePreStreamFinish = (
+        event: Extract<ModelEvent, { type: "finish" }>,
+      ) => {
         if (event.reason === "blocked") {
           finishLog({ code: "CONTENT_BLOCKED", styles, usage: event.usage });
           return preStreamError("CONTENT_BLOCKED", requestId);
@@ -286,6 +290,13 @@ export function createTranslateHandler(deps: TranslateHandlerDeps) {
       }
 
       const firstDeltaText = firstResult.value.text;
+      if (countCodePoints(firstDeltaText) > MAX_OUTPUT_CODE_POINTS) {
+        deadlineController.abort();
+        clearTimeout(deadlineTimer);
+        await iterator.return?.(undefined);
+        finishLog({ code: "INCOMPLETE_OUTPUT", styles });
+        return preStreamError("INCOMPLETE_OUTPUT", requestId);
+      }
       outputText += firstDeltaText;
 
       let streamClosed = false;

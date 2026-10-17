@@ -37,8 +37,7 @@ function mockFetchResponse(options: {
   fetchMock.mockResolvedValueOnce({
     ok: status >= 200 && status < 300,
     status,
-    body:
-      options.chunks !== undefined ? sseBody(options.chunks) : null,
+    body: options.chunks !== undefined ? sseBody(options.chunks) : null,
   });
 }
 
@@ -301,9 +300,7 @@ describe("streamRewrite", () => {
         }),
     );
 
-    await expect(
-      collectEvents(controller.signal),
-    ).rejects.toMatchObject({
+    await expect(collectEvents(controller.signal)).rejects.toMatchObject({
       code: "UPSTREAM_TIMEOUT",
     });
   });

@@ -7,11 +7,12 @@
 
 <p align="center"><strong>Translate meaning, not just words.</strong></p>
 
-Mimus is a small personal project that rewrites English text between recognizable
-writing styles: plain English
-into LinkedIn speak, corporate phrasing back into ordinary language, and more. It
-is a rewrite between writing registers, not a translator between languages, and it
-aims to change the expression without inventing facts or losing the point.
+Mimus is a small personal project for learning and experimenting with AI-assisted
+software development and text rewriting. It rewrites English text between
+recognizable writing styles: plain English into LinkedIn speak, corporate phrasing
+back into ordinary language, and more. It is a rewrite between writing registers,
+not a translator between languages, and it aims to change the expression without
+inventing facts or losing the point.
 
 [**Try Mimus**](https://mimus-rewrite.vercel.app) ·
 [Design notes](docs/case-study.md) · [Product specification](docs/product-spec.md) ·
@@ -76,28 +77,24 @@ The evaluations measure meaning and style separately and compare quality,
 latency, and cost. The [design notes](docs/case-study.md) link the implementation,
 tests, dated results, and remaining limitations.
 
-The historical corpus contains 50 synthetic cases. The new benchmark adds a
-12-case screening list, a 40-output evaluator challenge set, and 40 fresh release
-cases. Its protocol compares reasoning settings across four generators, studies
-LLM and decision-model scoring, and simulates a review cascade offline. Human
-review is limited to calibration and a small audit. The benchmark and data are
-described in [the protocol](docs/benchmark-protocol.md) and
-[evaluation guide](evals/README.md).
+The [fresh release comparison](evals/results/release-run-2026-10-15.md)
+recommended Gemini minimal: it scored 37/40 for full meaning and 37/40 for full
+style under the frozen automated rubric. Human auditing was limited and uneven:
+only one of eight audited outputs was Gemini. Production also produced a numerical
+meaning error that remains an accepted limitation. Meaning preservation is a goal,
+not a guarantee; the [evaluation guide](evals/README.md) retains results, failures,
+and earlier model history.
 
-The [fresh release comparison](evals/results/release-run-2026-10-15.md) recommends
-Gemini minimal: it met the frozen automated targets with 37/40 full-meaning and
-37/40 full-style scores. Haiku low scored 38/40 and 23/40, with one unresolved
-judgment. Eight blind human audits agreed with the judge on meaning in 7/8 and
-style in 4/8; only one audited output was Gemini. These are automated results with
-limited human auditing, not independently validated accuracy. The committed runtime
-configuration adopts Gemini minimal and is deployed on Production. Streaming and
-metadata-only logs were verified; a numerical meaning defect is retained as an
-accepted limitation (see the [adoption decision](docs/decisions.md#2026-10-16-gemini-minimal-adoption-production-verified)).
-The older **Gemini** release-candidate evaluation remains historical evidence for
-that configuration only ([summary](evals/results/summary.md)). The **GLM** run
-completed 40 requests and 39 passed deterministic checks, but has no committed
-formal meaning/style scores ([record](evals/results/glm-development.md)).
-Meaning preservation remains a goal, not a guarantee for any individual result.
+You can check the published comparison without a key or provider requests:
+
+```bash
+npm run eval:verify
+```
+
+AI coding agents contributed substantially to planning, implementation, testing,
+and review. I set product priorities, approved major decisions, completed blind
+reviews, and performed manual UI checks. The [AI-assisted development account](docs/case-study.md#ai-assisted-development)
+describes those contributions and their limits.
 
 ## Run locally
 
@@ -115,9 +112,13 @@ and set `MIMUS_MODE=live` and `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` (loopback
 development only). Live requests cost money on your OpenRouter account.
 
 ```bash
-npm run lint && npm run typecheck && npm test && npm run build
-npm run test:e2e   # Playwright, mocked provider
+npm run format:check && npm run lint && npm run typecheck && npm test
+npm run eval:verify && npm run build
+npm run test:e2e   # Playwright, mocked browser/API; no provider calls
 ```
+
+Use `npm run format` to format source, tests, scripts, and active configuration.
+Frozen evaluation data and published records are excluded.
 
 ## Documentation
 

@@ -30,26 +30,42 @@ describe("streamRewriteWithConfig", () => {
     for await (const event of streamRewriteWithConfig(
       { systemInstruction: "system", input: "text" },
       signal,
-      { model: "vendor/model", maxOutputTokens: 77, reasoning: { effort: "medium" } },
+      {
+        model: "vendor/model",
+        maxOutputTokens: 77,
+        reasoning: { effort: "medium" },
+      },
       "benchmark-key",
-    )) events.push(event);
+    ))
+      events.push(event);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("https://openrouter.ai/api/v1/chat/completions");
     expect(init.signal).toBe(signal);
-    expect((init.headers as Record<string, string>).Authorization).toBe("Bearer benchmark-key");
+    expect((init.headers as Record<string, string>).Authorization).toBe(
+      "Bearer benchmark-key",
+    );
     const body = JSON.parse(init.body as string);
     expect(body.model).toBe("vendor/model");
     expect(body.max_tokens).toBe(77);
     expect(body.reasoning).toEqual({ effort: "medium" });
-    expect(body.provider).toEqual({ data_collection: "deny", zdr: true, require_parameters: true });
+    expect(body.provider).toEqual({
+      data_collection: "deny",
+      zdr: true,
+      require_parameters: true,
+    });
     expect(events).toEqual([
       { type: "delta", text: "Hello" },
       {
         type: "finish",
         reason: "complete",
-        usage: { inputTokens: 4, outputTokens: 8, reasoningTokens: 3, costUsd: 0.0002 },
+        usage: {
+          inputTokens: 4,
+          outputTokens: 8,
+          reasoningTokens: 3,
+          costUsd: 0.0002,
+        },
         provider: "Provider A",
         providerGenerationId: "gen-1",
       },
@@ -57,18 +73,25 @@ describe("streamRewriteWithConfig", () => {
   });
 
   it("does not add absent usage metadata to the finish event", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      body: sse(['data: {"choices":[{"finish_reason":"stop"}]}\n\n', "data: [DONE]\n\n"]),
-    }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: sse([
+          'data: {"choices":[{"finish_reason":"stop"}]}\n\n',
+          "data: [DONE]\n\n",
+        ]),
+      }),
+    );
     const events = [];
     for await (const event of streamRewriteWithConfig(
       { systemInstruction: "s", input: "i" },
       new AbortController().signal,
       { model: "m", maxOutputTokens: 4, reasoning: { enabled: false } },
       "key",
-    )) events.push(event);
+    ))
+      events.push(event);
     expect(events).toEqual([{ type: "finish", reason: "complete" }]);
   });
 
@@ -83,7 +106,8 @@ describe("streamRewriteWithConfig", () => {
         controller.signal,
         { model: "m", maxOutputTokens: 4, reasoning: {} },
         "key",
-      )) void _event;
+      ))
+        void _event;
     }).rejects.toMatchObject({ code: "UPSTREAM_TIMEOUT" });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });

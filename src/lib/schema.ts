@@ -97,7 +97,11 @@ export function validateTranslateRequest(body: unknown): SchemaResult {
     };
   }
 
-  if (!isStyleId(sourceStyle) || !isStyleId(targetStyle) || !isIntensity(intensity)) {
+  if (
+    !isStyleId(sourceStyle) ||
+    !isStyleId(targetStyle) ||
+    !isIntensity(intensity)
+  ) {
     return {
       ok: false,
       code: "INVALID_REQUEST",

@@ -40,10 +40,7 @@ describe("SSE encode/parse", () => {
       const parser = new SseStreamParser();
       const first = bytes.slice(0, split);
       const second = bytes.slice(split);
-      const events = [
-        ...collect(parser, first),
-        ...collect(parser, second),
-      ];
+      const events = [...collect(parser, first), ...collect(parser, second)];
       const end = parser.end();
       expect(end.interrupted).toBe(false);
       expect(events.map((e) => e.event)).toEqual(["meta", "delta", "done"]);
@@ -54,7 +51,10 @@ describe("SSE encode/parse", () => {
   });
 
   it("handles multiple frames in one chunk and CRLF", () => {
-    const crlf = encodeSseEvent("meta", samplePayload.meta).replace(/\n/g, "\r\n");
+    const crlf = encodeSseEvent("meta", samplePayload.meta).replace(
+      /\n/g,
+      "\r\n",
+    );
     const parser = new SseStreamParser();
     const events = collect(parser, new TextEncoder().encode(crlf));
     expect(events).toHaveLength(1);

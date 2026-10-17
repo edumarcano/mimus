@@ -179,9 +179,7 @@ export function submitBlockReason(
 
 export function canRegenerate(state: TranslatorState): boolean {
   return (
-    isResultReady(state.status) &&
-    !isStale(state) &&
-    !isBusy(state.status)
+    isResultReady(state.status) && !isStale(state) && !isBusy(state.status)
   );
 }
 
@@ -209,13 +207,14 @@ function applyTargetStyleChange(
   state: TranslatorState,
   nextTarget: StyleId,
 ): Pick<TranslatorState, "targetStyle" | "intensity" | "rememberedIntensity"> {
-  const leavingHuman =
-    state.targetStyle === "human" && nextTarget !== "human";
+  const leavingHuman = state.targetStyle === "human" && nextTarget !== "human";
   const enteringHuman = nextTarget === "human" && state.targetStyle !== "human";
 
   if (enteringHuman) {
     const remembered =
-      state.targetStyle === "human" ? state.rememberedIntensity : state.intensity;
+      state.targetStyle === "human"
+        ? state.rememberedIntensity
+        : state.intensity;
     return {
       targetStyle: nextTarget,
       intensity: state.intensity,
@@ -238,10 +237,7 @@ function applyTargetStyleChange(
 
 function isRunAction(
   action: TranslatorAction,
-): action is Extract<
-  TranslatorAction,
-  { runId: number }
-> {
+): action is Extract<TranslatorAction, { runId: number }> {
   return "runId" in action;
 }
 

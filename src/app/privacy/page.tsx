@@ -46,7 +46,10 @@ export default function PrivacyPage() {
         ))}
 
         <section aria-labelledby="openrouter-terms-h">
-          <h2 id="openrouter-terms-h" className="text-lg font-semibold text-ink">
+          <h2
+            id="openrouter-terms-h"
+            className="text-lg font-semibold text-ink"
+          >
             OpenRouter terms and policies
           </h2>
           <p className="mt-2 text-ink-soft">
@@ -70,8 +73,8 @@ export default function PrivacyPage() {
               className="font-medium text-accent-strong underline underline-offset-4"
             >
               zero data retention documentation
-            </a>.{" "}
-            Downstream model-host terms vary because Mimus does not pin a
+            </a>
+            . Downstream model-host terms vary because Mimus does not pin a
             single host.
           </p>
         </section>

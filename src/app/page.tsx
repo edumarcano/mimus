@@ -106,8 +106,8 @@ export default async function Home() {
           </Link>
         </p>
         <p className="mt-1 max-w-2xl">
-          Mimus is an independent project. It is not affiliated with or
-          endorsed by LinkedIn.
+          Mimus is an independent project. It is not affiliated with or endorsed
+          by LinkedIn.
         </p>
       </footer>
     </div>

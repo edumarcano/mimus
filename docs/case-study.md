@@ -3,7 +3,8 @@
 Mimus rewrites English text between writing styles, such as plain speech to
 LinkedIn-style posts and back. It is deliberately small: one page, one API route,
 no accounts or database. These notes describe the architecture, evaluation,
-and limitations of the personal project.
+and limitations of a personal project built to learn and experiment with
+AI-assisted software development and text rewriting.
 
 ## The problem
 
@@ -50,6 +51,25 @@ flowchart LR
   token counts. Hosting and provider processing is separate: the platform and
   OpenRouter process request metadata, and the model host processes the text it
   serves. History is opt-in and stays in the browser.
+
+## Reading the implementation
+
+Start with `src/app/api/translate/route.ts` and
+`src/lib/server/translate.ts`: request validation and policy checks happen before
+provider dispatch; the handler owns the deadline, output cap, and SSE responses.
+`src/lib/server/openrouter.ts` maps provider events and closes the upstream stream.
+
+In the browser, `src/components/translator.tsx` coordinates the interaction;
+`use-rewrite-stream.ts` owns request lifetimes and cancellation, while
+`src/lib/translator-state.ts` rejects late events and keeps incomplete output
+separate from completed results. `translator-history.tsx` presents history;
+`src/lib/storage.ts` guards storage access and preserves legacy data if migration
+fails. Preferences and optional history remain browser-only.
+
+For privacy, inspect the server-only configuration, request logging allowlist,
+and shared notice together. For evaluation, run `npm run eval:verify` and read
+its limitations before interpreting the published scores: it recomputes the
+sanitized release evidence, not model quality or private provider billing.
 
 ## Evaluating meaning
 

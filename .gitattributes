@@ -1,0 +1,9 @@
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.css text eol=lf
+/*.json text eol=lf
+/.github/workflows/*.yml text eol=lf
+/.github/workflows/*.yaml text eol=lf
+/.prettierignore text eol=lf
+/.gitattributes text eol=lf

@@ -76,8 +76,7 @@ export function getServerConfig(): ServerConfig {
     process.env.MIMUS_LIVE_COUNTRIES !== undefined &&
     process.env.MIMUS_LIVE_COUNTRIES.trim() !== "" &&
     parsedCountries.length === 0;
-  const devAllowLocalLive =
-    process.env.MIMUS_DEV_ALLOW_LOCAL_LIVE === "true";
+  const devAllowLocalLive = process.env.MIMUS_DEV_ALLOW_LOCAL_LIVE === "true";
 
   const liveReady =
     mode === "live" &&

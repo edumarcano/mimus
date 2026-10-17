@@ -1,4 +1,5 @@
-export type StyleId = "human" | "linkedin" | "corporate" | "startup" | "academic";
+export type StyleId =
+  "human" | "linkedin" | "corporate" | "startup" | "academic";
 export type Intensity = "subtle" | "balanced" | "maximum";
 
 export const STYLE_IDS: readonly StyleId[] = [

@@ -24,8 +24,7 @@ export const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   UNSUPPORTED_MEDIA_TYPE: "Use application/json for this request.",
   INPUT_TOO_LARGE: "The text is too long. Shorten it and try again.",
   REQUEST_NOT_ALLOWED: "This request is not allowed.",
-  REGION_UNAVAILABLE:
-    "Live generation is not available in your region.",
+  REGION_UNAVAILABLE: "Live generation is not available in your region.",
   NOTICE_CHANGED:
     "The data-use notice has changed. Refresh the page and acknowledge again.",
   CONTENT_BLOCKED:
@@ -33,8 +32,7 @@ export const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   RATE_LIMITED: "Too many requests. Please wait and try again.",
   SERVICE_QUOTA_EXHAUSTED:
     "The rewrite service is temporarily unavailable. Please try again later.",
-  SERVICE_UNAVAILABLE:
-    "Live generation is unavailable right now.",
+  SERVICE_UNAVAILABLE: "Live generation is unavailable right now.",
   UPSTREAM_TIMEOUT: "The rewrite took too long. Please try again.",
   INCOMPLETE_OUTPUT:
     "The rewrite did not finish completely. Try again or shorten the input.",

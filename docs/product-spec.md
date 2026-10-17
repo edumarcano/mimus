@@ -31,11 +31,11 @@ Mimus rewrites text between recognizable writing styles while aiming to preserve
 
 The application should be understandable without reading documentation. Its primary interaction is a two-panel translator, not a chat conversation. Here, "translation" means rewriting English writing registers, not translating between human languages.
 
-Mimus is a standalone application. Its scope emphasizes a complete, approachable interaction, controlled model behavior, and inspectable evaluation rather than a general writing platform.
+Mimus is a personal learning and experimentation project exploring AI-assisted software development and text rewriting. It is a standalone application whose scope emphasizes a complete, approachable interaction, controlled model behavior, and inspectable evaluation rather than a general writing platform.
 
 **Primary audience:** Adults exploring writing styles, professional jargon, and playful rewrites. Treat the application as a writing experiment, not a factual interpreter of someone's hidden intentions or a professional advice service.
 
-**Success means:** A visitor can understand the concept, try an example, generate a rewrite where live access is available, and copy it. A technical reviewer can understand the architecture and inspect actual evaluation results in a few minutes.
+**Success means:** A visitor can understand the concept, try an example, generate a rewrite where live access is available, and copy it. The implementation and evaluation make the behavior and its limitations easy to inspect.
 
 ---
 
@@ -635,7 +635,7 @@ The release set covers all 20 directed style pairs, varied lengths and intensiti
 ```json
 {
   "id": "human-linkedin-uncertainty-01",
-  "split": "holdout",
+  "split": "release",
   "critical": true,
   "text": "The fictional team may ship two features on Friday if testing passes.",
   "sourceStyle": "human",

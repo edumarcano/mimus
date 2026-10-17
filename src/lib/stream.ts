@@ -31,10 +31,7 @@ export type ParsedSseEvent =
 
 const TERMINAL_EVENTS = new Set<SseEventName>(["done", "error"]);
 
-export function encodeSseEvent(
-  event: SseEventName,
-  data: unknown,
-): string {
+export function encodeSseEvent(event: SseEventName, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 

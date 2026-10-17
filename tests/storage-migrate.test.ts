@@ -31,6 +31,27 @@ const snapshot: RequestSnapshot = {
 };
 
 describe("migrateStorageKeys", () => {
+  it("retains the sole legacy copy when writing fails", () => {
+    const storage = memoryStorage({ legacy: "saved history" });
+    storage.setItem = () => {
+      throw new Error("quota");
+    };
+    migrateStorageKeys(storage, [{ legacy: "legacy", current: "current" }]);
+    expect(storage.getItem("legacy")).toBe("saved history");
+    expect(storage.getItem("current")).toBeNull();
+  });
+
+  it("retains legacy data when the destination cannot be read", () => {
+    const storage = memoryStorage({ legacy: "saved history" });
+    const read = storage.getItem;
+    storage.getItem = (key) => {
+      if (key === "current") throw new Error("denied");
+      return read(key);
+    };
+    migrateStorageKeys(storage, [{ legacy: "legacy", current: "current" }]);
+    expect(read("legacy")).toBe("saved history");
+    expect(read("current")).toBeNull();
+  });
   it("copies legacy value when the new key is absent and removes legacy", () => {
     const storage = memoryStorage({ "parlance:ack": "v-test" });
     migrateStorageKeys(storage, [
@@ -84,6 +105,21 @@ describe("migrateStorageKeys", () => {
 });
 
 describe("migrateLegacyStorage", () => {
+  it("retries a failed migration on a later mount", () => {
+    const local = memoryStorage({ "parlance:history:v1": "[]" });
+    const write = local.setItem;
+    local.setItem = () => {
+      throw new Error("quota");
+    };
+    vi.stubGlobal("localStorage", local);
+    vi.stubGlobal("sessionStorage", memoryStorage());
+    migrateLegacyStorage();
+    expect(local.getItem("parlance:history:v1")).toBe("[]");
+    local.setItem = write;
+    migrateLegacyStorage();
+    expect(local.getItem(HISTORY_STORAGE_KEY)).toBe("[]");
+    expect(local.getItem("parlance:history:v1")).toBeNull();
+  });
   afterEach(() => {
     resetLegacyStorageMigrationForTests();
     vi.unstubAllGlobals();

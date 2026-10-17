@@ -248,6 +248,51 @@ describe("createTranslateHandler", () => {
     expect(response.status).toBe(504);
   }, 2000);
 
+  it.each(["x", "😀"])(
+    "rejects an oversized first delta (%s) before streaming and closes upstream",
+    async (character) => {
+      let signal: AbortSignal | undefined;
+      let closed = false;
+      const handler = createTranslateHandler({
+        getConfig: () => liveConfig,
+        adapter: async function* (_request, upstreamSignal) {
+          signal = upstreamSignal;
+          try {
+            yield {
+              type: "delta",
+              text: character.repeat(MAX_OUTPUT_CODE_POINTS + 1),
+            };
+            yield { type: "finish", reason: "complete" };
+          } finally {
+            closed = true;
+          }
+        },
+      });
+      const response = await handler(postRequest(validBody()));
+      expect(response.status).not.toBe(200);
+      expect(await response.json()).toMatchObject({
+        error: { code: "INCOMPLETE_OUTPUT" },
+      });
+      expect(signal?.aborted).toBe(true);
+      expect(closed).toBe(true);
+    },
+  );
+
+  it("accepts exactly the output limit in Unicode code points", async () => {
+    const handler = createTranslateHandler({
+      getConfig: () => liveConfig,
+      adapter: adapterFrom([
+        { type: "delta", text: "😀".repeat(MAX_OUTPUT_CODE_POINTS) },
+        { type: "finish", reason: "complete" },
+      ]),
+    });
+    expect(await collectSse(await handler(postRequest(validBody())))).toEqual([
+      "meta",
+      "delta",
+      "done",
+    ]);
+  });
+
   it("aborts upstream and returns INCOMPLETE_OUTPUT when output exceeds cap", async () => {
     const big = "x".repeat(MAX_OUTPUT_CODE_POINTS);
     let captured: AbortSignal | undefined;
@@ -272,6 +317,7 @@ describe("createTranslateHandler", () => {
     );
     const events = await collectSse(response);
     expect(events.at(-1)).toBe("error");
+    expect(events).toEqual(["meta", "delta", "error"]);
     expect(captured?.aborted).toBe(true);
   });
 
@@ -308,10 +354,12 @@ describe("createTranslateHandler", () => {
 
     expect(captured?.aborted).toBe(true);
     expect(rejections).toHaveLength(0);
-    expect(logSpy.mock.calls.filter((call) => {
-      const line = call[0];
-      return typeof line === "string" && line.includes('"requestId"');
-    })).toHaveLength(1);
+    expect(
+      logSpy.mock.calls.filter((call) => {
+        const line = call[0];
+        return typeof line === "string" && line.includes('"requestId"');
+      }),
+    ).toHaveLength(1);
 
     logSpy.mockRestore();
     process.off("unhandledRejection", onRejection);
@@ -394,9 +442,7 @@ describe("createTranslateHandler", () => {
     );
     await collectSse(response);
 
-    const logged = logSpy.mock.calls
-      .map((call) => String(call[0]))
-      .join("\n");
+    const logged = logSpy.mock.calls.map((call) => String(call[0])).join("\n");
     expect(logged).toContain('"requestId"');
     expect(logged).not.toContain(secretInput);
     expect(logged).not.toContain(secretOutput);
@@ -412,9 +458,12 @@ describe("createTranslateHandler", () => {
     });
 
     await handler(
-      postRequest(validBody({ text: secretInput, eligibilityConfirmed: false }), {
-        headers: { "x-vercel-ip-country": "US" },
-      }),
+      postRequest(
+        validBody({ text: secretInput, eligibilityConfirmed: false }),
+        {
+          headers: { "x-vercel-ip-country": "US" },
+        },
+      ),
     );
 
     const logged = logSpy.mock.calls.map((call) => String(call[0])).join("\n");
@@ -635,7 +684,10 @@ describe("createTranslateHandler", () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const handler = createTranslateHandler({
-      getConfig: () => ({ ...liveConfig, openrouterApiKey: "sk-or-SECRET_KEY" }),
+      getConfig: () => ({
+        ...liveConfig,
+        openrouterApiKey: "sk-or-SECRET_KEY",
+      }),
       adapter: async function* (_req, signal) {
         yield { type: "delta", text: "SECRET_OUTPUT" };
         await abortPromise(signal);

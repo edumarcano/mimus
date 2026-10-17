@@ -95,6 +95,19 @@ function score(value: unknown, label: string): Score {
 function strings(value: unknown, label: string): string[] {
   return array(value, label).map((v) => string(v, label));
 }
+function annotations(
+  value: unknown,
+  label: string,
+  required: boolean,
+): string[] {
+  const result = strings(value, label);
+  check(
+    (!required || result.length > 0) &&
+      result.every((entry) => entry.trim().length > 0),
+    `${label}: expected ${required ? "nonempty " : ""}non-whitespace string entries`,
+  );
+  return result;
+}
 function unique<T>(
   items: T[],
   key: (item: T) => string,
@@ -241,8 +254,11 @@ export function verifyPublishedInputs(inputs: PublishedInputs) {
       INTENSITIES.some((level) => level === intensity),
       "Invalid case.intensity",
     );
-    strings(c.mustPreserve, "case.mustPreserve");
-    strings(c.mustNotInvent, "case.mustNotInvent");
+    annotations(c.mustPreserve, "case.mustPreserve", true);
+    annotations(c.mustNotInvent, "case.mustNotInvent", true);
+    if (c.preserveTokens !== undefined)
+      annotations(c.preserveTokens, "case.preserveTokens", false);
+    if (c.themes !== undefined) annotations(c.themes, "case.themes", false);
     return c;
   });
   const caseById = unique(cases, (c) => string(c.id, "case.id"), "case");

@@ -34,10 +34,29 @@ describe("published release evidence verification", () => {
     ["identical styles", (c: RecordValue) => (c.targetStyle = c.sourceStyle)],
     ["invalid intensity", (c: RecordValue) => (c.intensity = "extreme")],
     ["whitespace-only text", (c: RecordValue) => (c.text = " \n\t ")],
+    ["empty required annotations", (c: RecordValue) => (c.mustPreserve = [])],
+    [
+      "whitespace required annotation",
+      (c: RecordValue) => (c.mustNotInvent = [" \t "]),
+    ],
+    ["non-array preserve tokens", (c: RecordValue) => (c.preserveTokens = "x")],
+    [
+      "whitespace preserve token",
+      (c: RecordValue) => (c.preserveTokens = [" \t "]),
+    ],
+    ["non-string theme", (c: RecordValue) => (c.themes = [42])],
+    ["whitespace theme", (c: RecordValue) => (c.themes = ["  "])],
   ])("rejects release cases with %s", (_name, change) => {
     const inputs = fixture();
     change(record(inputs.dataset[0]));
     expect(() => verifyPublishedInputs(inputs)).toThrow();
+  });
+
+  it("accepts empty optional annotation arrays", () => {
+    const inputs = fixture();
+    record(inputs.dataset[0]).preserveTokens = [];
+    record(inputs.dataset[0]).themes = [];
+    expect(() => verifyPublishedInputs(inputs)).not.toThrow();
   });
 
   it("enforces the input code-point limit and treats ignored Human intensity as a valid request value", () => {

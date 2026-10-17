@@ -186,6 +186,6 @@ describe("evaluate CLI helpers", () => {
     });
     expect(code).toBe(0);
     expect(streamRewrite).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(writes[0]!).caseId).toBe("dev-negation-01");
+    expect(JSON.parse(writes[0]!).caseId).toBe("dev-pair-01");
   });
 });

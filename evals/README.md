@@ -53,6 +53,14 @@ configurations. Preserve them as dated observations; do not combine their scores
 with fresh release results. Each model result applies only to its evaluated
 configuration and cohort.
 
+Live rewriting now uses the [Google Vertex safety-retention policy](../docs/decisions.md#2026-10-17-google-vertex-safety-retention).
+The published study used its earlier routing policy; its scores, costs, and
+latencies do not establish behavior under the revised routing. `npm run eval`
+uses the current live adapter. The configurable multi-model benchmark and its
+evaluators retain the frozen ZDR defaults, so future Google benchmark calls may
+be unavailable after the policy change. Review any experiment-policy change
+separately; the offline `eval:verify` command needs no endpoint or account access.
+
 ## Existing evaluation runner
 
 CI never calls a provider. The existing runner requires an explicit opt-in and

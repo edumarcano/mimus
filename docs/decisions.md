@@ -381,7 +381,63 @@ shutdown remains unrehearsed.
 
 The [deployment guide](deployment.md) holds reusable procedures, the dated
 [development dependency exception](deployment.md#dependency-exception), and the
-unresolved [Google retention follow-up](deployment.md#privacy-follow-up). The
+[Google retention follow-up](deployment.md#privacy-follow-up). The
 [temporary checklist](release-checklist.md) tracks the remaining release gates;
 [CHANGELOG](../CHANGELOG.md) is the release-note source. Experimental records and
 original human/automated labels remain unchanged.
+
+## 2026-10-17: Google Vertex safety retention
+
+**Decision.** Accept Google safety/abuse retention for the personal writing
+experiment. Keep Gemini 3.5 Flash-Lite at minimal reasoning, prompt v4, and the
+2,048-token output cap. Live requests use `only: ["google-vertex"]`, `zdr: false`,
+`data_collection: "deny"`, and `require_parameters: true`. Restricting the provider
+family excludes AI Studio and other hosts while allowing Vertex regional variants.
+This replaces the earlier ZDR-only live policy. Google may retain content for
+safety review and cache data under its policies; no exact endpoint-specific
+retention period or absence of human review is promised. The no-training
+restriction remains, alongside fictional-text guidance and application-side
+content-free logging. Notice `openrouter-vertex-safety-v1` requires fresh
+acknowledgement; the acknowledgement storage key and history format stay the same.
+
+**Verification.** A signed-in [OpenRouter privacy page](https://openrouter.ai/settings/privacy)
+notice was read on October 17 and explicitly announced Google Safety Retention
+starting October 18. The page described Vertex safety retention separately from
+training. Its Google ZDR switch and paid-training switch were off. The inspected
+Mimus key had only the default workspace guardrail, with no policies, and
+input/output logging and broadcasts were off. No account or key setting was changed.
+
+The public [model endpoint catalog](https://openrouter.ai/api/v1/models/google/gemini-3.5-flash-lite/endpoints)
+still listed Vertex and AI Studio, and the [ZDR catalog](https://openrouter.ai/api/v1/endpoints/zdr)
+still included five Vertex variants. These pre-change labels are not proof of
+post-change eligibility. The [routing guide](https://openrouter.ai/docs/guides/routing/provider-selection)
+documents the `google-vertex` family slug and independent account/guardrail ZDR
+enforcement. The UI confirms the training control is separate. OpenRouter's
+[sovereign AI guide](https://openrouter.ai/docs/guides/get-started/sovereign-ai)
+also describes ZDR as the retention control and data-collection denial as a
+training control. The routing reference uses broader collection/storage wording,
+so the revised Vertex endpoint's eligibility under `data_collection: "deny"`
+has not been established by a post-change request. Mimus retains this separate
+filter rather than enabling training to resolve retention. Removing `zdr: true`
+does not guarantee eligibility under all remaining endpoint or account filters.
+
+[Google data governance](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention)
+distinguishes training restrictions from retention and caching.
+[Abuse monitoring](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/abuse-monitoring)
+describes potential logging and human review, with conditions varying by model
+and agreement. These general policies do not establish OpenRouter's exact
+endpoint-specific retention duration. The visible notice states retention and
+possible review without inventing a universal duration.
+
+**Evidence boundary.** No paid request or production change was made for this
+decision. The revised routing still requires an authorized deployment and any
+separately approved smoke test. Earlier study files, scores, provider observations,
+and ZDR-era records remain historical evidence. The configurable multi-model
+benchmark adapter and evaluators retain their ZDR defaults; this live policy
+change does not silently relax the frozen study protocol. Future Google benchmark
+calls may be unavailable under those defaults and need a separately reviewed
+experiment policy. The legacy `npm run eval` command follows the current live
+adapter and must be interpreted with its recorded model settings and revision.
+
+Account/key checks, deployment procedure, and the rollback caveat are in the
+[deployment guide](deployment.md#privacy-follow-up).

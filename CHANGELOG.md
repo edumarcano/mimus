@@ -43,9 +43,11 @@ Notable public releases of Mimus are documented here.
 - Server-side OpenRouter inference with output delivered through server-sent events.
 - Gemini 3.5 Flash-Lite at minimal reasoning adopted in the runtime configuration
   from the staged benchmark, with prompt v4 and a 2,048-token output cap.
-- Zero-data-retention endpoint routing and denial of provider data collection
-  requested for every live inference call; an acknowledgement and `/privacy`
-  page explain the remaining data-handling limitations.
+- Live inference is restricted to Google Vertex; requests do not require ZDR,
+  retain OpenRouter's separate `data_collection: "deny"` routing filter, and
+  require the requested parameters to be honored.
+  The updated acknowledgement and `/privacy` page disclose Google's safety and
+  abuse retention policy, including possible human review of flagged content.
 - Request validation, input/output limits, origin and visitor-country checks,
   timeouts, and Vercel WAF rate limiting.
 - Cancellation support for `/api/translate` on Vercel, upstream stream cleanup,
@@ -64,8 +66,9 @@ Notable public releases of Mimus are documented here.
   are documented in the [evaluation records](evals/README.md).
 - A Production Academic Maximum rewrite changed a relative percentage decrease
   into percentage points; the maintainer accepted retaining this known limitation.
-- An unpatched development-tool dependency advisory and the announced Google
-  Safety Retention change remain tracked in the [release checklist](docs/release-checklist.md).
+- An unpatched development-tool dependency advisory remains tracked in the
+  [release checklist](docs/release-checklist.md). Google Vertex may retain text for
+  safety and abuse monitoring under its published policies; see the [design notes](docs/case-study.md#google-vertex-safety-retention).
 - Live rewriting is limited to approved visitor regions and depends on
   third-party provider availability and account spending limits.
 - Upstream cancellation depends on the model host; billing after Stop is not

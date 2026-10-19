@@ -20,9 +20,9 @@ The integration could not exercise Edge or actual browser zoom. These checks are
 focused local observations, not a complete accessibility audit or deployed-provider
 verification.
 
-## Maintainer browser and screen-reader follow-up
+## Browser and screen-reader follow-up
 
-The maintainer separately reported that examples and controls worked in Edge
+I separately reported that examples and controls worked in Edge
 (version not supplied) and at actual 200% browser zoom. These observations were
 not independently witnessed by the browser integration.
 
@@ -32,7 +32,7 @@ An initial result-region/description change did not resolve text reading.
 
 The correction uses a persistent polite status region for example selection and a
 native read-only text area for the rewrite. The result is not a live region;
-generation status announcements remain separate. The maintainer confirmed example
+generation status announcements remain separate. I confirmed example
 announcements in one retest and text reading on focus in the next, using an
 isolated local demo without provider calls.
 

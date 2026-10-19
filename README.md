@@ -7,33 +7,44 @@
 
 <p align="center"><strong>Translate meaning, not just words.</strong></p>
 
-Mimus is a small personal project for learning and experimenting with AI-assisted
-software development and text rewriting. It rewrites English text between
-recognizable writing styles: plain English into LinkedIn speak, corporate phrasing
-back into ordinary language, and more. It is a rewrite between writing registers,
-not a translator between languages, and it aims to change the expression without
-inventing facts or losing the point.
+Mimus rewrites English text between writing styles. Plain speech becomes LinkedIn
+speak, corporate phrasing becomes ordinary language, and so on. It translates
+register, not language, and it tries to change how something is said without
+changing what it says.
+
+For example (written by hand, not model output):
+
+> **Human:** The team spent three hours discussing a button color.
+>
+> **LinkedIn, Maximum:** Three hours. One button color. That was the team's
+> discussion. #Design #Collaboration
+
+Mimus is also an experiment in building software with AI coding agents. Agents did
+much of the planning, implementation, testing, and review. I set priorities,
+approved the major decisions, did the blind reviews, and ran the manual UI checks.
+The [design notes](docs/design-notes.md#ai-assisted-development) cover what that
+looked like and where it fell short.
 
 [**Try Mimus**](https://mimus-rewrite.vercel.app) ·
-[Design notes](docs/case-study.md) · [Product specification](docs/product-spec.md) ·
+[Design notes](docs/design-notes.md) · [Product specification](docs/product-spec.md) ·
 [Evaluation](evals/README.md)
 
 ![Mimus in demo mode showing a prewritten Human to LinkedIn example](docs/assets/screenshots/desktop-1440.png)
 
-<sub>Demo-mode screenshot: the result is a labeled, prewritten example, not live
+<sub>Demo-mode screenshot. The result is a labeled, prewritten example, not live
 model output.</sub>
 
 ## Features
 
 - Five styles (Human, LinkedIn, Corporate, Startup Founder, Academic), all 20
-  directions, and three intensities (Subtle, Balanced, Maximum).
-- Streamed output with Stop, Copy result, Copy both, Regenerate, and Swap. The
-  original input stays available and stale results are labeled.
-- A credential-free demo mode, mobile layout, keyboard shortcut, and local-only
-  preferences. Optional history of up to 10 completed results is off by default and
-  stays in the browser.
-- Data-use notice next to Translate, a `/privacy` page, and no accounts, application
-  database, or analytics.
+  directions between them, and three intensities (Subtle, Balanced, Maximum).
+- Streamed output with Stop, Copy result, Copy both, Regenerate, and Swap. Your
+  original input stays available, and stale results are labeled as such.
+- A demo mode that needs no credentials, a mobile layout, a keyboard shortcut, and
+  preferences stored only in your browser. Optional history (the last 10 completed
+  results) is off by default and never leaves the browser.
+- A data-use notice next to the Translate button and a `/privacy` page. There are no
+  accounts, no application database, and no analytics.
 
 ## How it works
 
@@ -49,57 +60,46 @@ flowchart LR
   Route -->|"5. SSE events to browser"| Browser
 ```
 
-One Next.js (App Router, TypeScript, Tailwind) deployment with a single Node.js
-route. Trusted instructions and submitted text are kept separate, validation runs
-before any model call, and the model, reasoning effort, output cap, and privacy
+It's one Next.js deployment (App Router, TypeScript, Tailwind) with a single Node.js
+route. That route validates the request before any model call, keeps trusted
+instructions separate from the submitted text, and streams the result back as
+server-sent events (SSE). The model, reasoning effort, output cap, and privacy
 routing are committed together in
-[`src/lib/server/model-config.ts`](src/lib/server/model-config.ts), not read from
-the environment or the browser.
+[`src/lib/server/model-config.ts`](src/lib/server/model-config.ts). They are not read
+from the environment or the browser.
 
 ## Model and privacy
 
 Live mode calls OpenRouter with `google/gemini-3.5-flash-lite` (minimal reasoning,
-2,048-token output cap), `zdr: true`, and `data_collection: "deny"`. Hosts are not
-pinned. OpenRouter permits Google Vertex safety retention when the applicable
-account and guardrail settings allow it, so the ZDR routing flag is not a promise
-that no text is retained. The [design notes](docs/case-study.md#google-vertex-safety-retention)
-explain the policy and evidence limits.
+2,048-token output cap). Requests ask OpenRouter for zero-data-retention (ZDR)
+routing and deny data collection. That is not a promise that nothing is stored:
+Google may keep prompts and responses for safety monitoring, and flagged content may
+be reviewed by people. Mimus has no database and doesn't intentionally save your text
+on its servers, in logs, or in URLs, but you should use fictional text and nothing
+personal or confidential.
 
-Google may retain prompts and responses for safety and abuse monitoring, including
-human review of flagged content. Its applicable policies prohibit training or
-fine-tuning without permission or instruction. Provider caching may occur; Mimus
-does not promise a specific retention period. Mimus has no application database
-and does not intentionally persist submitted or generated text on its servers,
-in logs, or in URLs. OpenRouter and the hosting platform process request metadata.
-Use fictional text and do not submit personal or confidential information. The
-full notice and provider-policy links are on the
-[`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
+The full notice and provider-policy links are on the
+[`/privacy`](https://mimus-rewrite.vercel.app/privacy) page. The reasoning behind the
+policy is in the [design notes](docs/design-notes.md#google-vertex-safety-retention).
 
-## Design and evaluation
+## Evaluation
 
-The server handles validation, streaming, cancellation, and incomplete results.
-The evaluations measure meaning and style separately and compare quality,
-latency, and cost. The [design notes](docs/case-study.md) link the implementation,
-tests, dated results, and remaining limitations.
+Meaning preservation is the hard part of this project, so the evaluations score
+meaning and style separately and compare quality, latency, and cost across models.
 
-The [fresh release comparison](evals/results/release-run-2026-10-15.md)
-recommended Gemini minimal: it scored 37/40 for full meaning and 37/40 for full
-style under the frozen automated rubric. Human auditing was limited and uneven:
-only one of eight audited outputs was Gemini. Production also produced a numerical
-meaning error that remains an accepted limitation. Meaning preservation is a goal,
-not a guarantee; the [evaluation guide](evals/README.md) retains results, failures,
-and earlier model history.
+In the [fresh release comparison](evals/results/release-run-2026-10-15.md), Gemini with
+minimal reasoning scored 37/40 on full meaning and 37/40 on full style under an
+automated rubric. Humans audited only 8 outputs, and just one of them was Gemini, so
+that check is thin. Production also produced a numerical error (a 6% decrease became
+"six percentage points") that I've accepted as a known limitation. Meaning
+preservation is a goal, not a guarantee. The [evaluation guide](evals/README.md) has
+the full results, failures, and earlier model history.
 
-You can check the published comparison without a key or provider requests:
+You can check the published comparison without a key or any provider requests:
 
 ```bash
 npm run eval:verify
 ```
-
-AI coding agents contributed substantially to planning, implementation, testing,
-and review. I set product priorities, approved major decisions, completed blind
-reviews, and performed manual UI checks. The [AI-assisted development account](docs/case-study.md#ai-assisted-development)
-describes those contributions and their limits.
 
 ## Run locally
 
@@ -110,11 +110,13 @@ npm ci
 npm run dev
 ```
 
-With no configuration the app runs in demo mode: examples are shown, no model is
-called, and no key is needed. For live generation on your machine, copy
+With no configuration the app runs in demo mode. It shows examples, calls no model,
+and needs no key. For live generation on your machine, copy
 [`.env.example`](.env.example) to `.env.local`, add your own `OPENROUTER_API_KEY`,
 and set `MIMUS_MODE=live` and `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` (loopback
 development only). Live requests cost money on your OpenRouter account.
+
+To run the full checks:
 
 ```bash
 npm run format:check && npm run lint && npm run typecheck && npm test
@@ -124,22 +126,22 @@ npm run test:e2e   # Playwright, mocked browser/API; no provider calls
 ```
 
 On Linux, use `npx playwright install --with-deps chromium` to install the
-browser's system dependencies as well. Stop the development server before running
-browser tests so Playwright starts its own configured demo and mocked-live servers.
+browser's system dependencies too. Stop the development server before running the
+browser tests, because Playwright starts its own demo and mocked-live servers.
 
-Use `npm run format` to format source, tests, scripts, and active configuration.
-Frozen evaluation data and published records are excluded.
+`npm run format` formats source, tests, scripts, and active configuration. Frozen
+evaluation data and published records are excluded.
 
 ## Documentation
 
-- [Product specification](docs/product-spec.md): the behavioral contract.
-- [Design notes](docs/case-study.md): design, evaluation, and lessons.
+- [Product specification](docs/product-spec.md): what the app is meant to do.
+- [Design notes](docs/design-notes.md): design, evaluation, and lessons learned.
 - [Deployment and operations](docs/deployment.md): configuration, activation,
   shutdown, and rollback.
 - [Decisions and evidence](docs/decisions.md) and [CHANGELOG](CHANGELOG.md).
-- [Release checklist](docs/release-checklist.md): completed verification, remaining
-  evidence gaps, and publication decisions.
-- [Repository instructions](AGENTS.md): development conventions.
+- [Release checklist](docs/release-checklist.md): what's verified and what's still
+  open.
+- [Repository instructions](AGENTS.md): conventions for working in the repo.
 
 ## License
 

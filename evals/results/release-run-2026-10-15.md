@@ -1,6 +1,11 @@
 # Fresh release run (2026-10-15 study)
 
-**Recommend Gemini minimal for v1, subject to the maintainer's adoption decision.** It is the only finalist meeting the predeclared automated targets and evidence-completeness checks. The eight blind human audits were completed on October 16; their limited coverage and style disagreements constrain this recommendation. Production still uses GLM low.
+> **Status note (added later):** this report was written before the adoption decision.
+> "Production still uses GLM low" below was true then. Production now runs Gemini
+> minimal; see the [adoption decision](../../docs/decisions.md#2026-10-16-gemini-minimal-adoption-production-verified).
+> The results below are unchanged.
+
+**Recommend Gemini minimal for v1, subject to my adoption decision.** It is the only finalist meeting the predeclared automated targets and evidence-completeness checks. The eight blind human audits were completed on October 16; their limited coverage and style disagreements constrain this recommendation. Production still uses GLM low.
 
 The committed release-finalists-v1 manifest compares Haiku low and Gemini minimal, with prompt v4, on forty fresh synthetic cases per configuration. All eighty generations completed, without reuse. Argon low produced eighty judgment records: seventy-nine resolved and one unresolved request deadline. The deadline was recorded automatically by the repaired harness; it was not retried or replaced.
 
@@ -34,7 +39,7 @@ The [sampling rule](release-audit-rule-2026-10-15.md) was committed before relea
 | Suspected outputs | 4 | 3/4 | 0/4 |
 | Total | 8 | 7/8 | 4/8 |
 
-The human gave meaning 2 to seven outputs and meaning 1 to one, and style 2 to all eight. The meaning disagreement concerns a JSON-wrapped rewrite: the human note cites the brackets and `passage` key, while Argon gave meaning 2 and style 1. All four style disagreements concern Haiku outputs graded 0 or 1 by Argon. Both label sets are retained; neither silently overrides the other, and the judge/rubric was not changed after seeing release results.
+I gave meaning 2 to seven outputs and meaning 1 to one, and style 2 to all eight. The meaning disagreement concerns a JSON-wrapped rewrite: my note cites the brackets and `passage` key, while Argon gave meaning 2 and style 1. All four style disagreements concern Haiku outputs graded 0 or 1 by Argon. Both label sets are retained; neither silently overrides the other, and the judge/rubric was not changed after seeing release results.
 
 The JSON wrapper is also an observed **format-compliance defect**: the prompt contract requires rewritten plain text. The wrapper is separate from whether the enclosed text preserves meaning. The benchmark has no dedicated format-compliance metric, so this finding is recorded explicitly rather than silently changing the human meaning score or retrofitting a new release gate.
 
@@ -48,6 +53,6 @@ This phase dispatched 160 requests with $0.1607981 in reported known charges and
 
 Every release output received the selected LLM judging attempt regardless of the offline cascade. No prompt, model effort, judge, or threshold was tuned using release outputs. Production settings are unchanged.
 
-The recommendation is specifically `google/gemini-3.5-flash-lite`, minimal effort, shared prompt v4, and the 2,048-token output cap, through the existing OpenRouter privacy routing. Argon and this generator share a vendor; possible family bias was not measured. The constructed evaluator challenge also lacks style-failure reference examples, so it does not establish sensitivity to style failures. The human style disagreement, one-example human coverage of Gemini, small synthetic set, and observed judge variability make independent correctness claims exploratory.
+The recommendation is specifically `google/gemini-3.5-flash-lite`, minimal effort, shared prompt v4, and the 2,048-token output cap, through the existing OpenRouter privacy routing. Argon and this generator share a vendor; possible family bias was not measured. The constructed evaluator challenge also lacks style-failure reference examples, so it does not establish sensitivity to style failures. The style disagreement in my audit, one-example coverage of Gemini, small synthetic set, and observed judge variability make independent correctness claims exploratory.
 
 The decision-model cascade remains offline with no selected development threshold. Adopting a runtime model, operational rehearsals, merging, and publishing v1 remain separate decisions. If these release outputs are used for further tuning, they become development evidence; a new holdout is needed for an independent improvement claim.

@@ -2,7 +2,7 @@
 
 This local policy fixes how the eight human-reviewed release outputs are sampled.
 Freeze it before opening any release output. Do not change the seeds, cohorts,
-ranking, or fallback after the release results are visible. This rule is committed before release calls. Private mappings remain local until the human scores are fixed.
+ranking, or fallback after the release results are visible. This rule is committed before release calls. Private mappings remain local until my scores are fixed.
 
 ## Inputs and required cohort
 
@@ -82,4 +82,4 @@ SHA-256 over the helper bytes before release calls:
 - prepare-release-audit.ts: `c74b265c1a802b39c45be1c250dcc3a13c2bc853fd637f91ccd01b1728a0f6c0`
 - release-audit-selection.ts: `4773092f8bd2328e638f1088e79e20a9aae2e2ed3c8eb85be45fdd89d9a20592`
 
-The algorithm above is the public sampling contract; these hashes identify the local implementation used to export the page.
+The algorithm above is the public sampling contract. These hashes identify the local implementation used to export the page. The two helper files and the local calibration server mentioned above were never committed to the repository, so they can't be opened from here.

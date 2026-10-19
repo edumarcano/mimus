@@ -23,9 +23,12 @@ Selection followed the [predeclared rule](prompt-comparison-2026-10-15.md#effort
 
 There are 140/144 complete generations and 47 reused successful observations. Reuse retains original timings, usage and reported cost as performance evidence, without charging again. All 140 actual Argon requests produced valid judgments. The four incomplete generation judgments are local unresolved records and incur no evaluator request. No benchmark-client retry or model substitution was used.
 
+### Cost
+
 This phase made **237 new inference requests**, with **$0.301668** in reported known charges and **one unknown-cost settlement**. At phase end, the study had **647 requests**, **$0.593908** in reported known charges, and **$0.001485** retained for the unknown settlement cost. The reported known amount is not a complete final bill.
 
-Observed failures:
+### Observed failures
+
 - luna-none, dev-inject-01: blocked; reported cost $0.
 - luna-medium, dev-inject-01: blocked; reported cost $0.
 - glm-max, dev-inject-01: error (UPSTREAM_TIMEOUT); reported cost unknown.

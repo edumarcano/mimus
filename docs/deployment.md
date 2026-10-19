@@ -197,7 +197,7 @@ cannot enforce these account settings.
 Google may retain text for safety monitoring and review flagged content under its
 applicable policies. The [privacy notice](../src/lib/notice.ts) explains this
 exception; ZDR routing does not guarantee that no text is retained. See the
-[policy decision](decisions.md#2026-10-19-google-vertex-safety-retention).
+[policy decision](decisions.md#2026-10-19-google-vertex-safety-retention-active).
 
 ## Release procedure
 

@@ -47,6 +47,20 @@ function readThemeColor(name: string): string {
   return match[1].toLowerCase();
 }
 
+function readDarkThemeColor(name: string): string {
+  const css = readFileSync(GLOBALS_CSS, "utf8");
+  const darkBlock = css.match(/\.dark\s*\{([^}]+)\}/);
+  if (!darkBlock) {
+    throw new Error("Missing .dark block in globals.css");
+  }
+  const pattern = new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})\\s*;`);
+  const match = pattern.exec(darkBlock[1]);
+  if (!match) {
+    throw new Error(`Missing --color-${name} in .dark block in globals.css`);
+  }
+  return match[1].toLowerCase();
+}
+
 describe("theme contrast tokens", () => {
   const white = "#ffffff";
   const canvas = readThemeColor("canvas");
@@ -77,5 +91,39 @@ describe("theme contrast tokens", () => {
   it("white text on accent meets 4.5:1", () => {
     const accent = readThemeColor("accent");
     expect(contrastRatio(white, accent)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("dark theme contrast tokens", () => {
+  const surface = readDarkThemeColor("surface");
+  const canvas = readDarkThemeColor("canvas");
+  const controlLine = readDarkThemeColor("control-line");
+
+  it("control-line borders meet 3:1 on surface, canvas, and accent-soft", () => {
+    const accentSoft = readDarkThemeColor("accent-soft");
+    expect(contrastRatio(controlLine, surface)).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(controlLine, canvas)).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(controlLine, accentSoft)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("body text tokens meet 4.5:1 on surface and canvas", () => {
+    const textTokens = ["ink", "ink-soft", "accent-strong"] as const;
+    for (const token of textTokens) {
+      const color = readDarkThemeColor(token);
+      expect(
+        contrastRatio(color, surface),
+        `${token} on surface`,
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrastRatio(color, canvas),
+        `${token} on canvas`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("accent-ink on accent meets 4.5:1", () => {
+    const accent = readDarkThemeColor("accent");
+    const accentInk = readDarkThemeColor("accent-ink");
+    expect(contrastRatio(accentInk, accent)).toBeGreaterThanOrEqual(4.5);
   });
 });

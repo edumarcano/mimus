@@ -25,7 +25,7 @@ export function TranslatorHistory({
   onClear,
 }: TranslatorHistoryProps) {
   return (
-    <details className="mt-8 rounded-xl border border-line bg-white p-4">
+    <details className="mt-8 rounded-xl border border-line bg-surface p-4">
       <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-ink">
         History in this browser
       </summary>

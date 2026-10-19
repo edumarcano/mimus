@@ -102,4 +102,44 @@ test.describe("demo mode", () => {
       ).toBe(false);
     });
   }
+
+  test("theme toggle: cycles System -> Dark -> Light, persists in localStorage, and passes Axe in dark mode", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const toggle = page.getByTestId("theme-toggle");
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveAttribute("data-theme", "system");
+
+    // Click toggle to switch to dark mode
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator("html")).toHaveClass(/dark/);
+    expect(await page.evaluate(() => localStorage.getItem("mimus:theme"))).toBe(
+      "dark",
+    );
+
+    // Accessibility scan in dark mode
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+
+    // Reload page and verify dark mode is maintained without FOUC
+    await page.reload();
+    await expect(page.locator("html")).toHaveClass(/dark/);
+    await expect(toggle).toHaveAttribute("data-theme", "dark");
+
+    // Click toggle to switch to light mode
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
+    expect(await page.evaluate(() => localStorage.getItem("mimus:theme"))).toBe(
+      "light",
+    );
+
+    // Click toggle to cycle back to system
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("data-theme", "system");
+    expect(await page.evaluate(() => localStorage.getItem("mimus:theme"))).toBe(
+      "system",
+    );
+  });
 });

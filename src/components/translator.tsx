@@ -87,9 +87,9 @@ const HISTORY_DELETE_FAILURE_NOTE =
   "Couldn't delete saved history from this browser. Saved entries may remain and reappear after reload.";
 
 const selectClass =
-  "min-h-11 w-full min-w-0 rounded-lg border border-control-line bg-white px-3 text-base text-ink disabled:bg-canvas disabled:opacity-60";
+  "min-h-11 w-full min-w-0 rounded-lg border border-control-line bg-surface px-3 text-base text-ink disabled:bg-canvas disabled:opacity-60";
 const secondaryButton =
-  "min-h-11 rounded-lg border border-control-line bg-white px-4 text-sm font-medium transition-colors text-ink hover:border-accent disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-11 rounded-lg border border-control-line bg-surface px-4 text-sm font-medium transition-colors text-ink hover:border-accent disabled:cursor-not-allowed disabled:opacity-50";
 
 function StyleSelect(props: {
   id: string;
@@ -395,7 +395,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
     state.status === "example" || state.status === "history"
       ? "text-accent-strong"
       : state.status === "blocked" || PARTIAL_STATUSES.includes(state.status)
-        ? "text-red-700"
+        ? "text-red-700 dark:text-red-400"
         : "text-ink-soft";
   const showPartialNote =
     PARTIAL_STATUSES.includes(state.status) && state.output !== "";
@@ -405,7 +405,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
     state.status !== "generating" &&
     state.status !== "example";
 
-  const panel = "min-w-0 rounded-xl border border-line bg-white p-4 sm:p-6";
+  const panel = "min-w-0 rounded-xl border border-line bg-surface p-4 sm:p-6";
   const label =
     "text-sm font-semibold uppercase tracking-wide text-accent-strong";
 
@@ -456,13 +456,13 @@ export function Translator({ config }: { config: TranslatorConfig }) {
             aria-describedby={ids.count}
             rows={10}
             placeholder="Say it the way you'd say it out loud."
-            className="block min-h-56 w-full resize-y rounded-lg border border-control-line bg-white p-3 text-base text-ink placeholder:text-ink-soft disabled:bg-canvas"
+            className="block min-h-56 w-full resize-y rounded-lg border border-control-line bg-surface p-3 text-base text-ink placeholder:text-ink-soft disabled:bg-canvas"
           />
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
             <p
               id={ids.count}
               data-testid="counter"
-              className={`text-sm ${over ? "font-semibold text-red-700" : "text-ink-soft"}`}
+              className={`text-sm ${over ? "font-semibold text-red-700 dark:text-red-400" : "text-ink-soft"}`}
             >
               {count.toLocaleString("en-US")} / {max.toLocaleString("en-US")}
               {over ? " — over the limit; shorten your text" : ""}
@@ -519,7 +519,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
               <button
                 type="button"
                 onClick={stop}
-                className="mt-3 min-h-11 w-full rounded-lg transition-colors border border-accent bg-white px-6 font-semibold text-accent-strong hover:bg-accent-soft sm:w-auto"
+                className="mt-3 min-h-11 w-full rounded-lg transition-colors border border-accent bg-surface px-6 font-semibold text-accent-strong hover:bg-accent-soft sm:w-auto"
               >
                 Stop
               </button>
@@ -529,7 +529,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
                 onClick={translate}
                 disabled={!canTranslate}
                 aria-describedby={reason ? ids.why : undefined}
-                className="mt-3 min-h-11 w-full rounded-lg transition-colors bg-accent px-6 font-semibold text-white hover:bg-accent-strong disabled:cursor-not-allowed disabled:bg-line disabled:text-ink sm:w-auto"
+                className="mt-3 min-h-11 w-full rounded-lg transition-colors bg-accent px-6 font-semibold text-accent-ink hover:bg-accent-strong disabled:cursor-not-allowed disabled:bg-line disabled:text-ink sm:w-auto"
               >
                 Translate
               </button>
@@ -663,7 +663,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
             }`}
           />
           {showPartialNote && (
-            <p className="mt-2 text-sm text-red-700">
+            <p className="mt-2 text-sm text-red-700 dark:text-red-400">
               The text above is incomplete. Your input was kept; you can try
               again.
             </p>
@@ -699,7 +699,7 @@ export function Translator({ config }: { config: TranslatorConfig }) {
             <p
               data-testid="copy-note"
               role="status"
-              className={`mt-2 text-sm ${copyNote.ok ? "text-ink-soft" : "text-red-700"}`}
+              className={`mt-2 text-sm ${copyNote.ok ? "text-ink-soft" : "text-red-700 dark:text-red-400"}`}
             >
               {copyNote.text}
             </p>

@@ -77,7 +77,7 @@ Mimus is an experiment in AI-assisted software development and text rewriting. I
 | Abuse control | Vercel WAF rate limiting plus application request limits. No Redis. [S6] |
 | Budget | Target $0 recurring cost within eligible free allowances. No paid service activation without explicit approval. |
 | Analytics | No analytics SDK or content-tracking service in v1. |
-| Design | Light theme, Mimus bird/wordmark identity, readable typography, playful copy, restrained motion. |
+| Design | Light and dark themes with system preference support, Mimus bird/wordmark identity, readable typography, playful copy, restrained motion. |
 | Evaluation | Offline synthetic benchmark with reproducible generator configurations, automated rubric scoring, limited human calibration/auditing, and a fresh release set. |
 
 **Launch distinction:** Free-tier development is the starting choice; unrestricted worldwide public inference is not assumed. Section 12 defines a conservative initial live-access policy and the public-launch gate.
@@ -152,13 +152,13 @@ Use the Mimus **Bird + Speech Hybrid** identity: a restrained, simplified mockin
 
 The brand palette is **primary teal** `#0F5C63`, **secondary teal** `#2E7D86`, **sky accent** `#7BC4D6`, **mist** `#F5FAFB`, and **dark ink** `#14323A`. Apply these as logo colors and restrained UI accents, not as a requirement to recolor every existing interface element. Use "context-aware translation" only with nearby copy that identifies English writing-style rewriting; do not imply multilingual capability.
 
-Use appropriately optimized PNG assets where suitable: the bird mark, horizontal logo lockups with and without tagline, relevant light/dark-surface variants, favicon/browser icons, and a social-preview image. A vector redraw is not required. Before release, verify real transparency, clean edges, consistent bird and wing geometry across variants, accurate wordmark/tagline text, and legibility at deployed sizes (including 16 px and 32 px favicons). Dark-surface logo variants do not introduce dark mode into v1.
+Use appropriately optimized PNG assets where suitable: the bird mark, horizontal logo lockups with and without tagline, relevant light/dark-surface variants, favicon/browser icons, and a social-preview image. A vector redraw is not required. Before release, verify real transparency, clean edges, consistent bird and wing geometry across variants, accurate wordmark/tagline text, and legibility at deployed sizes (including 16 px and 32 px favicons). Dark-surface logo variants are deployed alongside the light variants for dark mode support.
 
 Do not imitate LinkedIn's exact product UI, use its logo, or imply endorsement. Add a brief independent-project disclaimer. Other named styles are descriptors, not partnerships.
 
 Required design checks: useful layout at 360px and 1440px widths; no horizontal page overflow; visible keyboard focus; explicit form labels; approximately 44px touch targets; body-text contrast target of at least 4.5:1; usable layout at 200% zoom. Honor reduced-motion preferences. Announce loading, completion, and errors without reading every streamed token through a live region.
 
-Use real streamed text rather than a simulated typewriter effect. Do not add a chatbot avatar, sidebar workspace system, graph, animation framework, or settings page. Dark mode is post-v1.
+Use real streamed text rather than a simulated typewriter effect. Do not add a chatbot avatar, sidebar workspace system, graph, animation framework, or settings page.
 
 ---
 

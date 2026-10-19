@@ -17,6 +17,7 @@ and the remaining gates are in the [release checklist](docs/release-checklist.md
   needs no credentials.
 - Local preferences and optional browser-only history of up to 10 completed
   rewrites, off by default.
+- Dark mode with system preference detection, in-header cycle toggle (System, Dark, Light), zero-layout-shift dark logo asset, and WCAG AA contrast compliance.
 
 ### Architecture and safeguards
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { connection } from "next/server";
 import { Translator } from "@/components/translator";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getPublicConfig } from "@/lib/server/config";
 
 const NOTICE_BY_MODE = {
@@ -56,16 +57,27 @@ export default async function Home() {
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-6 lg:py-12">
       <header className="mb-8">
-        <h1>
-          <Image
-            src="/brand/mimus-logo.png"
-            alt="Mimus"
-            width={720}
-            height={210}
-            priority
-            className="block h-10 w-auto sm:h-12 md:h-14"
-          />
-        </h1>
+        <div className="flex items-start justify-between gap-4">
+          <h1>
+            <Image
+              src="/brand/mimus-logo.png"
+              alt="Mimus"
+              width={720}
+              height={210}
+              priority
+              className="block dark:hidden h-10 w-auto sm:h-12 md:h-14"
+            />
+            <Image
+              src="/brand/mimus-logo-dark.png"
+              alt="Mimus"
+              width={1200}
+              height={348}
+              priority
+              className="hidden dark:block h-10 w-auto sm:h-12 md:h-14"
+            />
+          </h1>
+          <ThemeToggle />
+        </div>
         <p className="mt-2 text-xl text-accent-strong">
           Translate meaning, not just words.
         </p>
@@ -77,7 +89,7 @@ export default async function Home() {
         </p>
         <p
           data-testid="availability"
-          className="mt-5 inline-block max-w-2xl rounded-lg border border-line bg-white px-4 py-2 text-sm leading-relaxed text-ink"
+          className="mt-5 inline-block max-w-2xl rounded-lg border border-line bg-surface px-4 py-2 text-sm leading-relaxed text-ink"
         >
           <strong className="font-semibold uppercase tracking-wide">
             {bannerLabel}

@@ -70,10 +70,10 @@ export default async function Home() {
           Translate meaning, not just words.
         </p>
         <p className="mt-3 max-w-2xl leading-relaxed text-ink-soft">
-          Mimus rewrites English writing styles: Human, LinkedIn, Corporate,
-          Startup Founder, and Academic. It does not translate between
-          languages. Say it plainly, then hear how it would sound in another
-          style, or translate it back.
+          Mimus rewrites English writing styles: Human, LinkedIn Speak,
+          Corporate, Startup Founder, and Academic. It does not translate
+          between languages. Say it plainly, then hear how it would sound in
+          another style, or translate it back.
         </p>
         <p
           data-testid="availability"

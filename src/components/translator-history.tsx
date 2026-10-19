@@ -1,7 +1,7 @@
 "use client";
 
 import { historyPreview, type HistoryEntry } from "@/lib/history";
-import { STYLE_LABELS } from "@/lib/styles";
+import { STYLE_DISPLAY_LABELS } from "@/lib/styles";
 
 type TranslatorHistoryProps = {
   enabled: boolean;
@@ -64,8 +64,8 @@ export function TranslatorHistory({
               >
                 <div className="min-w-0">
                   <p className="font-medium text-ink">
-                    {STYLE_LABELS[entry.snapshot.sourceStyle]} →{" "}
-                    {STYLE_LABELS[entry.snapshot.targetStyle]}
+                    {STYLE_DISPLAY_LABELS[entry.snapshot.sourceStyle]} →{" "}
+                    {STYLE_DISPLAY_LABELS[entry.snapshot.targetStyle]}
                   </p>
                   <p className="text-xs">
                     {new Date(entry.savedAt).toLocaleString()}

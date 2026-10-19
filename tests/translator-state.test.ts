@@ -335,7 +335,7 @@ describe("selectors", () => {
       effectiveIntensity: "maximum",
     };
     expect(formatCopyBoth(linkedinSnap, "out")).toBe(
-      "Human:\nin\n\nLinkedIn (Maximum):\nout",
+      "Human:\nin\n\nLinkedIn Speak (Maximum):\nout",
     );
   });
 });

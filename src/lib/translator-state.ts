@@ -4,7 +4,7 @@ import {
   effectiveIntensity,
   INTENSITY_LABELS,
   isDistinctPair,
-  STYLE_LABELS,
+  STYLE_DISPLAY_LABELS,
   type Intensity,
   type StyleId,
 } from "./styles";
@@ -195,11 +195,11 @@ export function formatCopyBoth(
   snapshot: RequestSnapshot,
   output: string,
 ): string {
-  const sourceHeader = `${STYLE_LABELS[snapshot.sourceStyle]}:`;
+  const sourceHeader = `${STYLE_DISPLAY_LABELS[snapshot.sourceStyle]}:`;
   const targetHeader =
     snapshot.targetStyle === "human"
-      ? `${STYLE_LABELS.human}:`
-      : `${STYLE_LABELS[snapshot.targetStyle]} (${INTENSITY_LABELS[snapshot.effectiveIntensity]}):`;
+      ? `${STYLE_DISPLAY_LABELS.human}:`
+      : `${STYLE_DISPLAY_LABELS[snapshot.targetStyle]} (${INTENSITY_LABELS[snapshot.effectiveIntensity]}):`;
   return `${sourceHeader}\n${snapshot.text}\n\n${targetHeader}\n${output}`;
 }
 

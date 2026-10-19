@@ -24,6 +24,14 @@ export const STYLE_LABELS: Record<StyleId, string> = {
   academic: "Academic",
 };
 
+// Labels shown in the interface and in copied text. STYLE_LABELS above is what
+// the prompt builder sends to the model, so changing it changes the evaluated
+// prompt. Keep the two separate.
+export const STYLE_DISPLAY_LABELS: Record<StyleId, string> = {
+  ...STYLE_LABELS,
+  linkedin: "LinkedIn Speak",
+};
+
 export const INTENSITY_LABELS: Record<Intensity, string> = {
   subtle: "Subtle",
   balanced: "Balanced",

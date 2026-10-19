@@ -35,7 +35,7 @@ import {
   INTENSITIES,
   INTENSITY_LABELS,
   STYLE_IDS,
-  STYLE_LABELS,
+  STYLE_DISPLAY_LABELS,
   type Intensity,
   type StyleId,
 } from "@/lib/styles";
@@ -112,7 +112,7 @@ function StyleSelect(props: {
       >
         {STYLE_IDS.map((id) => (
           <option key={id} value={id}>
-            {STYLE_LABELS[id]}
+            {STYLE_DISPLAY_LABELS[id]}
           </option>
         ))}
       </select>
@@ -268,8 +268,8 @@ export function Translator({ config }: { config: TranslatorConfig }) {
   const copyOk = canCopy(state);
   const swapMovesOutput = canSwapOutput(state);
   const effective = effectiveIntensity(state.targetStyle, state.intensity);
-  const sourceLabel = STYLE_LABELS[state.sourceStyle];
-  const targetLabel = STYLE_LABELS[state.targetStyle];
+  const sourceLabel = STYLE_DISPLAY_LABELS[state.sourceStyle];
+  const targetLabel = STYLE_DISPLAY_LABELS[state.targetStyle];
 
   function translate() {
     if (!canTranslate) return;

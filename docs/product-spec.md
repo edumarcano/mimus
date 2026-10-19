@@ -56,7 +56,7 @@ Mimus is an experiment in AI-assisted software development and text rewriting. I
 | Name | Mimus. Domain and trademark availability are not established by this spec. |
 | Brand | Bird + Speech Hybrid mark and Mimus wordmark; primary tagline: "Translate meaning, not just words." |
 | Positioning | A playful writing-register translator, not a language-translation service. |
-| Initial styles | Human, LinkedIn, Corporate, Startup Founder, Academic. |
+| Initial styles | Human, LinkedIn Speak, Corporate, Startup Founder, Academic. |
 | Default | Human -> LinkedIn, Balanced intensity. |
 | Directions | All distinct source/target pairs: 20 combinations. |
 | Intensity | Subtle, Balanced, Maximum. Ignored for Human output, as defined below. |
@@ -179,10 +179,12 @@ This is not reversible encryption: a round trip is not expected to recover the e
 | ID | Label | Writing behavior | Important boundary |
 | --- | --- | --- | --- |
 | `human` | Human | Direct, natural plain English. Remove needless jargon and repetition. | Keep material qualifications and facts; do not summarize away important content or invent a blunt motive. |
-| `linkedin` | LinkedIn | Professional-social cadence, elevated framing, short paragraphs, recognizable career-post rhetoric. | No invented accomplishments, gratitude toward unnamed people, or emotions that contradict the input. |
+| `linkedin` | LinkedIn Speak | Professional-social cadence, elevated framing, short paragraphs, recognizable career-post rhetoric. | No invented accomplishments, gratitude toward unnamed people, or emotions that contradict the input. |
 | `corporate` | Corporate | Formal workplace phrasing, diplomatic language, process vocabulary, clear professional requests. | Do not invent approvals, meetings, deadlines, consensus, or authority. |
 | `startup` | Startup Founder | Energetic, concise, launch-oriented language and startup vocabulary where appropriate. | No fabricated customers, growth, funding, traction, or claims of market leadership. |
 | `academic` | Academic | Formal analytical phrasing, careful qualification, precise terminology. | No fabricated experiments, findings, references, statistics, or evidence of causation. |
+
+The interface shows the `linkedin` style as "LinkedIn Speak" so it reads like the other styles. The prompt builder still sends the label "LinkedIn" to the model, because relabeling it would change the evaluated prompt. In prose, "LinkedIn" remains fine as shorthand, such as in "Human <-> LinkedIn".
 
 The source-style selection is a hint, not an assertion the model must believe. Actual text wins when it conflicts with the selected source. No classifier is needed.
 

@@ -461,7 +461,7 @@ describe("Translator workflow", () => {
     for (const sel of [sourceSel(), targetSel()]) {
       expect(Array.from(sel.options).map((o) => o.textContent)).toEqual([
         "Human",
-        "LinkedIn",
+        "LinkedIn Speak",
         "Corporate",
         "Startup Founder",
         "Academic",
@@ -661,7 +661,7 @@ describe("Translator workflow", () => {
     fireEvent.click(btn("Copy both"));
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(2));
     expect(writeText).toHaveBeenLastCalledWith(
-      "Human:\nhello there\n\nLinkedIn (Balanced):\nOUT",
+      "Human:\nhello there\n\nLinkedIn Speak (Balanced):\nOUT",
     );
   });
 
@@ -714,7 +714,7 @@ describe("Translator workflow", () => {
     expect(status()).toContain("Example — not generated");
     expect(output()).toBe(ex.output);
     expect(screen.getByTestId("direction").textContent).toContain(
-      "LinkedIn → Human",
+      "LinkedIn Speak → Human",
     );
   });
 

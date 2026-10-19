@@ -36,7 +36,7 @@ model output.</sub>
 
 ## Features
 
-- Five styles (Human, LinkedIn, Corporate, Startup Founder, Academic), all 20
+- Five styles (Human, LinkedIn Speak, Corporate, Startup Founder, Academic), all 20
   directions between them, and three intensities (Subtle, Balanced, Maximum).
 - Streamed output with Stop, Copy result, Copy both, Regenerate, and Swap. Your
   original input stays available, and stale results are labeled as such.

@@ -7,7 +7,7 @@ and the remaining gates are in the [release checklist](docs/release-checklist.md
 
 ### Features
 
-- Five styles (Human, LinkedIn, Corporate, Startup Founder, Academic) with all 20
+- Five styles (Human, LinkedIn Speak, Corporate, Startup Founder, Academic) with all 20
   source-to-target directions.
 - Three rewriting intensities (Subtle, Balanced, Maximum). Human output ignores
   intensity.

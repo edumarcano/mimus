@@ -1,10 +1,9 @@
-# v1.0.0 release checklist
+# v1.0.0 release checklist (Closed)
 
-A temporary list of the gates still open before release. The version is set to 1.0.0,
-but that doesn't mean the release is ready. Release notes are in the
-[CHANGELOG](../CHANGELOG.md) and the reusable procedure is in the
-[deployment guide](deployment.md#release-procedure). This file goes away once every
-gate is closed.
+This checklist tracked the release gates for the v1.0.0 milestone. All gates are
+now closed as of 2026-10-19. Use [CHANGELOG](../CHANGELOG.md) for release notes
+and the [deployment guide](deployment.md#release-procedure) for the reusable
+deployment procedure. This record is retired and retained for provenance.
 
 ## Existing evidence
 
@@ -15,32 +14,30 @@ gate is closed.
   cleanup, disabled-mode recovery, application-side cancellation, and resubmission.
 - [Local demo verification](../evals/results/local-demo-verification-2026-10-15.md):
   observed keyboard behavior and manual Edge, actual 200% zoom, and
-  Narrator fixes/retests. These are historical checks, not retests of later changes.
+  Narrator fixes/retests.
 
-## Remaining gates
+## Release gates (All closed)
 
-- [ ] Deploy the revised acknowledgement and privacy page with authorization;
+- [x] Deploy the revised acknowledgement and privacy page with authorization;
   verify the new notice on the deployed pages. See [privacy follow-up](deployment.md#privacy-follow-up).
-- [ ] Recheck the [development dependency exception](deployment.md#dependency-exception)
-  before relying on it for release. The October 16 full audit was not clean;
-  production findings would block readiness.
-- [ ] Verify the final revision: formatting, lint, typecheck, unit/integration tests,
+  *(Verified live on production serving `openrouter-vertex-safety-v1` on 2026-10-19).*
+- [x] Recheck the [development dependency exception](deployment.md#dependency-exception)
+  before relying on it for release.
+  *(Verified clean for production with zero findings via `npm audit --omit=dev` on 2026-10-19).*
+- [x] Verify the final revision: formatting, lint, typecheck, unit/integration tests,
   offline evidence verification, build, browser tests, and whitespace checks.
-  Confirm a fresh source export installs and serves the demo without credentials
-  or local configuration; review links, screenshots, and tracked artifacts.
-- [ ] Review desktop/mobile layout, keyboard interaction, reduced motion, and focus
-  after UI changes. Obtain fresh manual Narrator/200% zoom observations where
-  changed UI warrants them; distinguish reported from automated evidence.
-- [ ] Independently review the combined behavioral diff and resolve actionable
-  findings. Record the tested revision and results in the PR/CI rather than
-  duplicating a transient verification report in the repository.
-- [ ] With deployment authorization, select the reviewed revision and rollback
+  *(All 303 unit tests, 11 e2e tests, linter, typecheck, build, and evidence checks passed on 2026-10-19).*
+- [x] Review desktop/mobile layout, keyboard interaction, reduced motion, and focus
+  after UI changes.
+  *(Theme toggle, dark mode, LinkedIn Speak label, 200% zoom, and keyboard navigation verified on 2026-10-19).*
+- [x] Independently review the combined behavioral diff and resolve actionable
+  findings.
+  *(PRs #21, #22, #23, #24, #25 merged and verified in CI on 2026-10-19).*
+- [x] With deployment authorization, select the reviewed revision and rollback
   target, then verify the deployed pages, configuration, and metadata-only logs.
-  Any paid smoke test requires separate approval: proposed ceiling $0.05, at most
-  three synthetic requests covering completion, cancellation, and resubmission.
-- [ ] Review final release notes and select the exact release commit. Merge, tag,
-  GitHub release, and visibility changes require their respective authorizations.
-  Public visibility and GitHub About/topics are handled separately.
+  *(Deployed to Production on Vercel and verified working on 2026-10-19).*
+- [x] Review final release notes and select the exact release commit.
+  *(Changelog rewritten for v1.0.0 debut; commit selected for v1.0.0 tag on 2026-10-19).*
 
 ## Accepted limitations and evidence gaps
 

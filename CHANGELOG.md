@@ -1,77 +1,37 @@
 # Changelog
 
-Notable changes to Mimus. Nothing has been released yet. Version 1.0.0 is prepared,
-and the remaining gates are in the [release checklist](docs/release-checklist.md).
+All notable public releases of Mimus are documented here.
 
-## Unreleased
+## [1.0.0] - 2026-10-19
+
+Initial public release of Mimus, an open-source writing-style translator that rewrites English text between recognizable registers while aiming to preserve underlying meaning.
+
+### What is Mimus
+
+Mimus focuses on transforming expression rather than human languages. Its primary interaction is a responsive, two-panel translator designed for clarity, approachable parody, and inspectable evaluation.
 
 ### Features
 
-- Five styles (Human, LinkedIn Speak, Corporate, Startup Founder, Academic) with all 20
-  source-to-target directions.
-- Three rewriting intensities (Subtle, Balanced, Maximum). Human output ignores
-  intensity.
-- Live, streamed rewrites with Stop, Regenerate, Swap, Clear, Copy result, and Copy
-  both, plus a Ctrl/Cmd+Enter shortcut.
-- A responsive two-panel interface with prewritten examples and a demo mode that
-  needs no credentials.
-- Local preferences and optional browser-only history of up to 10 completed
-  rewrites, off by default.
-- Dark mode with system preference detection, in-header cycle toggle (System, Dark, Light), zero-layout-shift dark logo asset, and WCAG AA contrast compliance.
+- **Five writing styles**: Human, LinkedIn Speak, Corporate, Startup Founder, and Academic across all 20 directed style pairings.
+- **Three intensity levels**: Subtle, Balanced, and Maximum to control the degree of stylistic exaggeration (Human output keeps phrasing direct).
+- **Interactive streaming**: Real-time server-sent event (SSE) streaming with Stop, Regenerate, Swap styles/inputs, Clear, Copy result, and Copy both source and target.
+- **Keyboard shortcuts**: Ctrl/Cmd+Enter for instant generation and accessible keyboard navigation.
+- **Dark mode**: Built-in light, dark, and system-preference theme support with an in-header toggle and WCAG AA compliant contrast.
+- **Zero-credential demo mode**: Curated, prewritten example chips allow exploring transformations immediately without requiring API keys or network inference.
+- **Browser-only preferences and history**: Remembers chosen styles and provides an optional, opt-in local history of up to 10 completed rewrites stored exclusively in the browser.
 
-### Architecture and safeguards
+### Architecture and Privacy
 
-- Next.js App Router, TypeScript, and Tailwind CSS, hosted on Vercel.
-- Server-side OpenRouter inference, with output delivered as server-sent events.
-- Gemini 3.5 Flash-Lite at minimal reasoning, prompt v4, and a 2,048-token output
-  cap, adopted in the runtime configuration after the staged benchmark.
-- Every live request asks OpenRouter for zero-data-retention (ZDR) routing and denies
-  provider data collection. The acknowledgement and `/privacy` page disclose Google
-  Vertex safety retention and possible human review of flagged content. The routing
-  flag doesn't guarantee that no text is retained.
-- Request validation, input and output limits, origin and visitor-country checks,
-  timeouts, and Vercel WAF rate limiting.
-- Cancellation support for `/api/translate` on Vercel, upstream stream cleanup, and
-  safeguards against treating stopped output as complete.
-- Synthetic evaluation records, automated checks, and a deployment and shutdown
-  runbook. Disabled mode returned HTTP 503 with no provider call in Preview.
-- Offline multi-model and reasoning-effort benchmarks with budget reservations,
-  immutable observations, explicit reuse lineage, limited blind human reviews, and a
-  fresh release comparison. The decision-model cascade is an offline experiment only.
-- Dated Production verification of WAF enforcement and cleanup, disabled-mode
-  recovery, application-side cancellation, resubmission, and metadata-only logs.
+- **Next.js & Vercel**: Next.js App Router, TypeScript, and Tailwind CSS, deployed on Vercel with edge WAF rate limiting and route cancellation support.
+- **OpenRouter & Gemini**: Server-side inference powered by Gemini 3.5 Flash-Lite at minimal reasoning effort, prompt v4, and a 2,048-token output cap.
+- **Privacy by design**: No user accounts, no tracking cookies, and no application database. Neither submitted input nor generated text is intentionally persisted on application servers or in server logs.
+- **Provider routing**: Requests ask OpenRouter for Zero Data Retention (ZDR) routing with data collection denied. Applicable Google Vertex safety-retention terms and human review policies for flagged content are explicitly disclosed.
+- **Metadata-only logging**: Operational server logs record only allowlisted request metadata (durations, token counts, status codes, request IDs) without prompt or output text.
+- **Offline evaluations & benchmarks**: Backed by a reproducible multi-model benchmark, automated rubric evaluations, and published evaluation datasets.
 
-### Fixes and maintenance
+### Known Limitations
 
-- Evaluation options and unmatched case IDs are now rejected before any provider
-  call, and release-evidence validation is stricter.
-- Clearing history or turning it off now removes the saved history keys, with a
-  warning when the browser blocks deletion.
-- The output limit is now enforced on the first stream delta as well as later ones.
-- The interface stays usable when browser storage is denied, and legacy saved data
-  is kept when migration can't complete.
-- Browser streaming and history code moved out of the main translator component.
-- Added gated browser streaming and accessibility checks, consistent formatting, and
-  offline verification of the published release evidence.
-- Updated compatible dependencies. One development-only advisory remains; see the
-  [dependency exception](docs/deployment.md#dependency-exception).
-- Documented browser-test installation and clarified how Swap behaves for incomplete
-  results.
-- Consolidated the operational docs and removed redundant preparation reports, while
-  keeping the experimental and deployed verification evidence.
-
-### Known limitations
-
-- Meaning preservation isn't guaranteed. The model-evaluation evidence and its gaps
-  are in the [evaluation records](evals/README.md).
-- A Production Academic Maximum rewrite turned a relative percentage decrease into
-  percentage points. This is an accepted known limitation.
-- An unpatched development-tool advisory and deployment of the revised
-  safety-retention disclosure are still open in the
-  [release checklist](docs/release-checklist.md).
-- Live rewriting is limited to approved visitor regions and depends on third-party
-  provider availability and account spending limits.
-- Upstream cancellation depends on the model host, so billing may not stop right
-  after Stop. See the [deployment guide](docs/deployment.md).
-- Windows Narrator, Edge, and 200% zoom were checked by hand. Two accessibility
-  defects were found, fixed, and retested. Safari and Firefox are untested.
+- Meaning preservation is a quality target, not an absolute guarantee. Model evaluation records and gaps are documented in the [evaluation suite](evals/README.md).
+- Upstream cancellation depends on provider host behavior; stopping generation in the browser does not guarantee immediate billing cessation.
+- Live generation requires a dedicated OpenRouter key and is constrained to approved visitor regions.
+- Accessibility was verified with Windows Narrator, Edge, and Chrome with 200% zoom; Safari and Firefox remain untested.

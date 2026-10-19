@@ -357,7 +357,7 @@ Revision `a013c79` was subsequently deployed. The
 [Production record](../evals/results/production-verification-2026-10-16.md)
 contains the actual HTTP requests, costs, streams, and inspected metadata-only
 logs. Both streams completed, but Academic Maximum changed a relative 6% decrease
-to six percentage points. The maintainer accepted retaining this known meaning
+to six percentage points. The decision was to retain this known meaning
 defect. The prompt and scores remain unchanged; this is a mixed quality
 observation, not a fully passing meaning check. No additional scoring round or
 prompt tuning was part of adoption.
@@ -385,3 +385,17 @@ unresolved [Google retention follow-up](deployment.md#privacy-follow-up). The
 [temporary checklist](release-checklist.md) tracks the remaining release gates;
 [CHANGELOG](../CHANGELOG.md) is the release-note source. Experimental records and
 original human/automated labels remain unchanged.
+
+## 2026-10-19: Google Vertex safety retention
+
+Keep OpenRouter request preferences `zdr: true`, `data_collection: "deny"`, and
+`require_parameters: true`, with no pinned model host. OpenRouter's Google ZDR
+controls allow Vertex safety retention when "Safety retention allowed" is selected.
+ZDR routing therefore does not guarantee that no text is retained.
+
+The acknowledgement and privacy page disclose possible safety retention, human
+review of flagged content, and provider caching. Google's applicable
+[data governance](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention)
+and [abuse monitoring](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/abuse-monitoring)
+policies restrict training without permission or instruction. No fixed retention
+period is promised. Notice `openrouter-vertex-safety-v1` requires fresh acknowledgement.

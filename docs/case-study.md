@@ -124,7 +124,7 @@ does not independently establish the recommended model's correctness, and
 possible bias from Argon and Gemini sharing a vendor was not measured. The runtime
 configuration adopts Gemini minimal through OpenRouter and is deployed on
 Production. The [Production record](../evals/results/production-verification-2026-10-16.md)
-retains a percentage-change error accepted by the maintainer for now. The historical corpus retains its original meaning.
+retains an accepted percentage-change error for now. The historical corpus retains its original meaning.
 
 ### One failure and its fix
 
@@ -187,6 +187,18 @@ reasoning through the same OpenRouter adapter, with prompt v4 and the 2,048-toke
 cap. This model change retains the existing privacy routing and notice version.
 The [adoption decision](decisions.md#2026-10-16-gemini-minimal-adoption-production-verified)
 links the committed configuration to verification on Production.
+
+### Google Vertex safety retention
+
+Live requests retain `zdr: true` and `data_collection: "deny"`; no model host is
+pinned. OpenRouter's Google controls allow safety retention while ZDR routing is
+enabled. The routing flag therefore does not establish that Google stores no text.
+Google may retain prompts and responses for abuse monitoring, with possible human
+review of flagged content. Its applicable policies prohibit training or fine-tuning
+without permission or instruction. Provider caching may occur; no universal
+retention duration is promised. The revised notice requires fresh acknowledgement.
+See the [policy decision](decisions.md#2026-10-19-google-vertex-safety-retention)
+for the disclosure and provider-policy references.
 
 ## Testing and verification
 

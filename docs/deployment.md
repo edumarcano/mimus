@@ -63,7 +63,7 @@ with /api/translate` and `method equals POST`.
 
 ## Activation and verification
 
-1. Confirm the [privacy follow-up](#privacy-follow-up), eligible ZDR routing, and
+1. Confirm the [privacy follow-up](#privacy-follow-up), applicable routing controls, and
    account settings. Use a dedicated capped key, disable auto-recharge, and keep
    prompt/completion logging off. The app cannot enforce account settings.
 2. Record the healthy deployment, reviewed source revision, and eligible rollback
@@ -72,7 +72,7 @@ with /api/translate` and `method equals POST`.
 3. Configure the Production variables above and deploy the reviewed revision.
    Inspect the deployment metadata for `supportsCancellation: true` on
    `src/app/api/translate/route.ts`; [vercel.json](../vercel.json) opts in this route.
-4. Fetch `/` and `/privacy`. Check mode, notice version `openrouter-zdr-v1`, adult
+4. Fetch `/` and `/privacy`. Check mode, notice version `openrouter-vertex-safety-v1`, adult
    acknowledgement, canonical metadata, and static assets.
 5. With separate paid-test approval, verify streaming completion, Stop, and immediate
    resubmission using synthetic text. A proposed ceiling is $0.05 and at most three
@@ -159,7 +159,7 @@ quota exhaustion, provider billing cessation after Stop, and key revocation or
 zeroing remain unverified.
 
 The [local demo record](../evals/results/local-demo-verification-2026-10-15.md)
-separates observed keyboard checks from maintainer-reported Edge, actual 200% zoom,
+separates observed keyboard checks from manual Edge, actual 200% zoom,
 and Narrator retests. Screenshots use prewritten examples, not live inference.
 These records do not establish that later revisions were deployed or manually
 retested. Current release gates remain in the [release checklist](release-checklist.md).
@@ -179,7 +179,7 @@ and the online production-only audit reported zero findings. Lint/CI availabilit
 exposure remains; exploitability in this repository was not reproduced. These
 bounded scans do not establish the absence of vulnerabilities.
 
-The maintainer accepted a bounded development-only exception when compatible
+A bounded development-only exception was accepted when compatible
 remediation was unavailable. Aligned Next.js/lint updates did not remove the
 advisory; no forced audit fix, incompatible downgrade, or override was introduced.
 Recheck upstream on the next toolchain update and before relying on the exception
@@ -188,23 +188,16 @@ readiness rather than inheriting this exception.
 
 ## Privacy follow-up
 
-A signed-in OpenRouter notice announced a Google Safety Retention change effective
-October 18, 2026. Its effect on the existing ZDR contract remains unresolved.
-Read-only public checks on October 16 found the model in the
-[endpoint catalog](https://openrouter.ai/api/v1/models/google/gemini-3.5-flash-lite/endpoints)
-and five Vertex tags in the [ZDR catalog](https://openrouter.ai/api/v1/endpoints/zdr):
-`google-vertex/global`, `google-vertex/global/flex`,
-`google-vertex/global/priority`, `google-vertex/us`, and `google-vertex/eu`.
-The [ZDR documentation](https://openrouter.ai/docs/guides/features/zdr) then described
-per-request restrictions and Google Vertex eligibility. These dated public checks
-are not an account-specific guarantee after the announced change.
+Requests use `zdr: true` and `data_collection: "deny"`, with no pinned model host.
+For Google, select "Safety retention allowed" in the applicable OpenRouter account
+and guardrail controls to keep Vertex eligible with ZDR enabled. Keep training
+opt-ins, Input & Output Logging, and observability broadcasts off. The application
+cannot enforce these account settings.
 
-Account-specific effects were not verified in that review; no setting was changed.
-Reconcile current
-official policy, endpoint metadata, and accessible account settings before treating
-the live demo as verified under the changed policy. If compatible routing cannot
-be established, demo readiness remains blocked. Do not weaken privacy or switch
-providers as a shortcut.
+Google may retain text for safety monitoring and review flagged content under its
+applicable policies. The [privacy notice](../src/lib/notice.ts) explains this
+exception; ZDR routing does not guarantee that no text is retained. See the
+[policy decision](decisions.md#2026-10-19-google-vertex-safety-retention).
 
 ## Release procedure
 

@@ -55,7 +55,7 @@ Mimus is a personal learning and experimentation project exploring AI-assisted s
 | Output | Streamed plain text; one result per request. |
 | Stack | Next.js App Router, React, TypeScript, Tailwind CSS. |
 | Backend | One Next.js Node.js route: `POST /api/translate`. |
-| Active AI provider | OpenRouter, called server-side with a server-only `OPENROUTER_API_KEY`. Requests use zero data retention (`zdr: true`) and data-collection denial (`data_collection: "deny"`) routing. [S9, S10] |
+| Active AI provider | OpenRouter, called server-side with a server-only `OPENROUTER_API_KEY`. Requests use OpenRouter ZDR (`zdr: true`) and data-collection denial (`data_collection: "deny"`) routing; Google safety-retention exceptions depend on account and guardrail settings. [S9, S10] |
 | Active model | `google/gemini-3.5-flash-lite`, reasoning effort `minimal`, 2,048-token output cap, committed in `src/lib/server/model-config.ts`. Access, price, and endpoint eligibility are verified per deployment, not assumed. [S9, S10] |
 | Superseded provider | Google Gemini Developer API with `gemini-3.5-flash-lite` and an AI Studio-managed key. This was the provider for the earlier release-candidate evaluation; that record is historical and lives in `evals/results/summary.md` and `docs/decisions.md`. It does not govern the active system. [S1, S3, S4] |
 | Model configuration | Model ID and model-specific parameters are versioned together in server-side code, not environment variables. |
@@ -282,8 +282,8 @@ The active adapter calls OpenRouter's chat-completions endpoint with native
 instruction and the submitted text as untrusted user content, the committed
 `model`, `max_tokens`, and `reasoning.effort`, and these provider preferences:
 
-- `provider.zdr: true`, so only zero-data-retention endpoints are eligible;
-- `provider.data_collection: "deny"`, so endpoints that may collect data are excluded;
+- `provider.zdr: true`, requesting OpenRouter ZDR routing subject to its safety-retention controls;
+- `provider.data_collection: "deny"`, retaining OpenRouter's separate data-policy filter; this does not establish absence of safety retention;
 - `provider.require_parameters: true`, so an endpoint that cannot honor the settings is not used;
 - no plugins and no tools. The app does not enforce account-level prompt logging;
   the OpenRouter account setting must be confirmed before live activation.
@@ -359,7 +359,7 @@ generation parameters, and privacy-routing preferences are committed together in
 server-side code. Before live activation, verify the exact model ID, current price,
 supported parameters, streaming, and eligible endpoint. [S16]
 
-Send provider preferences including `zdr: true` and `data_collection: "deny"`; use no plugins or tools. Account-level prompt logging must be disabled in the account; the app cannot enforce it. If no eligible route exists, fail rather than relax privacy. ZDR is an endpoint-routing policy, not a promise of anonymity or no operational metadata; OpenRouter also permits certain in-memory prompt caching under that policy. [S9, S10]
+Send provider preferences including `zdr: true` and `data_collection: "deny"`; use no plugins or tools. Account-level prompt logging must be disabled in the account; the app cannot enforce it. If no eligible route exists, fail rather than relax privacy. ZDR is an endpoint-routing control, not a guarantee of no safety retention, anonymity, or no operational metadata; OpenRouter also permits certain in-memory prompt caching under that policy. [S9, S10]
 
 Changing provider requires updating the visible privacy policy before traffic is sent. There is no automatic failover to Google or any other provider and no routing by visitor without a separate product decision. Reusing the same model across eligible OpenRouter endpoints is distinct from changing models; document any chosen routing behavior.
 
@@ -410,7 +410,7 @@ Do not put input/output text in query parameters, URL fragments, analytics paylo
   "targetStyle": "linkedin",
   "intensity": "balanced",
   "eligibilityConfirmed": true,
-  "privacyNoticeVersion": "openrouter-zdr-v1"
+  "privacyNoticeVersion": "openrouter-vertex-safety-v1"
 }
 ```
 
@@ -537,14 +537,19 @@ Keep first-use acknowledgement in session memory or `sessionStorage`, tied to th
 
 ### Current provider constraint
 
-Live requests go to OpenRouter, which passes each request to a third-party model
-host. OpenRouter's terms and privacy policy apply to the request, and downstream
-host terms vary because Mimus does not pin a single host. The app requests
-zero-data-retention endpoints and denies data-collection endpoints, but that routing
-is not anonymity and does not mean nobody can see the text. OpenRouter still records
-request metadata, may categorize prompts anonymously, and a host may cache prompt
-text in memory. Account-level prompt-logging settings must be confirmed, since the
-app cannot enforce them. [S9, S10, S16, S17]
+Live requests go through OpenRouter to an unpinned model host, using `zdr: true`,
+`data_collection: "deny"`, and `require_parameters: true`. OpenRouter's Google
+account and guardrail controls permit Vertex safety retention when "Safety retention
+allowed" is selected, even with ZDR routing enabled. The flag must not be described
+as guaranteeing that prompts are never stored. Google may retain prompts and
+responses for safety and abuse monitoring, including human review of flagged
+content. Its applicable policies prohibit training or fine-tuning without
+permission or instruction. Provider caching may occur; no fixed retention duration
+is promised. OpenRouter processes request metadata and may categorize prompts
+anonymously. Account-level logging must be checked separately. See the
+[dated decision](decisions.md#2026-10-19-google-vertex-safety-retention). [S9, S10, S16, S17]
+
+Use fictional text; do not submit personal, confidential, or sensitive information.
 
 The adult, professional-use, and audience conditions must also be reviewed before
 public live activation. A privacy notice alone does not resolve them.
@@ -560,16 +565,20 @@ Target adult professional audiences and require affirmative acknowledgement befo
 
 When those conditions cannot be met, keep live inference off and obtain approval for a suitable provider/deployment policy. Do not bypass restrictions or silently change providers.
 
-### Active notice (`openrouter-zdr-v1`)
+### Active notice (`openrouter-vertex-safety-v1`)
 
-> Text is sent to OpenRouter to generate a rewrite. OpenRouter routes each request to a third-party model host that it classifies as not storing prompts and not using them for training. OpenRouter still records request metadata, may categorize prompts anonymously, and a host may cache prompt text in memory. This routing is not anonymity. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser. [S9, S16, S17]
+The exact notice copy lives in [`src/lib/notice.ts`](../src/lib/notice.ts), shared
+by the translator and `/privacy`. It explains OpenRouter routing, the Google Vertex
+safety-retention exception, possible human review, applicable training restrictions,
+caching, and application storage boundaries. It must not equate `zdr: true` with
+zero safety retention. It asks for fictional, non-sensitive text.
 
 The age and availability condition is displayed with this notice: "For adults only.
 Live generation is currently limited to approved regions and is intended as a writing
 experiment." Keep exact disclosure copy in one shared module (`src/lib/notice.ts`) used
 by the UI and `/privacy` page. Changes in provider or data policy require a new notice
-version and fresh acknowledgement. The previous Google notice (`google-unpaid-v1`) is
-historical only.
+version and fresh acknowledgement. Previous notices (`openrouter-zdr-v1` and
+`google-unpaid-v1`) are historical only.
 
 ### Demo and disabled modes
 
@@ -596,7 +605,7 @@ Do not ship an in-memory JavaScript map as the production rate limiter. A local 
 | Hosting | Eligible Vercel Hobby use within its included allowances; no paid upgrade by default. [S5] |
 | Database | None. |
 | Domain | Use the assigned deployment subdomain; no domain purchase required. |
-| Model | Dedicated OpenRouter inference key with a verified spending limit and an eligible ZDR endpoint. Account eligibility and enforcement are unverified until they are checked. [S14, S16] |
+| Model | Dedicated OpenRouter inference key with a verified spending limit and an endpoint eligible under the applicable routing and safety-retention controls. Account eligibility and enforcement are unverified until they are checked. [S14, S16] |
 | Analytics, queues, storage services | None. |
 | Paid model alternative | Only after approval; proposed initial experiment budget is $5, not an assumed recurring commitment. |
 

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import {
   NOTICE_VERSION,
+  GOOGLE_ABUSE_MONITORING_URL,
+  GOOGLE_DATA_GOVERNANCE_URL,
+  OPENROUTER_LOGGING_URL,
   OPENROUTER_PRIVACY_URL,
   OPENROUTER_TERMS_URL,
-  OPENROUTER_ZDR_URL,
   PRIVACY_SECTIONS,
 } from "@/lib/notice";
 
@@ -50,10 +52,10 @@ export default function PrivacyPage() {
             id="openrouter-terms-h"
             className="text-lg font-semibold text-ink"
           >
-            OpenRouter terms and policies
+            Provider data handling
           </h2>
           <p className="mt-2 text-ink-soft">
-            Live generation uses the OpenRouter API. Read{" "}
+            Read{" "}
             <a
               href={OPENROUTER_TERMS_URL}
               className="font-medium text-accent-strong underline underline-offset-4"
@@ -67,15 +69,30 @@ export default function PrivacyPage() {
             >
               OpenRouter&apos;s privacy policy
             </a>
-            {", and its "}
+            {", "}
             <a
-              href={OPENROUTER_ZDR_URL}
+              href={OPENROUTER_LOGGING_URL}
               className="font-medium text-accent-strong underline underline-offset-4"
             >
-              zero data retention documentation
+              data logging documentation
             </a>
-            . Downstream model-host terms vary because Mimus does not pin a
-            single host.
+            , and Google&apos;s{" "}
+            <a
+              href={GOOGLE_DATA_GOVERNANCE_URL}
+              className="font-medium text-accent-strong underline underline-offset-4"
+            >
+              data governance policy
+            </a>
+            {" and "}
+            <a
+              href={GOOGLE_ABUSE_MONITORING_URL}
+              className="font-medium text-accent-strong underline underline-offset-4"
+            >
+              abuse monitoring policy
+            </a>
+            . Mimus requests OpenRouter ZDR routing; eligible hosts depend on
+            OpenRouter and the applicable account and guardrail settings,
+            including safety-retention exceptions.
           </p>
         </section>
       </main>

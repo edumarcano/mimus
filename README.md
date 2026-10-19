@@ -58,17 +58,22 @@ the environment or the browser.
 
 ## Model and privacy
 
-Live mode calls OpenRouter with `google/gemini-3.5-flash-lite` (minimal reasoning, 2,048-token
-output cap) and requests zero-data-retention endpoints with data collection
-denied. Hosts are not pinned, so behavior can vary between requests. The choice
-and its trade-offs are explained in the [design notes](docs/case-study.md).
+Live mode calls OpenRouter with `google/gemini-3.5-flash-lite` (minimal reasoning,
+2,048-token output cap), `zdr: true`, and `data_collection: "deny"`. Hosts are not
+pinned. OpenRouter permits Google Vertex safety retention when the applicable
+account and guardrail settings allow it, so the ZDR routing flag is not a promise
+that no text is retained. The [design notes](docs/case-study.md#google-vertex-safety-retention)
+explain the policy and evidence limits.
 
-Live text is sent to OpenRouter and then to a third-party model host. Mimus has no
-application database and does not intentionally persist submitted or generated text
-on its servers, in logs, or in URLs. Zero data retention is an endpoint routing
-policy, not anonymity: the hosting platform and OpenRouter still process request
-metadata, and a host may cache prompts in memory. Use fictional text. The full notice
-is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
+Google may retain prompts and responses for safety and abuse monitoring, including
+human review of flagged content. Its applicable policies prohibit training or
+fine-tuning without permission or instruction. Provider caching may occur; Mimus
+does not promise a specific retention period. Mimus has no application database
+and does not intentionally persist submitted or generated text on its servers,
+in logs, or in URLs. OpenRouter and the hosting platform process request metadata.
+Use fictional text and do not submit personal or confidential information. The
+full notice and provider-policy links are on the
+[`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
 
 ## Design and evaluation
 

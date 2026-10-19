@@ -43,9 +43,10 @@ Notable public releases of Mimus are documented here.
 - Server-side OpenRouter inference with output delivered through server-sent events.
 - Gemini 3.5 Flash-Lite at minimal reasoning adopted in the runtime configuration
   from the staged benchmark, with prompt v4 and a 2,048-token output cap.
-- Zero-data-retention endpoint routing and denial of provider data collection
-  requested for every live inference call; an acknowledgement and `/privacy`
-  page explain the remaining data-handling limitations.
+- OpenRouter ZDR routing and denial of provider data collection requested for every
+  live inference call. The renewed acknowledgement and `/privacy` page disclose
+  Google Vertex safety retention and possible human review of flagged content;
+  the routing flag does not guarantee that no text is retained.
 - Request validation, input/output limits, origin and visitor-country checks,
   timeouts, and Vercel WAF rate limiting.
 - Cancellation support for `/api/translate` on Vercel, upstream stream cleanup,
@@ -63,9 +64,9 @@ Notable public releases of Mimus are documented here.
 - Meaning preservation is not guaranteed. Model-evaluation evidence and gaps
   are documented in the [evaluation records](evals/README.md).
 - A Production Academic Maximum rewrite changed a relative percentage decrease
-  into percentage points; the maintainer accepted retaining this known limitation.
-- An unpatched development-tool dependency advisory and the announced Google
-  Safety Retention change remain tracked in the [release checklist](docs/release-checklist.md).
+  into percentage points; this remains an accepted known limitation.
+- An unpatched development-tool dependency advisory and deployment of the revised
+  safety-retention disclosure remain tracked in the [release checklist](docs/release-checklist.md).
 - Live rewriting is limited to approved visitor regions and depends on
   third-party provider availability and account spending limits.
 - Upstream cancellation depends on the model host; billing after Stop is not

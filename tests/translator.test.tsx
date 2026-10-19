@@ -10,7 +10,7 @@ import {
 import { Translator, type TranslatorConfig } from "@/components/translator";
 import { EXAMPLES } from "@/lib/examples";
 import { addEntry, HISTORY_STORAGE_KEY } from "@/lib/history";
-import { ACK_STORAGE_KEY } from "@/lib/notice";
+import { ACK_STORAGE_KEY, NOTICE_FULL, NOTICE_VERSION } from "@/lib/notice";
 import { PREFS_STORAGE_KEY } from "@/lib/preferences";
 import { resetLegacyStorageMigrationForTests } from "@/lib/storage";
 import { encodeSseEvent } from "@/lib/stream";
@@ -828,6 +828,23 @@ describe("Translator privacy and history", () => {
     cleanup();
     sessionStorage.setItem("mimus:ack", "old-version");
     render(<Translator config={cfg("live", "available")} />);
+    expect(
+      (screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked,
+    ).toBe(false);
+  });
+
+  it("requires fresh acknowledgement for the current Vertex safety notice", () => {
+    sessionStorage.setItem(ACK_STORAGE_KEY, "openrouter-zdr-v1");
+    render(
+      <Translator
+        config={{
+          ...cfg("live", "available"),
+          notice: { version: NOTICE_VERSION, text: NOTICE_FULL },
+        }}
+      />,
+    );
+
+    expect(screen.getByText(NOTICE_FULL)).toBeTruthy();
     expect(
       (screen.getByLabelText(/I am an adult/) as HTMLInputElement).checked,
     ).toBe(false);

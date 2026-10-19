@@ -1,7 +1,7 @@
 export const NOTICE_VERSION = "openrouter-vertex-safety-v1";
 
 export const NOTICE_TEXT =
-  "Your text is sent through OpenRouter to Google Vertex AI, which generates the rewrite. Mimus routes requests only to Google Vertex endpoints. OpenRouter records request metadata and may categorize prompts anonymously. Google may retain prompts and responses for safety and abuse monitoring, and flagged content may be reviewed by people. Under Google's applicable policies, this content is not used to train or fine-tune models without permission or instruction. Provider caching may occur. This is not anonymity. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser.";
+  "Your text is sent through OpenRouter to a third-party model host to generate the rewrite. For Google models, OpenRouter allows Vertex endpoints with safety retention when the applicable account and guardrail settings permit it, even with ZDR routing enabled. OpenRouter records request metadata and may categorize prompts anonymously. Google may retain prompts and responses for safety and abuse monitoring, and flagged content may be reviewed by people. Under Google's applicable policies, this content is not used to train or fine-tune models without permission or instruction. Provider caching may occur. This is not anonymity. Use fictional text; do not submit personal, confidential, or sensitive information. Mimus does not intentionally save your text on its servers. Optional history stays in this browser.";
 
 export const NOTICE_AVAILABILITY =
   "For adults only. Live generation is currently limited to approved regions and is intended as a writing experiment.";
@@ -39,7 +39,7 @@ export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
     title: "What live mode sends to OpenRouter and Google",
     paragraphs: [
       NOTICE_TEXT,
-      "OpenRouter receives the request and routes it only to Google Vertex endpoints. OpenRouter content logging is disabled for Mimus; OpenRouter may record request metadata under its policies. Google Vertex may retain prompts and responses for safety and abuse monitoring, and flagged content may receive human review. Google states that it does not use customer data to train or fine-tune models without permission or instruction. Provider caching may occur under the applicable service terms.",
+      "Mimus requests OpenRouter ZDR routing and denies provider data collection. These routing preferences do not guarantee that the host stores no text: OpenRouter offers a safety-retention exception for Google Vertex in its account and guardrail controls. Mimus does not pin a model host. OpenRouter content logging is disabled for Mimus; OpenRouter may record request metadata under its policies. Google Vertex may retain prompts and responses for safety and abuse monitoring, and flagged content may receive human review. Google states that it does not use customer data to train or fine-tune models without permission or instruction. Provider caching may occur under the applicable service terms.",
       "These provider controls do not make a request anonymous. Do not submit personal, sensitive, or confidential information.",
     ],
   },

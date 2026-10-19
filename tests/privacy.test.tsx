@@ -35,17 +35,17 @@ describe("/privacy page", () => {
     expect(hrefs).toContain(GOOGLE_ABUSE_MONITORING_URL);
   });
 
-  it("describes the approved provider route and safety retention accurately", () => {
+  it("describes routing controls and safety retention accurately", () => {
     const { container } = render(<PrivacyPage />);
     const text = container.textContent ?? "";
     expect(text).not.toMatch(/unpaid/i);
     expect(text).not.toMatch(/product improvement/i);
-    expect(text).toMatch(/only to Google Vertex endpoints/i);
+    expect(text).toMatch(/requests OpenRouter ZDR routing/i);
+    expect(text).toMatch(/safety-retention exception for Google Vertex/i);
     expect(text).toMatch(/may retain prompts and responses/i);
     expect(text).toMatch(/flagged content may be reviewed by people/i);
     expect(text).toMatch(/not used to train or fine-tune models/i);
     expect(text).toMatch(/Provider caching may occur/i);
-    expect(text).not.toMatch(/zero data retention/i);
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
       a.getAttribute("href"),
     );

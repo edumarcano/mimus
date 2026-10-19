@@ -55,7 +55,7 @@ Mimus is a personal learning and experimentation project exploring AI-assisted s
 | Output | Streamed plain text; one result per request. |
 | Stack | Next.js App Router, React, TypeScript, Tailwind CSS. |
 | Backend | One Next.js Node.js route: `POST /api/translate`. |
-| Active AI provider | OpenRouter, called server-side with a server-only `OPENROUTER_API_KEY`. Live requests route only to Google Vertex (`only: ["google-vertex"]`), do not require ZDR (`zdr: false`), retain the separate `data_collection: "deny"` routing filter, and require endpoints to honor the requested parameters. Account/key guardrails may independently enforce ZDR. [S9, S10] |
+| Active AI provider | OpenRouter, called server-side with a server-only `OPENROUTER_API_KEY`. Requests use OpenRouter ZDR (`zdr: true`) and data-collection denial (`data_collection: "deny"`) routing; Google safety-retention exceptions depend on account and guardrail settings. [S9, S10] |
 | Active model | `google/gemini-3.5-flash-lite`, reasoning effort `minimal`, 2,048-token output cap, committed in `src/lib/server/model-config.ts`. Access, price, and endpoint eligibility are verified per deployment, not assumed. [S9, S10] |
 | Superseded provider | Google Gemini Developer API with `gemini-3.5-flash-lite` and an AI Studio-managed key. This was the provider for the earlier release-candidate evaluation; that record is historical and lives in `evals/results/summary.md` and `docs/decisions.md`. It does not govern the active system. [S1, S3, S4] |
 | Model configuration | Model ID and model-specific parameters are versioned together in server-side code, not environment variables. |
@@ -240,15 +240,11 @@ The active configuration has this application-owned shape:
 // src/lib/server/model-config.ts
 export const MODEL_CONFIG = {
   provider: "openrouter",
-  providerPreferences: {
-    only: ["google-vertex"],
-    zdr: false,
-    dataCollection: "deny",
-    requireParameters: true,
-  },
   maxOutputTokens: 2_048,
   model: "google/gemini-3.5-flash-lite",
   reasoningEffort: "minimal",
+  dataCollection: "deny",
+  zdr: true,
 } as const;
 
 export const MODEL_PUBLIC_LABEL = "Gemini 3.5 Flash-Lite";
@@ -268,15 +264,12 @@ Do not read a model ID, thinking setting, or sampling setting from `.env.local`,
 deployment environment variables, or a browser request. Credentials, deployment
 mode, trusted origin, and the approved region policy remain environment-specific.
 
-Use the same model generation settings and prompt builder for production and the
-release evaluation. Record provider preferences separately: the live wrapper
-restricts traffic to Google Vertex, while the historical benchmark runner retains
-its strict ZDR default. These settings describe separate workflows. Record the exact
-model ID, effective settings, prompt version, SDK version, Git revision, and run
-date with evaluation results. A configuration change requires a reviewed code
-change and renewed relevant checks. Git captures the requested configuration, not
-a guarantee that a hosted model's behavior never changes; record a resolved model
-version when the provider supplies one.
+Use the same committed configuration and prompt builder for production and the
+release evaluation. Record the exact model ID, effective settings, prompt version,
+SDK version, Git revision, and run date with evaluation results. A configuration
+change requires a reviewed code change and renewed relevant checks. Git captures
+the requested configuration, not a guarantee that a hosted model's behavior never
+changes; record a resolved model version when the provider supplies one.
 
 For initial experiments, edit a complete candidate configuration in code and
 record which revision was tested. Do not build an environment-driven override,
@@ -289,20 +282,15 @@ The active adapter calls OpenRouter's chat-completions endpoint with native
 instruction and the submitted text as untrusted user content, the committed
 `model`, `max_tokens`, and `reasoning.effort`, and these provider preferences:
 
-- `provider.only: ["google-vertex"]`, so only the Google Vertex provider family is eligible;
-- `provider.zdr: false`, so the request does not require a ZDR-classified endpoint;
-- `provider.data_collection: "deny"`, retained as a separate OpenRouter routing filter; it does not promise zero storage or remove Google's safety-retention policy;
-- `provider.require_parameters: true`, so an endpoint that cannot honor the requested parameters is not used;
-- no plugins and no tools. Account or key guardrails can independently enforce
-  ZDR and deny otherwise eligible endpoints; review those settings before live
-  activation.
+- `provider.zdr: true`, requesting OpenRouter ZDR routing subject to its safety-retention controls;
+- `provider.data_collection: "deny"`, retaining OpenRouter's separate data-policy filter; this does not establish absence of safety retention;
+- `provider.require_parameters: true`, so an endpoint that cannot honor the settings is not used;
+- no plugins and no tools. The app does not enforce account-level prompt logging;
+  the OpenRouter account setting must be confirmed before live activation.
 
-If no eligible Google Vertex route exists or account/key guardrails reject the
-request, it fails rather than widening the provider set. [S9, S10, S16]
-
-Before enabling live requests, confirm that OpenRouter input/output logging and
-data-use opt-ins are off for the account and the Mimus key. The application cannot
-enforce these settings; `data_collection: "deny"` is a separate routing filter.
+If no eligible route exists, the request fails rather than relaxing privacy. The
+adapter does not pin a single model host; behavior can vary across the hosts that
+serve the model. [S9, S10, S16]
 
 Read the active configuration from the server-side module and the API key from
 server environment configuration. Initialize live-provider access lazily so a
@@ -371,9 +359,9 @@ generation parameters, and privacy-routing preferences are committed together in
 server-side code. Before live activation, verify the exact model ID, current price,
 supported parameters, streaming, and eligible endpoint. [S16]
 
-Route only to Google Vertex with `only: ["google-vertex"]`, set `zdr: false`, retain `data_collection: "deny"`, and set `require_parameters: true`; use no plugins or tools. A key or account may independently enforce ZDR, which can still reject these requests. If no eligible route exists, fail rather than widening the provider set. [S9, S10]
+Send provider preferences including `zdr: true` and `data_collection: "deny"`; use no plugins or tools. Account-level prompt logging must be disabled in the account; the app cannot enforce it. If no eligible route exists, fail rather than relax privacy. ZDR is an endpoint-routing control, not a guarantee of no safety retention, anonymity, or no operational metadata; OpenRouter also permits certain in-memory prompt caching under that policy. [S9, S10]
 
-Changing provider requires updating the visible privacy policy before traffic is sent. There is no automatic failover to another provider family or routing by visitor. Any change to the Google Vertex restriction requires a separate review of provider routing and the privacy notice.
+Changing provider requires updating the visible privacy policy before traffic is sent. There is no automatic failover to Google or any other provider and no routing by visitor without a separate product decision. Reusing the same model across eligible OpenRouter endpoints is distinct from changing models; document any chosen routing behavior.
 
 ---
 
@@ -390,9 +378,8 @@ Next.js /api/translate (Node.js)
   | origin, mode, region, body, schema, and notice checks
   | trusted prompt builder
   v
-OpenRouter adapter -> OpenRouter chat completions (Google Vertex only,
-  |                   ZDR not required, data_collection deny)
-  |                   -> Google Vertex
+OpenRouter adapter -> OpenRouter chat completions (ZDR, data_collection deny)
+  |                   -> third-party model host (not pinned)
   v
 Normalized events -> SSE -> browser output panel
 
@@ -550,21 +537,19 @@ Keep first-use acknowledgement in session memory or `sessionStorage`, tied to th
 
 ### Current provider constraint
 
-Live requests go through OpenRouter and are restricted to Google Vertex. Google's
-[data governance](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention)
-and [abuse monitoring](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/abuse-monitoring)
-policies describe safety retention and possible human review of flagged content.
-Under applicable policies, content is not used to train or fine-tune models without
-permission or instruction. Provider caching may occur; Mimus does not promise a
-specific retention period. The `data_collection: "deny"` routing filter is separate
-from these policies and does not promise zero storage. The October 17 account notice
-and evidence boundary are in the [dated decision](decisions.md#2026-10-17-google-vertex-safety-retention).
+Live requests go through OpenRouter to an unpinned model host, using `zdr: true`,
+`data_collection: "deny"`, and `require_parameters: true`. OpenRouter's Google
+account and guardrail controls permit Vertex safety retention when "Safety retention
+allowed" is selected, even with ZDR routing enabled. The flag must not be described
+as guaranteeing that prompts are never stored. Google may retain prompts and
+responses for safety and abuse monitoring, including human review of flagged
+content. Its applicable policies prohibit training or fine-tuning without
+permission or instruction. Provider caching may occur; no fixed retention duration
+is promised. OpenRouter processes request metadata and may categorize prompts
+anonymously. Account-level logging must be checked separately. See the
+[dated decision](decisions.md#2026-10-19-google-vertex-safety-retention). [S9, S10, S16, S17]
 
-Mimus sends `only: ["google-vertex"]`, `zdr: false`,
-`data_collection: "deny"`, and `require_parameters: true`. This does not disable
-independent account or key guardrails: if they require ZDR, they can still reject
-the request. OpenRouter and the host process request metadata. Use fictional text;
-do not submit personal, confidential, or sensitive information. [S9, S10, S16, S17]
+Use fictional text; do not submit personal, confidential, or sensitive information.
 
 The adult, professional-use, and audience conditions must also be reviewed before
 public live activation. A privacy notice alone does not resolve them.
@@ -582,22 +567,18 @@ When those conditions cannot be met, keep live inference off and obtain approval
 
 ### Active notice (`openrouter-vertex-safety-v1`)
 
-The exact notice copy lives in [`src/lib/notice.ts`](../src/lib/notice.ts) and is
-shared by the translator and `/privacy` page. It must explain that requests go
-through OpenRouter to Google Vertex, identify possible safety retention and review
-under Google policy, state the applicable no-training terms accurately, and caution
-users against submitting personal, confidential, or sensitive text. Keep caching,
-retention duration, and app-side storage claims aligned with provider policy and
-implementation; do not imply that `data_collection: "deny"` means zero storage.
+The exact notice copy lives in [`src/lib/notice.ts`](../src/lib/notice.ts), shared
+by the translator and `/privacy`. It explains OpenRouter routing, the Google Vertex
+safety-retention exception, possible human review, applicable training restrictions,
+caching, and application storage boundaries. It must not equate `zdr: true` with
+zero safety retention. It asks for fictional, non-sensitive text.
 
 The age and availability condition is displayed with this notice: "For adults only.
 Live generation is currently limited to approved regions and is intended as a writing
 experiment." Keep exact disclosure copy in one shared module (`src/lib/notice.ts`) used
 by the UI and `/privacy` page. Changes in provider or data policy require a new notice
-version and fresh acknowledgement. The previous notice (`openrouter-zdr-v1`) describes
-the earlier ZDR routing and is historical only. The active
-`openrouter-vertex-safety-v1` notice replaces it. The previous Google notice
-(`google-unpaid-v1`) is also historical only.
+version and fresh acknowledgement. Previous notices (`openrouter-zdr-v1` and
+`google-unpaid-v1`) are historical only.
 
 ### Demo and disabled modes
 
@@ -624,7 +605,7 @@ Do not ship an in-memory JavaScript map as the production rate limiter. A local 
 | Hosting | Eligible Vercel Hobby use within its included allowances; no paid upgrade by default. [S5] |
 | Database | None. |
 | Domain | Use the assigned deployment subdomain; no domain purchase required. |
-| Model | Dedicated OpenRouter inference key with a verified spending limit and Google Vertex routing allowed. Account/key guardrails must not independently require ZDR if live Vertex requests are to succeed. [S14, S16] |
+| Model | Dedicated OpenRouter inference key with a verified spending limit and an endpoint eligible under the applicable routing and safety-retention controls. Account eligibility and enforcement are unverified until they are checked. [S14, S16] |
 | Analytics, queues, storage services | None. |
 | Paid model alternative | Only after approval; proposed initial experiment budget is $5, not an assumed recurring commitment. |
 
@@ -727,9 +708,8 @@ Use TypeScript strict mode, Vitest for unit/integration tests, React Testing Lib
 **Route/provider integration coverage:** validation prevents model calls; secrets
 and model configuration stay server-side; the adapter uses the committed model
 and matching settings; no model environment override is consulted; demo/build
-paths require no credential; the OpenRouter request routes only to Google Vertex,
-sends `zdr: false`, `data_collection: "deny"`, and
-`require_parameters: true`, with no tools or plugins; only one
+paths require no credential; the OpenRouter request sends `zdr: true`,
+`data_collection: "deny"`, and no tools or plugins; only one
 provider request is made; blocked/empty/length finishes are not success; abort and
 timeout clean up; emitted output is bounded; disallowed/unknown regions fail;
 malformed and non-JSON errors are safe. Mock the external boundary, not the
@@ -883,7 +863,7 @@ A release candidate is ready when:
 - Mobile and keyboard interactions are usable, and accessibility checks have been performed.
 - Preferences work; local history is bounded, opt-in, clearable, and resilient to storage errors.
 - Credentials remain server-only; application logs and URLs do not contain submitted/generated text.
-- OpenRouter requests route only to Google Vertex with `zdr: false`, the separate `data_collection: "deny"` filter, and `require_parameters: true`, with no tools or plugins. Account/key guardrails do not independently require ZDR; input/output logging and data-use opt-ins are off; and the visible notice matches the applicable provider policy. The application cannot enforce account/key settings.
+- OpenRouter requests use ZDR endpoint routing and `data_collection: "deny"`, with no tools or plugins; account-level prompt logging is confirmed in the account settings, because the app does not enforce it. The visible notice matches actual processing.
 - The released model ID and model-specific settings are committed in code and match the evaluated configuration.
 - Public-launch audience, region, billing, and hosting conditions have been reviewed and recorded.
 - Production WAF enforcement, request caps, mode switch, and inspected safe logs are verified. Quota-error handling has automated coverage; any unverified live-provider or geographic cases are documented separately from mocked checks rather than forcing quota exhaustion on the shared key.
@@ -918,5 +898,5 @@ Reference baseline: **October 6, 2026**. Account access and deployment behavior 
 - **[S14]** OpenRouter: [Spend controls](https://openrouter.ai/docs/guides/best-practices/spend-controls). Budget and guardrail concepts for a future paid deployment.
 
 - **[S15]** Google: [Gemini thinking](https://ai.google.dev/gemini-api/docs/thinking). Model-specific thinking levels and current configuration guidance.
-- **[S16]** OpenRouter: [Terms of service](https://openrouter.ai/terms). Terms for the active routing service; live model-host routing is restricted to Google Vertex.
+- **[S16]** OpenRouter: [Terms of service](https://openrouter.ai/terms). Terms for the active provider; downstream model-host terms vary and are not pinned.
 - **[S17]** OpenRouter: [Privacy policy](https://openrouter.ai/privacy). Account, request metadata, and routing privacy terms for the active provider.

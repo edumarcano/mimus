@@ -27,7 +27,7 @@ flowchart LR
   Browser -->|"POST /api/translate"| Route["Next.js route: checks, prompt builder, SSE framing"]
   Route -->|"provider request"| Adapter["OpenRouter adapter: maps provider events"]
   Adapter -->|"chat completion, streamed"| OpenRouter["OpenRouter"]
-  OpenRouter -->|"Google Vertex only"| Host["Google Vertex"]
+  OpenRouter -->|"routes to"| Host["Model host"]
   OpenRouter -->|"provider stream"| Adapter
   Adapter -->|"normalized delta and finish events"| Route
   Route -->|"SSE events"| Browser
@@ -37,7 +37,7 @@ flowchart LR
   `finish` events. The route owns validation, the deadline, cancellation, and the
   SSE framing. Browser code never imports the provider or model configuration.
 - **Model settings live in code.** The model, reasoning effort, output cap, and
-  provider routing are committed together and are not environment variables, so a
+  privacy routing are committed together and are not environment variables, so a
   configuration change is reviewable and can be compared with evaluation records.
 - **Demo by default.** With no key the app shows labeled, prewritten examples and
   never contacts a provider. Live mode fails closed: a missing key, origin, or
@@ -45,18 +45,12 @@ flowchart LR
 - **Honest streaming states.** Output that was stopped, truncated, blocked, or
   interrupted is not a "completed translation", so it cannot be copied as one,
   swapped, regenerated, or saved to history.
-- **Privacy boundaries are explicit.** Mimus has no application database and does
-  not intentionally persist submitted or generated text on its application servers,
-  in logs, or in URLs. Allowlisted logs hold request IDs, style IDs, durations,
-  status codes, and token counts. The platform and OpenRouter process request
-  metadata; Google Vertex processes the text. Google's [data governance](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention)
-  and [abuse monitoring](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/abuse-monitoring)
-  policies describe safety retention, possible human review of flagged content,
-  and training restrictions. Under those policies, content is not used to train or
-  fine-tune models without permission or instruction. Provider caching may occur;
-  no exact retention period is promised. The `data_collection: "deny"` routing
-  preference is separate from Google's safety retention and does not promise zero
-  storage. History is opt-in and stays in the browser.
+- **Privacy by design.** Mimus has no application database and does not
+  intentionally persist submitted or generated text on its servers, in logs, or in
+  URLs. Allowlisted logs hold request IDs, style IDs, durations, status codes, and
+  token counts. Hosting and provider processing is separate: the platform and
+  OpenRouter process request metadata, and the model host processes the text it
+  serves. History is opt-in and stays in the browser.
 
 ## Reading the implementation
 
@@ -177,10 +171,10 @@ $0.0014, and observed local and Preview latencies were roughly 0.6-1.6 seconds.
 Rewriting quality is a qualitative judgment, and no comparative scores against
 other models were recorded.
 
-That earlier routing was not anonymity. OpenRouter still recorded request metadata,
-hosts were not pinned, and a host could cache prompts in memory. The notice said so
-and asked for fictional text. The active processing policy has since changed; see
-the current provider decision below.
+That routing is not anonymity. OpenRouter still records request metadata, hosts are
+not pinned, and a host may cache prompts in memory, so the notice says so and asks
+for fictional text. Changing provider required a new notice version and fresh
+acknowledgement.
 
 The GLM development run completed all 40 requests and 39 passed the deterministic
 checks, but formal meaning and style scores were not committed and the original
@@ -190,31 +184,21 @@ nothing here claims GLM matches or beats Gemini on meaning.
 The staged benchmark subsequently provided comparative meaning and style scores.
 Its recommendation led to adopting `google/gemini-3.5-flash-lite` at minimal
 reasoning through the same OpenRouter adapter, with prompt v4 and the 2,048-token
-cap. The release evaluation's historical runner continues to use its recorded ZDR
-defaults; those settings describe that experiment and do not define live routing.
+cap. This model change retains the existing privacy routing and notice version.
 The [adoption decision](decisions.md#2026-10-16-gemini-minimal-adoption-production-verified)
 links the committed configuration to verification on Production.
 
 ### Google Vertex safety retention
 
-On October 17, 2026, a notice in the signed-in OpenRouter account announced that
-Google Vertex safety retention would take effect the next day. The banner announced
-the effective date; it did not itself establish detailed retention or training
-terms. Those come from Google's published [data governance](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention)
-and [abuse monitoring](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/abuse-monitoring)
-policies. Public OpenRouter catalogs still labeled Vertex ZDR on October 17, so
-post-change runtime behavior was not yet observed. The exact account notice, source
-review, and verification boundary are captured in the
-[dated provider decision](decisions.md#2026-10-17-google-vertex-safety-retention).
-
-The live request now restricts provider routing to Google Vertex
-(`only: ["google-vertex"]`), sets `zdr: false`, retains the separate
-`data_collection: "deny"` routing filter, and requires endpoints to honor the
-requested parameters. Account or guardrail settings
-may independently enforce ZDR and still prevent a request. The notice version
-`openrouter-vertex-safety-v1` requires a fresh acknowledgement. The current
-decision and its verification boundary are recorded in
-[the provider decision](decisions.md#2026-10-17-google-vertex-safety-retention).
+Live requests retain `zdr: true` and `data_collection: "deny"`; no model host is
+pinned. OpenRouter's Google controls allow safety retention while ZDR routing is
+enabled. The routing flag therefore does not establish that Google stores no text.
+Google may retain prompts and responses for abuse monitoring, with possible human
+review of flagged content. Its applicable policies prohibit training or fine-tuning
+without permission or instruction. Provider caching may occur; no universal
+retention duration is promised. The revised notice requires fresh acknowledgement.
+See the [October 19 decision](decisions.md#2026-10-19-google-vertex-safety-retention)
+for sources, the maintainer-reported production test, and verification limits.
 
 ## Testing and verification
 

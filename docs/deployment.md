@@ -42,8 +42,8 @@ or real user text.
 Live requests are allowed only when Vercel's `x-vercel-ip-country` header matches
 `MIMUS_LIVE_COUNTRIES`. Missing, unknown, or disallowed countries fail closed with
 `REGION_UNAVAILABLE` before any provider call. This logic is unit-tested. The
-allowlist does not mean inference stays in the US: the permitted Google Vertex
-family includes global and other regional endpoints. Deployed rejection of a non-US request has not been
+allowlist does not mean inference stays in the US, because OpenRouter routes to
+unpinned third-party hosts. Deployed rejection of a non-US request has not been
 observed, since it cannot be produced from a US network.
 
 ## WAF rate limit
@@ -63,9 +63,8 @@ with /api/translate` and `method equals POST`.
 
 ## Activation and verification
 
-1. Confirm the [privacy follow-up](#privacy-follow-up), Google Vertex routing, and
-   account/key settings that permit safety retention. Use a dedicated capped key,
-   disable auto-recharge, and keep
+1. Confirm the [privacy follow-up](#privacy-follow-up), applicable routing controls, and
+   account settings. Use a dedicated capped key, disable auto-recharge, and keep
    prompt/completion logging off. The app cannot enforce account settings.
 2. Record the healthy deployment, reviewed source revision, and eligible rollback
    target before replacing anything. Keep Preview in demo mode unless separately
@@ -189,59 +188,32 @@ readiness rather than inheriting this exception.
 
 ## Privacy follow-up
 
-The [October 17 decision](decisions.md#2026-10-17-google-vertex-safety-retention)
-accepts Google safety/abuse retention for live rewriting and replaces the previous
-ZDR-only contract. The signed-in OpenRouter announcement was verified read-only:
-Google models require Safety Retention starting October 18, 2026. The app limits
-live routing to the `google-vertex` family with `zdr: false`, retains
-`data_collection: "deny"`, and requires a new acknowledgement. Google may retain
-content and review flagged material under its policies; this is not a claim of
-zero retention. No post-change inference request has been verified by this record.
+The [October 19 decision](decisions.md#2026-10-19-google-vertex-safety-retention)
+records the safety-retention disclosure and the maintainer's successful Production
+test after the announced October 18 change. Requests retain `zdr: true` and
+`data_collection: "deny"`; the app does not pin a host. OpenRouter's Google ZDR
+controls offer "Safety retention allowed", which keeps Vertex eligible while
+excluding AI Studio. Do not disable ZDR solely because of the announcement.
 
-Before enabling the revised deployment, check these controls without changing
-unrelated model groups or enabling training:
+In the account and every guardrail applicable to the deployed key, inspect the
+Google safety-retention selection. Keep training opt-ins, Input & Output Logging,
+and observability broadcasts off, alongside the dedicated spending cap. A working
+key does not need recreation. The app cannot enforce these account settings.
+Before asserting which host served the reported request, inspect its provider
+metadata in OpenRouter Activity; no additional inference is needed for that check.
 
-1. In [account Privacy](https://openrouter.ai/settings/privacy), keep the Google
-   toggle under Zero Data Retention **off**. Keep paid-endpoint training disabled.
-2. In the key's [workspace](https://openrouter.ai/workspaces), inspect Guardrails,
-   including the default guardrail and any key/member assignments. Google ZDR
-   enforcement must be off in every applicable guardrail; other restrictions must
-   permit the selected model and `google-vertex` endpoints. Request-level
-   `zdr: false` cannot override account or guardrail ZDR enforcement.
-3. Keep Input & Output Logging and observability broadcasts off. Do not opt into
-   OpenRouter's use of inputs/outputs for a discount. Keep the dedicated spending
-   cap and other operational safeguards.
+OpenRouter's public [ZDR documentation](https://openrouter.ai/docs/guides/features/zdr)
+still describes strict zero-retention routing and does not fully reconcile the
+safety-retention exception shown in the dashboard. Google may retain text for
+safety monitoring and review flagged content under its applicable policies. No
+fixed retention period is promised, and working inference does not prove absence
+of retention.
 
-The October 17 read-only account inspection found Google ZDR enforcement off,
-paid-endpoint training off, and the Mimus key assigned to the default workspace
-guardrail, which showed no policies. Input/output logging and broadcasts were
-off. No setting was changed, and no new key was needed. Recheck the account and
-workspace that actually own the deployed key before activation; the source cannot
-override stricter settings or prove which key a deployment contains.
-
-The [routing documentation](https://openrouter.ai/docs/guides/routing/provider-selection)
-defines `only: ["google-vertex"]` as restricting the provider family, including its
-regional variants. Public model and ZDR catalogs still listed five Vertex variants
-on October 17; their pre-change labels do not establish behavior after October 18.
-See [Google data handling](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention)
-and [abuse monitoring](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/abuse-monitoring)
-for retention, caching, and review conditions. Mimus does not guarantee a fixed
-endpoint-specific retention duration.
-
-The separate `data_collection: "deny"` filter is retained. OpenRouter describes it
-as a training control in its [sovereign AI guide](https://openrouter.ai/docs/guides/get-started/sovereign-ai),
-while the routing reference also uses collection/storage language. Compatibility
-with the post-change Vertex classification has not been tested. If the revised
-deployment reports a data-policy routing denial, inspect the current endpoint and
-account policies before changing this filter; do not enable training to restore
-availability. The source change removes the ZDR requirement, not every possible
-reason for a provider to reject a request.
-
-After an authorized deployment, verify the new notice on `/` and `/privacy` before
-any paid check. A synthetic smoke test needs separate spend approval. Until then,
-the policy decision and account inspection are recorded, while deployed behavior
-under the revised routing remains unverified. Rolling back to the old ZDR-only
-build may make Google requests unavailable after the policy change.
+After an authorized deployment, verify the renewed notice on `/` and `/privacy`
+with version `openrouter-vertex-safety-v1`. The maintainer's October 19 test predates
+this disclosure revision; it does not verify the revised deployed pages. Any new
+paid smoke test requires separate approval. A rollback to the old notice would
+restore wording that omits the safety-retention exception.
 
 ## Release procedure
 

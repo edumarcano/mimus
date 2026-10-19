@@ -19,13 +19,11 @@ Retire this file once the gates below are closed.
 
 ## Remaining gates
 
-- [x] Verify the October 18 Google Safety Retention announcement and record the
-  accepted policy change and read-only account/key inspection. See the
-  [October 17 decision](decisions.md#2026-10-17-google-vertex-safety-retention).
-- [ ] Deploy the reviewed Google Vertex routing and revised notice with
-  authorization; confirm the deployed key's applicable Google ZDR restrictions
-  are off. Follow the [privacy procedure](deployment.md#privacy-follow-up).
-  Post-change inference remains unverified and paid smoke checks require approval.
+- [x] Reconcile the October 18 Google safety-retention announcement with the
+  maintainer-reported October 19 Production test and guardrail screenshot. Keep
+  existing request routing; record the [policy evidence and limits](decisions.md#2026-10-19-google-vertex-safety-retention).
+- [ ] Deploy the revised acknowledgement and privacy page with authorization;
+  verify the new notice on the deployed pages. See [privacy follow-up](deployment.md#privacy-follow-up).
 - [ ] Recheck the [development dependency exception](deployment.md#dependency-exception)
   before relying on it for release. The October 16 full audit was not clean;
   production findings would block readiness.

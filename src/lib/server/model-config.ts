@@ -7,12 +7,8 @@ export const MODEL_CONFIG = {
   maxOutputTokens: 2_048,
   model: "google/gemini-3.5-flash-lite",
   reasoningEffort: "minimal",
-  providerPreferences: {
-    only: ["google-vertex"],
-    dataCollection: "deny",
-    zdr: false,
-    requireParameters: true,
-  },
+  dataCollection: "deny",
+  zdr: true,
 } as const;
 
 export const MODEL_PUBLIC_LABEL = "Gemini 3.5 Flash-Lite";

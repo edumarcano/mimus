@@ -90,7 +90,9 @@ export default function PrivacyPage() {
             >
               abuse monitoring policy
             </a>
-            . Mimus routes live generation only to Google Vertex endpoints.
+            . Mimus requests OpenRouter ZDR routing; eligible hosts depend on
+            OpenRouter and the applicable account and guardrail settings,
+            including safety-retention exceptions.
           </p>
         </section>
       </main>

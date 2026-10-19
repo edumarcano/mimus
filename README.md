@@ -41,8 +41,8 @@ model output.</sub>
 flowchart LR
   Browser -->|"1. text and styles"| Route["Next.js route: checks, then prompt"]
   Route -->|"2. provider request"| Adapter["OpenRouter adapter"]
-  Adapter -->|"3. chat completion, Vertex routing"| OpenRouter["OpenRouter"]
-  OpenRouter -->|"Google Vertex only"| Host["Google Vertex"]
+  Adapter -->|"3. chat completion, ZDR routing"| OpenRouter["OpenRouter"]
+  OpenRouter -->|"routes to"| Host["Model host"]
   Host -->|"generated output"| OpenRouter
   OpenRouter -->|"provider stream"| Adapter
   Adapter -->|"4. normalized events"| Route
@@ -59,22 +59,21 @@ the environment or the browser.
 ## Model and privacy
 
 Live mode calls OpenRouter with `google/gemini-3.5-flash-lite` (minimal reasoning,
-prompt v4, 2,048-token output cap) and restricts routing to Google Vertex. It
-retains OpenRouter's `data_collection: "deny"` routing preference, separately
-from Google's safety-retention policy, and does not require zero-data-retention
-routing.
-The choice and its trade-offs are explained in the [design notes](docs/case-study.md).
+2,048-token output cap), `zdr: true`, and `data_collection: "deny"`. Hosts are not
+pinned. OpenRouter permits Google Vertex safety retention when the applicable
+account and guardrail settings allow it, so the ZDR routing flag is not a promise
+that no text is retained. The [design notes](docs/case-study.md#google-vertex-safety-retention)
+explain the policy and evidence limits.
 
-Live text is sent to OpenRouter and Google Vertex. Google's [data governance](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention)
-and [abuse monitoring](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/abuse-monitoring)
-policies describe safety retention and possible human review of flagged content.
-Under applicable policies, content is not used to train or fine-tune models without
-permission or instruction. Provider caching may occur; Mimus does not promise a
-specific retention period. The OpenRouter preference does not itself mean the host
-stores no data. Mimus does not intentionally store text on its
-application servers, in its logs, or in URLs. Use fictional text and do not submit
-personal or confidential information.
-The full notice is on the [`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
+Google may retain prompts and responses for safety and abuse monitoring, including
+human review of flagged content. Its applicable policies prohibit training or
+fine-tuning without permission or instruction. Provider caching may occur; Mimus
+does not promise a specific retention period. Mimus has no application database
+and does not intentionally persist submitted or generated text on its servers,
+in logs, or in URLs. OpenRouter and the hosting platform process request metadata.
+Use fictional text and do not submit personal or confidential information. The
+full notice and provider-policy links are on the
+[`/privacy`](https://mimus-rewrite.vercel.app/privacy) page.
 
 ## Design and evaluation
 

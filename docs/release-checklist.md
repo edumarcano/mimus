@@ -1,10 +1,10 @@
 # v1.0.0 release checklist
 
-Temporary checklist for the remaining release gates. The application version is
-prepared as 1.0.0; that does not establish release readiness. Use
-[CHANGELOG](../CHANGELOG.md) for release notes and the
-[deployment guide](deployment.md#release-procedure) for the reusable procedure.
-Retire this file once the gates below are closed.
+A temporary list of the gates still open before release. The version is set to 1.0.0,
+but that doesn't mean the release is ready. Release notes are in the
+[CHANGELOG](../CHANGELOG.md) and the reusable procedure is in the
+[deployment guide](deployment.md#release-procedure). This file goes away once every
+gate is closed.
 
 ## Existing evidence
 

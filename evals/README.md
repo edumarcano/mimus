@@ -5,6 +5,23 @@ reproducible v1 benchmark. The original records and split meanings are preserved
 The frozen protocol in [`docs/benchmark-protocol.md`](../docs/benchmark-protocol.md)
 defines the experiments; dated records below document their results and limits.
 
+## Names used in these records
+
+- **Generators** write the rewrites: GLM 5.3 Flash ("GLM"), GPT-6 Luna ("Luna"),
+  Anthropic's Haiku 5.5 ("Haiku"), and Gemini 3.5 Flash-Lite ("Gemini"). A setting
+  like "Gemini minimal" or "Haiku low" means that model at that reasoning effort.
+- **Judges** score the rewrites. Gemini 4 Argon ("Argon") is the chosen LLM judge.
+  Luna was the other candidate.
+- **Decision models** (Jev, Microsoft Decision, Perplexity Decider) are small models
+  tested as a cheap first filter in the offline cascade experiment.
+- **Meaning and style scores** run from 0 to 2. "Full" means a score of 2.
+- **Critical cases** are the 10 cases most likely to expose serious failures such as
+  invented facts or changed commitments.
+- **Holdout** cases are meant to stay unseen until a configuration is frozen. Once
+  they inform a change, they count as development evidence.
+
+## The case set
+
 The synthetic set in [`cases.jsonl`](cases.jsonl) has 50 fictional cases:
 
 - 30 original `dev-*` development cases;
@@ -46,7 +63,7 @@ The human review budget is at most 25 outputs: 12 calibration, 8 audit, and up t
 | [`results/release-audit-rule-2026-10-15.md`](results/release-audit-rule-2026-10-15.md) | Final eight-review sampling rule | Frozen before release calls; blind scores remain separate |
 | [`results/release-run-2026-10-15.md`](results/release-run-2026-10-15.md) | Fresh release comparison and eight blind audits | Gemini minimal meets automated targets; adopted in the runtime configuration and deployed on Production; audit style disagreement and limited model coverage retained |
 | [`results/production-verification-2026-10-16.md`](results/production-verification-2026-10-16.md) | Production smoke checks and operational rehearsals | Streaming and application-side cancellation verified; numerical meaning defect accepted; provider billing remains separate |
-| [`results/local-demo-verification-2026-10-15.md`](results/local-demo-verification-2026-10-15.md) | Local keyboard, browser, zoom, and Narrator checks | Includes maintainer observations and corrected accessibility defects |
+| [`results/local-demo-verification-2026-10-15.md`](results/local-demo-verification-2026-10-15.md) | Local keyboard, browser, zoom, and Narrator checks | Includes my observations and corrected accessibility defects |
 
 Historical records do not establish the quality of planned benchmark
 configurations. Preserve them as dated observations; do not combine their scores

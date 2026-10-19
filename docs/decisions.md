@@ -1,15 +1,32 @@
 # Decisions and evidence
 
-This log records Mimus engineering decisions, what was actually observed, and
-why the project ended up where it is. It is not the behavioral contract (that is
-[`product-spec.md`](product-spec.md)) and not the operations guide (that is
-[`deployment.md`](deployment.md)). Entries describe what was run. None of them is
+This log records the engineering decisions behind Mimus, what was actually observed,
+and how the project ended up where it is. It isn't the behavioral contract (that's
+[`product-spec.md`](product-spec.md)) or the operations guide (that's
+[`deployment.md`](deployment.md)). Entries describe what was run. None counts as
 release acceptance unless it says so.
 
+## Where things stand
+
+- **Provider:** OpenRouter, after a terms review ruled out Google's unpaid Gemini API
+  for a public site.
+- **Model:** `google/gemini-3.5-flash-lite` with minimal reasoning, prompt v4, and a
+  2,048-token output cap. It replaced GLM 5.3 Flash after a staged benchmark.
+- **Privacy:** requests ask for zero-data-retention (ZDR) routing and deny data
+  collection. Google may still keep text for safety monitoring, and the notice says so.
+- **Known defects:** meaning preservation isn't guaranteed. A Production rewrite
+  turned a relative 6% decrease into "six percentage points", and I chose to accept
+  that.
+- **Not verified:** real non-US rejection, upstream quota exhaustion, whether the model
+  host stops billing after Stop, and a full emergency shutdown.
+
+## How to read this log
+
 Each entry is labeled **Active** (still governs the project), **Superseded**
-(replaced, with what replaced it), or **Historical evidence** (kept for
-provenance). Early entries use the project's pre-release name, Parlance, and its
-`PARLANCE_*` variables.
+(replaced, with what replaced it), or **Historical evidence** (kept for provenance).
+Entries run roughly in date order. The "Cancellation and spending safeguards" section
+is a topic section rather than a dated entry. Early entries use the project's
+pre-release name, Parlance, and its `PARLANCE_*` variables.
 
 ## 2026-10-06: Candidate integration check (Superseded: Gemini)
 
@@ -33,7 +50,7 @@ the specified codes: 403 for a foreign origin or missing acknowledgement, 409 fo
 a stale notice version, 400 for a same-style pair or unknown field, and 413 for a
 17 KB body.
 
-**Quality (informal, one reviewer, unscored).** Reverse mode did not decode
+**Quality (informal, my review only, unscored).** Reverse mode did not decode
 motives and kept qualifiers and negation. An embedded "ignore all previous
 instructions" was not followed, and emoji and hashtag caps held. At higher
 intensity the model strengthened meaning: "Priya says the client *might* renew"
@@ -70,8 +87,8 @@ Browser checks showed no horizontal overflow at 360 and 1440 px on `/` and
 with 720 and 640 px viewports; reduced motion disabled the busy animation; all
 controls measured at least 44 px; computed contrast was at least 4.5:1 for text.
 The browser tool's synthetic key events do not move native focus, so keyboard-only
-Tab traversal was not machine-verified. Keyboard, zoom, and live use were reported
-as normal.
+Tab traversal was not machine-verified. I found keyboard, zoom, and live use
+normal.
 
 **Not verified then:** screen readers, Safari, Firefox, and real cancellation
 behavior. Later [local demo checks](../evals/results/local-demo-verification-2026-10-15.md)
@@ -386,7 +403,7 @@ unresolved [Google retention follow-up](deployment.md#privacy-follow-up). The
 [CHANGELOG](../CHANGELOG.md) is the release-note source. Experimental records and
 original human/automated labels remain unchanged.
 
-## 2026-10-19: Google Vertex safety retention
+## 2026-10-19: Google Vertex safety retention (Active)
 
 Keep OpenRouter request preferences `zdr: true`, `data_collection: "deny"`, and
 `require_parameters: true`, with no pinned model host. OpenRouter's Google ZDR

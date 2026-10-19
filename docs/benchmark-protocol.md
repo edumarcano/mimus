@@ -136,23 +136,10 @@ request flow. CI uses fixtures and mocks and never calls a provider.
 
 ## Study status
 
-The technical pilot, evaluator calibration/validation, and initial challenge-set
-cascade simulation have dated records in `evals/results/`. Calibration preserves
-original human scores and separate human adjudications. The dated validation
-record selects the offline evaluators. The [development comparison](../evals/results/development-comparison-2026-10-15.md)
-and [cascade assessment](../evals/results/development-cascade-2026-10-15.md) preserve
-all failed and unresolved observations. The [difficult-case repeats](../evals/results/repeatability-2026-10-15.md)
-retain observed meaning failures; Gemini minimal and Haiku low proceed unchanged
-under the frozen release manifest. The [final audit sampling rule](../evals/results/release-audit-rule-2026-10-15.md)
-is recorded before release calls. The [fresh collection record](../evals/results/release-run-2026-10-15.md)
-preserves complete generation coverage, one unresolved judgment, and the eight
-completed blind human audits. Gemini minimal meets the automated targets and is
-recommended for v1; its configuration is now adopted in code and deployed on
-Production. Deployment checks and accepted limitations are recorded separately
-in the [Production verification](../evals/results/production-verification-2026-10-16.md). Exact human/Argon agreement
-is 7/8 for meaning and 4/8 for style, with seven Haiku examples and only one Gemini
-example. These limited labels do not independently validate the recommendation.
-The [local demo verification record](../evals/results/local-demo-verification-2026-10-15.md)
-separates automated keyboard/browser checks from manual Edge, 200% zoom, and
-Narrator observations, including the reported defects and their successful retests.
-Provider-operation checks remain separate from these local UI observations.
+The study is complete. Each phase has a dated record in `evals/results/`; the table in the [evaluation guide](../evals/README.md#records) lists them all. In short:
+
+- **Pilot, calibration, validation:** the judges were tested on constructed examples. Calibration kept the original human scores and the later adjudications separate, and validation selected the offline evaluators.
+- **Development comparison, cascade, and repeats:** the [development comparison](../evals/results/development-comparison-2026-10-15.md) advanced Gemini minimal and Haiku low. The [cascade assessment](../evals/results/development-cascade-2026-10-15.md) was inconclusive. The [difficult-case repeats](../evals/results/repeatability-2026-10-15.md) kept every observed meaning failure, and both finalists went forward unchanged.
+- **Release run:** the [audit sampling rule](../evals/results/release-audit-rule-2026-10-15.md) was recorded before any release calls. The [release run](../evals/results/release-run-2026-10-15.md) completed all generations, with one unresolved judgment and eight blind human audits. Gemini minimal met the automated targets and is recommended for v1. It's now adopted in code and deployed on Production.
+- **Human audit limits:** humans agreed with Argon on meaning in 7 of 8 outputs and on style in 4 of 8. Seven of the eight were Haiku outputs and only one was Gemini, so these labels don't independently validate the recommendation.
+- **Deployment and UI checks:** these are recorded separately in the [Production verification](../evals/results/production-verification-2026-10-16.md) and the [local demo verification](../evals/results/local-demo-verification-2026-10-15.md), including the Narrator defects and their retests.

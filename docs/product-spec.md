@@ -2,36 +2,46 @@
 
 **Translate meaning, not just words.**
 
-This is the single product and technical specification for Mimus. It describes
-what the application is intended to do, not what has already been implemented or
-verified. Numerical limits and evaluation thresholds are project decisions, not
-measured results. External-service assumptions require verification before launch.
+This is the product and technical specification for Mimus. It describes what the
+application is meant to do, not what has been implemented or verified. Numerical
+limits and evaluation thresholds are project decisions, not measured results.
+Assumptions about external services need to be checked before launch.
 
-This document defines product behavior and technical requirements, independent
-of implementation order. The code, tests, evaluation results, and deployment
-evidence establish which requirements have actually been met.
+The spec is written as a brief for AI coding agents, which is why it's phrased as
+instructions ("Do not add...", "Keep... separate"). The code, tests, evaluation
+results, and deployment evidence show which requirements have actually been met. For
+history and rationale, see [decisions](decisions.md).
 
 ## Contents
 
-- [Product and scope](#1-product-purpose)
-- [Interaction and visual direction](#4-user-experience-and-interaction-rules)
-- [Transformation semantics](#6-transformation-semantics-and-style-profiles)
-- [Provider boundary](#8-ai-provider-design-and-model-selection)
-- [HTTP and streaming contract](#10-http-and-streaming-contract)
-- [Privacy and launch policy](#12-privacy-local-storage-and-public-launch-gate)
-- [Evaluation and tests](#14-evaluation-plan)
-- [Configuration and deployment](#17-configuration-and-deployment)
-- [Release acceptance](#18-definition-of-done)
+1. [Product purpose](#1-product-purpose)
+2. [Product and architecture decisions](#2-product-and-architecture-decisions)
+3. [Scope boundaries](#3-scope-boundaries)
+4. [User experience and interaction rules](#4-user-experience-and-interaction-rules)
+5. [Visual and accessibility direction](#5-visual-and-accessibility-direction)
+6. [Transformation semantics and style profiles](#6-transformation-semantics-and-style-profiles)
+7. [Prompt and output contract](#7-prompt-and-output-contract)
+8. [AI provider design and model selection](#8-ai-provider-design-and-model-selection)
+9. [Architecture and ownership](#9-architecture-and-ownership)
+10. [HTTP and streaming contract](#10-http-and-streaming-contract)
+11. [Lifecycle, limits, and failure behavior](#11-lifecycle-limits-and-failure-behavior)
+12. [Privacy, local storage, and public-launch gate](#12-privacy-local-storage-and-public-launch-gate)
+13. [Abuse controls and cost plan](#13-abuse-controls-and-cost-plan)
+14. [Evaluation plan](#14-evaluation-plan)
+15. [Automated testing and verification](#15-automated-testing-and-verification)
+16. [Repository organization](#16-repository-organization)
+17. [Configuration and deployment](#17-configuration-and-deployment)
+18. [Definition of done](#18-definition-of-done)
 
 ---
 
 ## 1. Product purpose
 
-Mimus rewrites text between recognizable writing styles while aiming to preserve its underlying meaning. The hero experience is **Human <-> LinkedIn**: ordinary language becomes exaggerated professional-social writing, and inflated writing becomes plain English.
+Mimus rewrites text between recognizable writing styles while aiming to preserve its underlying meaning. The main experience is **Human <-> LinkedIn**: ordinary language becomes exaggerated professional-social writing, and inflated writing becomes plain English.
 
 The application should be understandable without reading documentation. Its primary interaction is a two-panel translator, not a chat conversation. Here, "translation" means rewriting English writing registers, not translating between human languages.
 
-Mimus is a personal learning and experimentation project exploring AI-assisted software development and text rewriting. It is a standalone application whose scope emphasizes a complete, approachable interaction, controlled model behavior, and inspectable evaluation rather than a general writing platform.
+Mimus is an experiment in AI-assisted software development and text rewriting. It's a standalone application. Its scope favors a complete, approachable interaction, controlled model behavior, and inspectable evaluation over being a general writing platform.
 
 **Primary audience:** Adults exploring writing styles, professional jargon, and playful rewrites. Treat the application as a writing experiment, not a factual interpreter of someone's hidden intentions or a professional advice service.
 
@@ -57,7 +67,7 @@ Mimus is a personal learning and experimentation project exploring AI-assisted s
 | Backend | One Next.js Node.js route: `POST /api/translate`. |
 | Active AI provider | OpenRouter, called server-side with a server-only `OPENROUTER_API_KEY`. Requests use OpenRouter ZDR (`zdr: true`) and data-collection denial (`data_collection: "deny"`) routing; Google safety-retention exceptions depend on account and guardrail settings. [S9, S10] |
 | Active model | `google/gemini-3.5-flash-lite`, reasoning effort `minimal`, 2,048-token output cap, committed in `src/lib/server/model-config.ts`. Access, price, and endpoint eligibility are verified per deployment, not assumed. [S9, S10] |
-| Superseded provider | Google Gemini Developer API with `gemini-3.5-flash-lite` and an AI Studio-managed key. This was the provider for the earlier release-candidate evaluation; that record is historical and lives in `evals/results/summary.md` and `docs/decisions.md`. It does not govern the active system. [S1, S3, S4] |
+| Superseded provider | Google Gemini Developer API, used for the earlier release-candidate evaluation. It's recorded in `evals/results/summary.md` and `docs/decisions.md` and doesn't govern the active system. [S1, S3, S4] |
 | Model configuration | Model ID and model-specific parameters are versioned together in server-side code, not environment variables. |
 | Provider portability | One small internal adapter boundary. Only OpenRouter is active. Changing provider requires a reviewed notice update first. |
 | Database and accounts | None. No authentication, user profiles, or application database. |
@@ -258,7 +268,7 @@ The OpenRouter adapter translates these fields into its chat-completions request
 (`reasoning.effort`, `max_tokens`, and `provider` routing preferences). The output
 cap counts reasoning tokens as well as visible text. Verify any change to the model
 or its supported parameters against the live endpoint; do not change only the model
- string. Leave sampling overrides unset unless evaluation supports a change. [S9, S10, S16]
+string. Leave sampling overrides unset unless evaluation supports a change. [S9, S10, S16]
 
 Do not read a model ID, thinking setting, or sampling setting from `.env.local`,
 deployment environment variables, or a browser request. Credentials, deployment
@@ -352,16 +362,13 @@ model quality. Do not silently substitute another model when the chosen one fail
 The initial check supports integration; the full evaluation in Section 14 supports
 release acceptance.
 
-### OpenRouter contract - active provider
+### Provider changes and activation
 
-The OpenRouter adapter reuses the internal contract above. Its selected model,
-generation parameters, and privacy-routing preferences are committed together in
-server-side code. Before live activation, verify the exact model ID, current price,
-supported parameters, streaming, and eligible endpoint. [S16]
+The adapter above is the active provider contract. Before live activation, verify the exact model ID, current price, supported parameters, streaming, and an eligible endpoint. [S16]
 
-Send provider preferences including `zdr: true` and `data_collection: "deny"`; use no plugins or tools. Account-level prompt logging must be disabled in the account; the app cannot enforce it. If no eligible route exists, fail rather than relax privacy. ZDR is an endpoint-routing control, not a guarantee of no safety retention, anonymity, or no operational metadata; OpenRouter also permits certain in-memory prompt caching under that policy. [S9, S10]
+ZDR is an endpoint-routing control. It does not guarantee the absence of safety retention, anonymity, or operational metadata, and OpenRouter permits some in-memory prompt caching under that policy. [S9, S10]
 
-Changing provider requires updating the visible privacy policy before traffic is sent. There is no automatic failover to Google or any other provider and no routing by visitor without a separate product decision. Reusing the same model across eligible OpenRouter endpoints is distinct from changing models; document any chosen routing behavior.
+Changing provider requires updating the visible privacy policy before any traffic is sent. There is no automatic failover to Google or any other provider, and no routing by visitor without a separate product decision. Reusing the same model across eligible OpenRouter endpoints is different from changing models; document any chosen routing behavior.
 
 ---
 
@@ -547,7 +554,7 @@ content. Its applicable policies prohibit training or fine-tuning without
 permission or instruction. Provider caching may occur; no fixed retention duration
 is promised. OpenRouter processes request metadata and may categorize prompts
 anonymously. Account-level logging must be checked separately. See the
-[dated decision](decisions.md#2026-10-19-google-vertex-safety-retention). [S9, S10, S16, S17]
+[dated decision](decisions.md#2026-10-19-google-vertex-safety-retention-active). [S9, S10, S16, S17]
 
 Use fictional text; do not submit personal, confidential, or sensitive information.
 
@@ -557,7 +564,7 @@ public live activation. A privacy notice alone does not resolve them.
 **Conservative v1 deployment default:** Publicly viewable examples, with live requests
 limited to US traffic after review. The US allowlist is a visitor restriction
 in this app. It is not data residency, and the app does not claim that inference
-stays in the US. 
+stays in the US.
 
 Use Vercel's platform-supplied country information at the server boundary; reject unknown or non-allowlisted locations for live requests. Do not accept a country sent in the JSON body. Local development may use `MIMUS_DEV_ALLOW_LOCAL_LIVE=true` only in a loopback development server with `NODE_ENV=development` and no Vercel deployment environment. Fail closed outside that context; never activate the bypass through a request parameter. Vercel documents the geolocation headers and their deployment/proxy limitations. [S13]
 
@@ -685,9 +692,9 @@ Score **meaning** and **style** independently:
 
 Deterministic checks cover nonempty output, size bounds, completion status, and case-specific tokens only where exact preservation is meaningful. Token overlap, embeddings, a decision model, or an LLM judge are not proof of fidelity by themselves. V1 uses automated scoring with limited human calibration and audit; reports must state this limitation and preserve human, automated, and adjudicated labels separately.
 
-The benchmark compares the former GLM configuration, GPT-6 Luna, Haiku 5.5, and Gemini 3.5 Flash-Lite. Reasoning settings are compared within each model and are not treated as equivalent across model families. A 12-case screen narrows settings before the 40-case development comparison. The existing 50-case corpus and historical records remain unchanged; a separate 40-case fresh release set is used for final evaluation. The ten-case historical `holdout2` cohort has already been run on Gemini and is not fresh release evidence.
+The benchmark compares four generator models (the former GLM configuration, GPT-6 Luna, Haiku 5.5, and Gemini 3.5 Flash-Lite). Reasoning settings are compared within each model, not across model families. A 12-case screen narrows settings before a 40-case development comparison, and a separate 40-case fresh release set is used for final evaluation. The ten-case historical `holdout2` cohort was already run on Gemini and is not fresh release evidence.
 
-The evaluator study compares GPT-6 Luna and Gemini 4 Argon as LLM judges, and Jev 1.14, Microsoft-Decision-1, and Perplexity Decider V1.1 27B as decision models. Exact model identifiers and supported settings must be pinned before paid runs. Evaluators are compared on a separate challenge set of 20 source passages, each with one faithful and one deliberately flawed rewrite; 12 pairs are for calibration and 8 pairs for validation. The experiment may simulate a decision-model escalation policy. It does not add an evaluator to production, and the release set is scored by the selected LLM judge without cascade gating.
+The evaluator study compares two LLM judges (GPT-6 Luna and Gemini 4 Argon) and three decision models (Jev 1.14, Microsoft-Decision-1, and Perplexity Decider V1.1 27B). Exact model identifiers and supported settings must be pinned before paid runs. Judges are compared on a separate challenge set of 20 source passages, each with one faithful and one deliberately flawed rewrite: 12 pairs for calibration and 8 for validation. The experiment may simulate a decision-model escalation policy. It does not add an evaluator to production, and the release set is scored by the selected LLM judge without cascade gating. The [benchmark protocol](benchmark-protocol.md) has the full procedure.
 
 Human involvement is capped at 25 outputs: 12 calibration examples, 8 final audit examples, and at most 5 disagreements. The audit includes randomly selected confident passes. If human labels are insufficient to support a conclusion, the report describes the result as exploratory instead of overstating validation.
 
@@ -730,52 +737,14 @@ manifest or a requirement to create empty modules. Repository contribution
 instructions and development-tool configuration remain separate from application
 code.
 
-```text
-mimus/
-  README.md
-  LICENSE
-  AGENTS.md
-  .env.example
-  .gitignore
-  .cursorignore
-  docs/product-spec.md
+The main areas are:
 
-  # Application files added as the corresponding behavior is implemented:
-  package.json
-  package-lock.json
-  src/app/
-    page.tsx
-    layout.tsx
-    globals.css
-    privacy/page.tsx
-    api/translate/route.ts
-  src/components/
-  src/lib/
-    schema.ts
-    styles.ts
-    prompts.ts
-    stream.ts
-    history.ts
-    limits.ts
-    server/
-      config.ts             # Environment validation; contains no secret literals
-      model-config.ts       # Versioned model ID and matching parameters
-      openrouter.ts          # Provider adapter and cleanup
-      policy.ts
-      errors.ts
-  tests/
-  e2e/
-  evals/
-    cases.jsonl
-    README.md
-    results/summary.md
-    results/glm-development.md
-  scripts/evaluate.ts
-  docs/decisions.md
-  docs/deployment.md
-  docs/case-study.md
-  .github/workflows/ci.yml
-```
+- `src/app/` and `src/components/`: pages, the `/privacy` page, the `/api/translate` route, and the translator UI.
+- `src/lib/`: shared schema, styles, prompts, stream parsing, history, and limits. `src/lib/server/` holds server-only code: environment validation, the versioned model configuration, the OpenRouter adapter, policy checks, and error mapping.
+- `tests/` and `e2e/`: unit, integration, and Playwright tests.
+- `evals/` and `scripts/`: datasets, dated results, and the offline benchmark tooling.
+- `docs/`: this specification, the decisions log, the deployment guide, the design notes, and the benchmark protocol.
+- `.github/workflows/ci.yml`: CI.
 
 These paths describe ownership, not a mandate for one file per concept. Provider
 and model-configuration modules remain server-only. Public setup instructions must
@@ -786,32 +755,9 @@ understand the application. Raw evaluation output and secrets are not committed.
 
 ## 17. Configuration and deployment
 
-Start `.env.example` with placeholders and safe defaults:
+[`.env.example`](../.env.example) holds placeholders and safe defaults. It is the source of truth for variable names and comments and must stay credential-free. Server-only variables are never prefixed with `NEXT_PUBLIC_`.
 
-```dotenv
-# Copy to .env.local only if it does not already exist; keep real credentials there.
-# Server-only variables. Never prefix credentials with NEXT_PUBLIC_.
-OPENROUTER_API_KEY=
-
-# Model ID, reasoning effort, output cap, and privacy routing live in
-# src/lib/server/model-config.ts. There is intentionally no model-selection
-# environment variable; leftover GEMINI_API_KEY, GEMINI_MODEL, and
-# OPENROUTER_MODEL are ignored.
-
-# demo | live | disabled. Default: demo; no model calls or key required.
-MIMUS_MODE=demo
-
-# Exact trusted browser origin for this environment, without a trailing slash.
-APP_ORIGIN=http://localhost:3000
-
-# Visitor region allowlist for live mode; a visitor restriction, not data residency.
-# Use uppercase country codes.
-MIMUS_LIVE_COUNTRIES=US
-
-# Local loopback development only; must be rejected on deployed/production hosts.
-# Does not bypass the privacy notice, validation, or any other request limits.
-MIMUS_DEV_ALLOW_LOCAL_LIVE=false
-```
+The variables are `OPENROUTER_API_KEY`, `MIMUS_MODE` (`demo`, `live`, or `disabled`; default `demo`), `APP_ORIGIN`, `MIMUS_LIVE_COUNTRIES`, and `MIMUS_DEV_ALLOW_LOCAL_LIVE`. There is intentionally no model-selection variable; leftover `GEMINI_API_KEY`, `GEMINI_MODEL`, and `OPENROUTER_MODEL` are ignored.
 
 These are the configuration names used by Mimus. The application has no
 legacy-name lookup (the former `PARLANCE_*` names are ignored), and the names

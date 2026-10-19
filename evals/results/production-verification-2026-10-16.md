@@ -43,14 +43,14 @@ or generated text, key, or reasoning content. A failed initial log lookup was
 retried read-only; inference requests were not retried.
 
 No code, prompt, deployment, key, WAF, or privacy configuration was changed during
-verification. Production remains on Gemini. The maintainer subsequently accepted
+verification. Production remains on Gemini. I subsequently accepted
 leaving the numerical meaning defect for now. It remains a failed meaning observation;
 accepting it does not turn the
 quality check into a pass. No prompt tuning or retrospective score change was made.
 
 ## Operational follow-up
 
-The maintainer authorized completing the remaining operational checks. All
+I authorized completing the remaining operational checks. All
 observations below were collected on October 16 against the same merged
 application revision. No model, prompt, key, or spending limit was changed.
 
@@ -125,7 +125,7 @@ This verifies that Vercel delivered this disconnect to the function and that
 subsequent requests worked. Provider-side generation and billing cessation
 remain separate and are not guaranteed by application status 499.
 
-After the maintainer signed in, the account and default-workspace generation
+After I signed in, the account and default-workspace generation
 tables were inspected and refreshed. Their newest visible Mimus rows were the
 earlier local checks at 10:33 AM America/New_York; no row matching the 11:59 AM
 cancellation/resubmission window was visible. No provider generation ID was

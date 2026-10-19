@@ -1,6 +1,6 @@
 # Authorized benchmark pilot (2026-10-15)
 
-The maintainer authorized offline experiments using the existing OpenRouter key. The study targets $1 with a $3 cumulative ceiling; these pilot manifests limit cumulative spend to $0.25. No Vercel settings or deployed application configuration changed.
+I authorized offline experiments using the existing OpenRouter key. The study targets $1 with a $3 cumulative ceiling; these pilot manifests limit cumulative spend to $0.25. No Vercel settings or deployed application configuration changed.
 
 This is a technical integration and accounting pilot, not model selection or release acceptance. Four generators each rewrote one existing development case; five evaluators each graded the same four constructed calibration examples. No fresh release cases were run. The evaluator rubric and reference labels still await limited blind human calibration.
 

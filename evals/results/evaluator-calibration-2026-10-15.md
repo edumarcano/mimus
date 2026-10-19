@@ -1,6 +1,6 @@
 # Evaluator calibration (2026-10-15)
 
-The maintainer completed 12 blind reviews of constructed rewrites. Five automated
+I completed 12 blind reviews of constructed rewrites. Five automated
 evaluators then scored the 24 calibration examples. This phase used no validation
 or fresh release outputs. It does not select a shipping model or establish
 general evaluator accuracy.
@@ -9,7 +9,7 @@ The run used revision `4a22f27223661e328ab8486f15397efb08ae5650`, rubric 1, and
 [`evaluator-calibration-v1.json`](../experiments/evaluator-calibration-v1.json).
 Hashes and aggregate measurements are in the [structured summary](evaluator-calibration-2026-10-15.json).
 The [observation records](evaluator-calibration-2026-10-15.jsonl) retain original
-human labels, separate maintainer adjudications, and automated judgments. Sources,
+human labels, separate adjudications of mine, and automated judgments. Sources,
 rewrites, and annotations are in the committed evaluator challenge dataset.
 
 ## Human calibration
@@ -20,8 +20,8 @@ Three separately confirmed adjudications preserve the original scores:
 
 | Case | Original | Adjudicated | Reason |
 |---|---|---|---|
-| evaluator-01-flawed | Meaning 2 | Meaning 0 | The maintainer confirmed missing the change from “may” to “will.” |
-| evaluator-04-flawed | Meaning 1 | Meaning 0 | The maintainer confirmed missing the change from 18 responses to 81. |
+| evaluator-01-flawed | Meaning 2 | Meaning 0 | I confirmed I had missed the change from “may” to “will.” |
+| evaluator-04-flawed | Meaning 1 | Meaning 0 | I confirmed I had missed the change from 18 responses to 81. |
 | evaluator-09-faithful | Style 2 | Style 1 | Maximum retains the specification's obvious-parody requirement; restrained academic prose is a partial match. Meaning was not adjudicated. |
 
 The resulting labels agree with constructed references on meaning in 9/12 and
@@ -64,9 +64,9 @@ provider-speed estimates.
 ## Reference quality and limits
 
 - `evaluator-05-faithful` changes a past discussion into ongoing exploration.
-  The human and both LLMs scored meaning 1 against the constructed reference 2.
+  My review and both LLMs scored meaning 1 against the constructed reference 2.
 - `evaluator-02-faithful` adds “mild” to cloudiness. Both LLMs scored meaning 1;
-  the human scored 2. The unsupported degree and its severity remain visible.
+  I scored 2. The unsupported degree and its severity remain visible.
 - Several references omit “fictional,” although the source includes it. The
   human penalized the survey omission but not the lab omission; both LLMs
   penalized the latter. Neither reference nor human agreement resolves this

@@ -1,7 +1,7 @@
 ---
 name: ui-worker
 model: claude-haiku-5-5[thinking=true,context=300k,reasoning_effort=high]
-description: Implement approved frontend and documentation work including React interactions, responsive layout, accessibility, visual polish, user-facing copy, README content, and case-study prose. Use after the parent has established the product and design plan.
+description: Implement approved frontend and documentation work including React interactions, responsive layout, accessibility, visual polish, user-facing copy, README content, and design-notes prose. Use after the parent has established the product and design plan.
 ---
 
 Implement the frontend or documentation work delegated by the parent.

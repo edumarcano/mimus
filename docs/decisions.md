@@ -357,7 +357,7 @@ Revision `a013c79` was subsequently deployed. The
 [Production record](../evals/results/production-verification-2026-10-16.md)
 contains the actual HTTP requests, costs, streams, and inspected metadata-only
 logs. Both streams completed, but Academic Maximum changed a relative 6% decrease
-to six percentage points. The maintainer accepted retaining this known meaning
+to six percentage points. The decision was to retain this known meaning
 defect. The prompt and scores remain unchanged; this is a mixed quality
 observation, not a fully passing meaning check. No additional scoring round or
 prompt tuning was part of adoption.
@@ -388,37 +388,14 @@ original human/automated labels remain unchanged.
 
 ## 2026-10-19: Google Vertex safety retention
 
-**Decision.** Keep the existing OpenRouter request preferences (`zdr: true`,
-`data_collection: "deny"`, `require_parameters: true`) and unpinned host routing.
-Update the acknowledgement and privacy page to disclose Google safety retention
-and possible human review. Notice `openrouter-vertex-safety-v1` requires fresh
-acknowledgement. Storage keys and history format stay the same.
+Keep OpenRouter request preferences `zdr: true`, `data_collection: "deny"`, and
+`require_parameters: true`, with no pinned model host. OpenRouter's Google ZDR
+controls allow Vertex safety retention when "Safety retention allowed" is selected.
+ZDR routing therefore does not guarantee that no text is retained.
 
-**Evidence.** The October 17 signed-in account notice announced that Google models
-would require Safety Retention from October 18. On October 19, the maintainer
-reported successful Production requests before this branch was merged and supplied
-a guardrail screenshot with Google ZDR enabled and "Safety retention allowed"
-selected. The UI says this permits Vertex while excluding AI Studio. This is
-evidence against the earlier prediction that `zdr: true` would necessarily deny
-Google requests after October 18. No routing relaxation is justified by that
-prediction.
-
-The public [OpenRouter ZDR documentation](https://openrouter.ai/docs/guides/features/zdr)
-still describes request-level ZDR as restricting requests to zero-retention
-endpoints. Its wording does not fully explain the dashboard's safety-retention
-exception. Do not infer absence of retention from the flag or promise that every
-account has the same eligibility. The successful request's provider metadata has
-not been independently inspected; the report establishes observed availability,
-not the exact host or its retention behavior.
-
-[Google data governance](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention)
+The acknowledgement and privacy page disclose possible safety retention, human
+review of flagged content, and provider caching. Google's applicable
+[data governance](https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention)
 and [abuse monitoring](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/abuse-monitoring)
-describe retention, caching, possible human review, and restrictions on training
-without permission or instruction. These general policies do not establish an
-exact OpenRouter endpoint-specific retention period. The notice avoids a fixed
-duration and continues to require fictional, non-sensitive input.
-
-**Limits.** No new provider request, account setting change, or Production deployment
-was performed for this revision. Historical evaluations and verification records
-remain dated evidence. The [deployment guide](deployment.md#privacy-follow-up)
-covers account checks and deployment of the revised disclosure.
+policies restrict training without permission or instruction. No fixed retention
+period is promised. Notice `openrouter-vertex-safety-v1` requires fresh acknowledgement.

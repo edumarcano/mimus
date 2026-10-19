@@ -64,7 +64,7 @@ Notable public releases of Mimus are documented here.
 - Meaning preservation is not guaranteed. Model-evaluation evidence and gaps
   are documented in the [evaluation records](evals/README.md).
 - A Production Academic Maximum rewrite changed a relative percentage decrease
-  into percentage points; the maintainer accepted retaining this known limitation.
+  into percentage points; this remains an accepted known limitation.
 - An unpatched development-tool dependency advisory and deployment of the revised
   safety-retention disclosure remain tracked in the [release checklist](docs/release-checklist.md).
 - Live rewriting is limited to approved visitor regions and depends on

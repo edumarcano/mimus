@@ -159,7 +159,7 @@ quota exhaustion, provider billing cessation after Stop, and key revocation or
 zeroing remain unverified.
 
 The [local demo record](../evals/results/local-demo-verification-2026-10-15.md)
-separates observed keyboard checks from maintainer-reported Edge, actual 200% zoom,
+separates observed keyboard checks from manual Edge, actual 200% zoom,
 and Narrator retests. Screenshots use prewritten examples, not live inference.
 These records do not establish that later revisions were deployed or manually
 retested. Current release gates remain in the [release checklist](release-checklist.md).
@@ -179,7 +179,7 @@ and the online production-only audit reported zero findings. Lint/CI availabilit
 exposure remains; exploitability in this repository was not reproduced. These
 bounded scans do not establish the absence of vulnerabilities.
 
-The maintainer accepted a bounded development-only exception when compatible
+A bounded development-only exception was accepted when compatible
 remediation was unavailable. Aligned Next.js/lint updates did not remove the
 advisory; no forced audit fix, incompatible downgrade, or override was introduced.
 Recheck upstream on the next toolchain update and before relying on the exception
@@ -188,32 +188,16 @@ readiness rather than inheriting this exception.
 
 ## Privacy follow-up
 
-The [October 19 decision](decisions.md#2026-10-19-google-vertex-safety-retention)
-records the safety-retention disclosure and the maintainer's successful Production
-test after the announced October 18 change. Requests retain `zdr: true` and
-`data_collection: "deny"`; the app does not pin a host. OpenRouter's Google ZDR
-controls offer "Safety retention allowed", which keeps Vertex eligible while
-excluding AI Studio. Do not disable ZDR solely because of the announcement.
+Requests use `zdr: true` and `data_collection: "deny"`, with no pinned model host.
+For Google, select "Safety retention allowed" in the applicable OpenRouter account
+and guardrail controls to keep Vertex eligible with ZDR enabled. Keep training
+opt-ins, Input & Output Logging, and observability broadcasts off. The application
+cannot enforce these account settings.
 
-In the account and every guardrail applicable to the deployed key, inspect the
-Google safety-retention selection. Keep training opt-ins, Input & Output Logging,
-and observability broadcasts off, alongside the dedicated spending cap. A working
-key does not need recreation. The app cannot enforce these account settings.
-Before asserting which host served the reported request, inspect its provider
-metadata in OpenRouter Activity; no additional inference is needed for that check.
-
-OpenRouter's public [ZDR documentation](https://openrouter.ai/docs/guides/features/zdr)
-still describes strict zero-retention routing and does not fully reconcile the
-safety-retention exception shown in the dashboard. Google may retain text for
-safety monitoring and review flagged content under its applicable policies. No
-fixed retention period is promised, and working inference does not prove absence
-of retention.
-
-After an authorized deployment, verify the renewed notice on `/` and `/privacy`
-with version `openrouter-vertex-safety-v1`. The maintainer's October 19 test predates
-this disclosure revision; it does not verify the revised deployed pages. Any new
-paid smoke test requires separate approval. A rollback to the old notice would
-restore wording that omits the safety-retention exception.
+Google may retain text for safety monitoring and review flagged content under its
+applicable policies. The [privacy notice](../src/lib/notice.ts) explains this
+exception; ZDR routing does not guarantee that no text is retained. See the
+[policy decision](decisions.md#2026-10-19-google-vertex-safety-retention).
 
 ## Release procedure
 

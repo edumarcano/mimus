@@ -138,7 +138,7 @@ request flow. CI uses fixtures and mocks and never calls a provider.
 
 The technical pilot, evaluator calibration/validation, and initial challenge-set
 cascade simulation have dated records in `evals/results/`. Calibration preserves
-original human scores and separate maintainer adjudications. The dated validation
+original human scores and separate human adjudications. The dated validation
 record selects the offline evaluators. The [development comparison](../evals/results/development-comparison-2026-10-15.md)
 and [cascade assessment](../evals/results/development-cascade-2026-10-15.md) preserve
 all failed and unresolved observations. The [difficult-case repeats](../evals/results/repeatability-2026-10-15.md)
@@ -153,6 +153,6 @@ in the [Production verification](../evals/results/production-verification-2026-1
 is 7/8 for meaning and 4/8 for style, with seven Haiku examples and only one Gemini
 example. These limited labels do not independently validate the recommendation.
 The [local demo verification record](../evals/results/local-demo-verification-2026-10-15.md)
-separates automated keyboard/browser checks from maintainer Edge, 200% zoom, and
+separates automated keyboard/browser checks from manual Edge, 200% zoom, and
 Narrator observations, including the reported defects and their successful retests.
 Provider-operation checks remain separate from these local UI observations.

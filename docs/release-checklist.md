@@ -14,14 +14,11 @@ Retire this file once the gates below are closed.
   Gemini minimal at `a013c79`, streaming, metadata-only logs, WAF enforcement and
   cleanup, disabled-mode recovery, application-side cancellation, and resubmission.
 - [Local demo verification](../evals/results/local-demo-verification-2026-10-15.md):
-  observed keyboard behavior and maintainer-reported Edge, actual 200% zoom, and
+  observed keyboard behavior and manual Edge, actual 200% zoom, and
   Narrator fixes/retests. These are historical checks, not retests of later changes.
 
 ## Remaining gates
 
-- [x] Reconcile the October 18 Google safety-retention announcement with the
-  maintainer-reported October 19 Production test and guardrail screenshot. Keep
-  existing request routing; record the [policy evidence and limits](decisions.md#2026-10-19-google-vertex-safety-retention).
 - [ ] Deploy the revised acknowledgement and privacy page with authorization;
   verify the new notice on the deployed pages. See [privacy follow-up](deployment.md#privacy-follow-up).
 - [ ] Recheck the [development dependency exception](deployment.md#dependency-exception)
@@ -43,12 +40,12 @@ Retire this file once the gates below are closed.
   three synthetic requests covering completion, cancellation, and resubmission.
 - [ ] Review final release notes and select the exact release commit. Merge, tag,
   GitHub release, and visibility changes require their respective authorizations.
-  Public visibility and GitHub About/topics remain maintainer tasks.
+  Public visibility and GitHub About/topics are handled separately.
 
 ## Accepted limitations and evidence gaps
 
 The Production Academic Maximum rewrite changed a relative 6% decrease to six
-percentage points. The maintainer accepted retaining that failed meaning
+percentage points. The decision was to retain that failed meaning
 observation. No retrospective relabeling, prompt change, or additional scoring
 round is included. Meaning preservation is a goal, not a guarantee; human auditing
 remains limited and uneven.

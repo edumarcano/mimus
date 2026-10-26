@@ -41,8 +41,8 @@ export function TranslatorHistory({
           <span>Save completed rewrites in this browser</span>
         </label>
         <p>
-          History is off by default, stored unencrypted in localStorage, and not
-          suitable for shared devices.
+          History is off by default, stored locally in this browser
+          (localStorage), and not recommended on shared devices.
         </p>
         <button
           type="button"

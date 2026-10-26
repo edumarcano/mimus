@@ -110,9 +110,9 @@ Keep future ideas separate from release work. Adding them requires an explicit s
 
 Keep the translator visible near the top of the page. Include the Mimus bird-and-speech mark with its wordmark, the tagline "Translate meaning, not just words.", a short explanation that the app rewrites English writing styles, and a compact footer linking to GitHub and Privacy. Show a clear live/demo availability notice. Prefer a compact horizontal logo without the tagline in the persistent header; the tagline can appear in the introduction.
 
-On desktop, place input and output side by side. On mobile, stack input before output. Both panels have an explicit style label. The source selector describes the submitted text; the target selector controls the rewrite.
+On desktop, place input and output side by side in a unified translator surface with soft framed writing and reading beds for clear input affordance. On mobile, stack input before output. Both panels have explicit style selectors. The source selector describes the submitted text; the target selector controls the rewrite. Target intensity is adjusted via segmented controls.
 
-The input panel contains a plain textarea, character counter, Clear action, and a few example chips. The output panel contains selectable plain text and its completion status. Below the controls, place the current data-use notice close to Translate, not only in the footer.
+The input panel contains a soft framed textarea, character counter, Clear action, and example chips. The output panel contains selectable plain text, completion status, and copy/regenerate actions. Centered between the panels is a circular swap control. Below the controls, a streamlined action card contains the data-use notice with expandable provider details, the eligibility checkbox, and the Translate action.
 
 ### Main flow
 

@@ -405,10 +405,6 @@ export function Translator({ config }: { config: TranslatorConfig }) {
     state.status !== "generating" &&
     state.status !== "example";
 
-  const panel = "min-w-0 rounded-xl border border-line bg-surface p-4 sm:p-6";
-  const label =
-    "text-sm font-semibold uppercase tracking-wide text-accent-strong";
-
   return (
     <div>
       <p className="mb-4 text-sm text-ink-soft" data-testid="direction">
@@ -423,135 +419,98 @@ export function Translator({ config }: { config: TranslatorConfig }) {
         </span>
       </p>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4">
-        <section className={panel} aria-labelledby={`${ids.text}-h`}>
-          <div className="mb-3 flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
-            <h2 id={`${ids.text}-h`} className={label}>
-              {sourceLabel} <span className="text-ink-soft">· Source</span>
+      <div className="rounded-2xl border border-line bg-surface shadow-sm overflow-hidden grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+        <section
+          className="p-5 sm:p-6 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-line"
+          aria-labelledby={`${ids.text}-h`}
+        >
+          <div>
+            <h2 id={`${ids.text}-h`} className="sr-only">
+              {sourceLabel} · Source
             </h2>
-            <div className="w-full sm:w-48">
-              <StyleSelect
-                id={ids.source}
-                label="Source style"
-                value={state.sourceStyle}
+            <div className="mb-3.5 flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
+              <label
+                htmlFor={ids.text}
+                className="text-xs font-semibold uppercase tracking-wider text-accent-strong"
+              >
+                Your text
+              </label>
+              <div className="w-full sm:w-48">
+                <StyleSelect
+                  id={ids.source}
+                  label="Source style"
+                  value={state.sourceStyle}
+                  disabled={busy}
+                  onChange={(style) =>
+                    dispatch({ type: "setSourceStyle", style })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-line bg-canvas/40 p-3.5 focus-within:border-accent focus-within:bg-surface focus-within:ring-2 focus-within:ring-accent/15 transition-all">
+              <textarea
+                id={ids.text}
+                value={state.text}
                 disabled={busy}
-                onChange={(style) =>
-                  dispatch({ type: "setSourceStyle", style })
+                onChange={(e) =>
+                  dispatch({ type: "setText", text: e.target.value })
                 }
+                onKeyDown={onKeyDown}
+                ref={textareaRef}
+                aria-describedby={ids.count}
+                rows={9}
+                placeholder="Say it the way you'd say it out loud."
+                className="block min-h-52 w-full resize-y bg-transparent p-0 text-base text-ink placeholder:text-ink-soft focus:outline-none disabled:opacity-60"
               />
             </div>
           </div>
-          <label htmlFor={ids.text} className="mb-2 block font-medium">
-            Your text
-          </label>
-          <textarea
-            id={ids.text}
-            value={state.text}
-            disabled={busy}
-            onChange={(e) =>
-              dispatch({ type: "setText", text: e.target.value })
-            }
-            onKeyDown={onKeyDown}
-            ref={textareaRef}
-            aria-describedby={ids.count}
-            rows={10}
-            placeholder="Say it the way you'd say it out loud."
-            className="block min-h-56 w-full resize-y rounded-lg border border-control-line bg-surface p-3 text-base text-ink placeholder:text-ink-soft disabled:bg-canvas"
-          />
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-            <p
-              id={ids.count}
-              data-testid="counter"
-              className={`text-sm ${over ? "font-semibold text-red-700 dark:text-red-400" : "text-ink-soft"}`}
-            >
-              {count.toLocaleString("en-US")} / {max.toLocaleString("en-US")}
-              {over ? " — over the limit; shorten your text" : ""}
-            </p>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                dispatch({ type: "clear" });
-                textareaRef.current?.focus();
-              }}
-              className={secondaryButton}
-            >
-              Clear
-            </button>
-          </div>
 
-          <div className="mt-4">
-            <p className="mb-1 text-sm text-ink-soft">Try an example</p>
-            <div className="flex flex-wrap gap-2">
-              {EXAMPLES.map((ex) => (
-                <button
-                  key={ex.id}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => applyExample(ex.id)}
-                  className="min-h-11 rounded-full transition-colors border border-control-line bg-accent-soft px-4 text-sm font-medium text-accent-strong hover:border-accent disabled:opacity-50"
-                >
-                  {ex.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6 border-t border-line pt-4">
-            <p className="text-sm text-ink-soft">{noticeText}</p>
-            {liveAvailable && (
-              <label
-                htmlFor={ids.ack}
-                className="mt-3 flex min-h-11 cursor-pointer items-start gap-3"
-              >
-                <input
-                  id={ids.ack}
-                  type="checkbox"
-                  checked={state.acknowledged}
-                  disabled={busy}
-                  onChange={(e) => persistAck(e.target.checked)}
-                  className="mt-1 size-5 shrink-0 accent-accent"
-                />
-                <span className="text-sm">{NOTICE_ACK_LABEL}</span>
-              </label>
-            )}
-            {busy ? (
-              <button
-                type="button"
-                onClick={stop}
-                className="mt-3 min-h-11 w-full rounded-lg transition-colors border border-accent bg-surface px-6 font-semibold text-accent-strong hover:bg-accent-soft sm:w-auto"
-              >
-                Stop
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={translate}
-                disabled={!canTranslate}
-                aria-describedby={reason ? ids.why : undefined}
-                className="mt-3 min-h-11 w-full rounded-lg transition-colors bg-accent px-6 font-semibold text-accent-ink hover:bg-accent-strong disabled:cursor-not-allowed disabled:bg-line disabled:text-ink sm:w-auto"
-              >
-                Translate
-              </button>
-            )}
-            {reason && (
+          <div className="mt-4 pt-3.5 border-t border-line/60">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <p
-                id={ids.why}
-                tabIndex={-1}
-                className="mt-2 text-sm text-ink-soft outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                id={ids.count}
+                data-testid="counter"
+                className={`text-sm ${over ? "font-semibold text-red-700 dark:text-red-400" : "text-ink-soft"}`}
               >
-                {reason}
+                {count.toLocaleString("en-US")} / {max.toLocaleString("en-US")}
+                {over ? " — over the limit; shorten your text" : ""}
               </p>
-            )}
-            {state.storageNote && (
-              <p className="mt-2 text-sm text-ink-soft" role="status">
-                {state.storageNote}
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  dispatch({ type: "clear" });
+                  textareaRef.current?.focus();
+                }}
+                className={secondaryButton}
+              >
+                Clear
+              </button>
+            </div>
+
+            <div className="mt-3.5">
+              <p className="mb-1.5 text-xs font-medium text-ink-soft">
+                Try an example
               </p>
-            )}
+              <div className="flex flex-wrap gap-2">
+                {EXAMPLES.map((ex) => (
+                  <button
+                    key={ex.id}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => applyExample(ex.id)}
+                    className="min-h-10 rounded-full transition-colors border border-control-line bg-accent-soft px-3.5 text-xs font-medium text-accent-strong hover:border-accent disabled:opacity-50"
+                  >
+                    {ex.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
-        <div className="flex items-center justify-center lg:self-start lg:pt-24">
+        <div className="relative flex items-center justify-center bg-canvas/40 px-3 py-3 lg:py-0 border-b lg:border-b-0 lg:border-r border-line">
           <button
             type="button"
             onClick={() => {
@@ -565,146 +524,252 @@ export function Translator({ config }: { config: TranslatorConfig }) {
                 ? "Swap styles and move the result into the input"
                 : "Swap styles"
             }
-            className={`${secondaryButton} flex items-center gap-2`}
+            className="size-11 rounded-full border border-control-line bg-surface text-ink shadow-xs flex items-center justify-center hover:border-accent hover:text-accent hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span aria-hidden="true" className="lg:hidden">
+            <span aria-hidden="true" className="text-lg font-bold lg:hidden">
               ⇅
             </span>
-            <span aria-hidden="true" className="hidden lg:inline">
+            <span
+              aria-hidden="true"
+              className="hidden text-lg font-bold lg:inline"
+            >
               ⇄
             </span>
-            Swap
+            <span className="sr-only">Swap</span>
           </button>
         </div>
 
-        <section className={panel} aria-labelledby={`${ids.text}-o`}>
-          <div className="mb-3 flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
-            <h2 id={`${ids.text}-o`} className={label}>
-              {targetLabel} <span className="text-ink-soft">· Result</span>
+        <section
+          className="p-5 sm:p-6 flex flex-col justify-between bg-canvas/30"
+          aria-labelledby={`${ids.text}-o`}
+        >
+          <div>
+            <h2 id={`${ids.text}-o`} className="sr-only">
+              {targetLabel} · Result
             </h2>
-            <div className="w-full sm:w-48">
-              <StyleSelect
-                id={ids.target}
-                label="Target style"
-                value={state.targetStyle}
-                disabled={busy}
-                onChange={(style) =>
-                  dispatch({ type: "setTargetStyle", style })
-                }
-              />
+            <div className="mb-3.5 flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-accent-strong">
+                Result
+              </span>
+              <div className="w-full sm:w-48">
+                <StyleSelect
+                  id={ids.target}
+                  label="Target style"
+                  value={state.targetStyle}
+                  disabled={busy}
+                  onChange={(style) =>
+                    dispatch({ type: "setTargetStyle", style })
+                  }
+                />
+              </div>
             </div>
-          </div>
 
-          <fieldset
-            disabled={busy || isHuman}
-            className="mb-3 min-w-0 border-0 p-0"
-          >
-            <legend className="mb-1 text-sm text-ink-soft">Intensity</legend>
-            <div className="flex flex-wrap gap-2">
-              {INTENSITIES.map((level: Intensity) => (
-                <label
-                  key={level}
-                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-control-line px-3 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60"
-                >
-                  <input
-                    type="radio"
-                    name={`${ids.target}-intensity`}
-                    value={level}
-                    checked={state.intensity === level}
-                    disabled={busy || isHuman}
-                    onChange={() =>
-                      dispatch({ type: "setIntensity", intensity: level })
-                    }
-                    className="size-4 accent-accent"
-                  />
-                  {INTENSITY_LABELS[level]}
-                </label>
-              ))}
-            </div>
-            {isHuman && (
-              <p className="mt-1 text-sm text-ink-soft">
-                Plain English keeps it direct.
+            <fieldset
+              disabled={busy || isHuman}
+              className="mb-3.5 min-w-0 border-0 p-0"
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-accent-strong">
+                  Intensity
+                </span>
+                {isHuman && (
+                  <p className="text-xs text-ink-soft italic">
+                    Plain English keeps it direct.
+                  </p>
+                )}
+              </div>
+              <div
+                className={`inline-flex rounded-lg border border-control-line bg-surface p-1 w-full sm:w-auto ${
+                  isHuman ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {INTENSITIES.map((level: Intensity) => {
+                  const isChecked = state.intensity === level;
+                  return (
+                    <label
+                      key={level}
+                      className={`flex-1 sm:flex-initial relative flex min-h-9 cursor-pointer items-center justify-center px-4 py-1 text-xs font-medium rounded-md transition ${
+                        isChecked && !isHuman
+                          ? "bg-accent text-accent-ink shadow-xs font-semibold"
+                          : "text-ink-soft hover:text-ink"
+                      } ${isHuman ? "cursor-not-allowed" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name={`${ids.target}-intensity`}
+                        value={level}
+                        checked={isChecked}
+                        disabled={busy || isHuman}
+                        onChange={() =>
+                          dispatch({ type: "setIntensity", intensity: level })
+                        }
+                        className="sr-only"
+                      />
+                      <span>{INTENSITY_LABELS[level]}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
+
+            <p
+              data-testid="status"
+              className={`mb-2 text-sm font-medium ${statusTone}`}
+            >
+              {busy && (
+                <span
+                  aria-hidden="true"
+                  data-testid="busy-indicator"
+                  className="mr-2 inline-block size-2 rounded-full bg-accent align-middle motion-safe:animate-pulse"
+                />
+              )}
+              {statusText}
+            </p>
+            {showStale && (
+              <p
+                data-testid="stale"
+                className="mb-2 text-sm font-medium text-ink"
+              >
+                Result is from your previous input
               </p>
             )}
-          </fieldset>
 
-          <p
-            data-testid="status"
-            className={`mb-2 text-sm font-medium ${statusTone}`}
-          >
-            {busy && (
-              <span
-                aria-hidden="true"
-                data-testid="busy-indicator"
-                className="mr-2 inline-block size-2 rounded-full bg-accent align-middle motion-safe:animate-pulse"
+            <div
+              className={`rounded-xl border p-3.5 transition-all ${
+                state.status === "example" || state.status === "history"
+                  ? "border-dashed border-accent bg-accent-soft"
+                  : "border-line/70 bg-canvas/70"
+              }`}
+            >
+              <textarea
+                data-testid="output"
+                readOnly
+                rows={7}
+                value={state.output}
+                placeholder="Your rewrite will appear here."
+                aria-label={`${targetLabel} rewrite`}
+                className="field-sizing-content block min-h-52 w-full resize-y bg-transparent p-0 text-base text-ink whitespace-pre-wrap break-words placeholder:text-ink-soft focus:outline-none"
               />
+            </div>
+            {showPartialNote && (
+              <p className="mt-2 text-sm text-red-700 dark:text-red-400">
+                The text above is incomplete. Your input was kept; you can try
+                again.
+              </p>
             )}
-            {statusText}
-          </p>
-          {showStale && (
-            <p
-              data-testid="stale"
-              className="mb-2 text-sm font-medium text-ink"
-            >
-              Result is from your previous input
-            </p>
-          )}
-          <textarea
-            data-testid="output"
-            readOnly
-            rows={8}
-            value={state.output}
-            placeholder="Your rewrite will appear here."
-            aria-label={`${targetLabel} rewrite`}
-            className={`field-sizing-content min-h-56 w-full resize-y whitespace-pre-wrap break-words rounded-lg border p-3 text-base placeholder:text-ink-soft ${
-              state.status === "example" || state.status === "history"
-                ? "border-dashed border-accent bg-accent-soft"
-                : "border-line bg-canvas"
-            }`}
-          />
-          {showPartialNote && (
-            <p className="mt-2 text-sm text-red-700 dark:text-red-400">
-              The text above is incomplete. Your input was kept; you can try
-              again.
-            </p>
-          )}
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={!copyOk}
-              onClick={() => void copy("result")}
-              className={secondaryButton}
-            >
-              Copy result
-            </button>
-            <button
-              type="button"
-              disabled={!copyOk || !state.snapshot}
-              onClick={() => void copy("both")}
-              className={secondaryButton}
-            >
-              Copy both
-            </button>
-            <button
-              type="button"
-              disabled={!regenerateOk}
-              onClick={regenerate}
-              className={secondaryButton}
-            >
-              Regenerate
-            </button>
           </div>
-          {copyNote && copyNote.key === copyKey && (
-            <p
-              data-testid="copy-note"
-              role="status"
-              className={`mt-2 text-sm ${copyNote.ok ? "text-ink-soft" : "text-red-700 dark:text-red-400"}`}
+
+          <div className="mt-4 pt-3.5 border-t border-line/60">
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={!copyOk}
+                onClick={() => void copy("result")}
+                className={secondaryButton}
+              >
+                Copy result
+              </button>
+              <button
+                type="button"
+                disabled={!copyOk || !state.snapshot}
+                onClick={() => void copy("both")}
+                className={secondaryButton}
+              >
+                Copy both
+              </button>
+              <button
+                type="button"
+                disabled={!regenerateOk}
+                onClick={regenerate}
+                className={secondaryButton}
+              >
+                Regenerate
+              </button>
+            </div>
+            {copyNote && copyNote.key === copyKey && (
+              <p
+                data-testid="copy-note"
+                role="status"
+                className={`mt-2 text-sm ${copyNote.ok ? "text-ink-soft" : "text-red-700 dark:text-red-400"}`}
+              >
+                {copyNote.text}
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-line bg-surface p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="text-xs text-ink-soft space-y-1.5 max-w-xl">
+          <p className="leading-relaxed">
+            Rewrites are processed via OpenRouter. Use fictional text; do not
+            submit personal or confidential information.
+          </p>
+          {liveAvailable && (
+            <details className="text-xs text-ink-soft group">
+              <summary className="cursor-pointer underline underline-offset-2 hover:text-ink font-medium">
+                Provider safety and data handling notice
+              </summary>
+              <p className="mt-2 p-3 rounded-lg bg-canvas text-xs leading-relaxed border border-line">
+                {noticeText}
+              </p>
+            </details>
+          )}
+          {liveAvailable && (
+            <label
+              htmlFor={ids.ack}
+              className="flex min-h-11 cursor-pointer items-start gap-3 pt-1"
             >
-              {copyNote.text}
+              <input
+                id={ids.ack}
+                type="checkbox"
+                checked={state.acknowledged}
+                disabled={busy}
+                onChange={(e) => persistAck(e.target.checked)}
+                className="mt-0.5 size-5 shrink-0 accent-accent"
+              />
+              <span className="text-sm font-medium text-ink">
+                {NOTICE_ACK_LABEL}
+              </span>
+            </label>
+          )}
+          {reason && (
+            <p
+              id={ids.why}
+              tabIndex={-1}
+              className="mt-1 text-sm text-ink-soft outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              {reason}
             </p>
           )}
-        </section>
+          {state.storageNote && (
+            <p className="mt-1 text-sm text-ink-soft" role="status">
+              {state.storageNote}
+            </p>
+          )}
+        </div>
+
+        <div className="w-full sm:w-auto shrink-0">
+          {busy ? (
+            <button
+              type="button"
+              onClick={stop}
+              className="min-h-11 w-full rounded-xl transition-colors border border-accent bg-surface px-7 font-semibold text-accent-strong hover:bg-accent-soft shadow-xs sm:w-auto"
+            >
+              Stop
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={translate}
+              disabled={!canTranslate}
+              aria-describedby={reason ? ids.why : undefined}
+              className="min-h-11 w-full rounded-xl transition-colors bg-accent px-7 font-semibold text-accent-ink hover:bg-accent-strong disabled:cursor-not-allowed disabled:bg-line disabled:text-ink shadow-xs sm:w-auto"
+            >
+              Translate
+            </button>
+          )}
+        </div>
       </div>
 
       <TranslatorHistory

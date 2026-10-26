@@ -2,6 +2,25 @@
 
 All notable public releases of Mimus are documented here.
 
+## [1.0.1] - 2026-10-26
+
+User interface polish and documentation refinement release.
+
+### User Interface & Experience
+
+- **Modern Sleek Layout**: Unified the translator into an elevated, modern two-pane surface with soft framed writing and reading beds, giving clear typing affordance while removing heavy box-inside-a-box borders.
+- **Segmented Intensity Controls**: Replaced loose radio button boxes with a connected segmented pill toggle for Subtle, Balanced, and Maximum intensity levels.
+- **Floating Swap Affordance**: Centered circular swap icon button (⇄) between panels for clean bi-directional style and text swapping.
+- **Progressive Notice Disclosure**: Streamlined the live translation notice to a concise 1-sentence reminder with an expandable <details> section for the full provider safety and data handling disclosures.
+- **Refined Availability Banner**: Softened the live status indicator to product-focused copy (Live generation ready · Powered by Gemini 3.5 Flash-Lite).
+- **History Phrasing**: Clarified the browser-only localStorage description in the history accordion.
+
+### Documentation & Assets
+
+- **Updated Screenshots**: Replaced desktop (1440px), mobile (360px), and privacy page screenshots in docs/assets/screenshots/ to match the new interface.
+- **Authentic Project Narrative**: Reframed the README narrative to accurately communicate the collaborative human-and-agent development workflow and architectural leadership.
+- **Specification Alignment**: Updated docs/product-spec.md Section 4 to reflect the unified layout, soft framed beds, and progressive disclosure controls.
+
 ## [1.0.0] - 2026-10-19
 
 Initial public release of Mimus, an open-source writing-style translator that rewrites English text between recognizable registers while aiming to preserve underlying meaning.

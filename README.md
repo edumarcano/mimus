@@ -19,11 +19,12 @@ For example (written by hand, not model output):
 > **LinkedIn, Maximum:** Three hours. One button color. That was the team's
 > discussion. #Design #Collaboration
 
-Mimus is also an experiment in building software with AI coding agents. Agents did
-much of the planning, implementation, testing, and review. I set priorities,
-approved the major decisions, did the blind reviews, and ran the manual UI checks.
-The [design notes](docs/design-notes.md#ai-assisted-development) cover what that
-looked like and where it fell short.
+I built Mimus by working with AI coding agents. Together we shaped how the app
+would work—from the architecture and privacy boundaries down to the evaluation
+benchmarks. The agent turned those specs into code, and I guided the
+implementation through manual reviews, accessibility audits, and iterative
+improvements. The [design notes](docs/design-notes.md#ai-assisted-development)
+cover the process, the decisions, and what fell short.
 
 [**Try Mimus**](https://mimus-rewrite.vercel.app) ·
 [Design notes](docs/design-notes.md) · [Product specification](docs/product-spec.md) ·

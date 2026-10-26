@@ -7,6 +7,7 @@
 
 <p align="center"><strong>Translate meaning, not just words.</strong></p>
 
+Named after the mockingbird genus (*Mimus*) known for mimicking other bird calls,
 Mimus rewrites English text between writing styles. Plain speech becomes LinkedIn
 speak, corporate phrasing becomes ordinary language, and so on. It translates
 register, not language, and it tries to change how something is said without
@@ -30,7 +31,10 @@ cover the process, the decisions, and what fell short.
 [Design notes](docs/design-notes.md) · [Product specification](docs/product-spec.md) ·
 [Evaluation](evals/README.md)
 
-![Mimus in demo mode showing a prewritten Human to LinkedIn example](docs/assets/screenshots/desktop-1440.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/desktop-1440-dark.png">
+  <img src="docs/assets/screenshots/desktop-1440.png" alt="Mimus in demo mode showing a prewritten Human to LinkedIn example">
+</picture>
 
 <sub>Demo-mode screenshot. The result is a labeled, prewritten example, not live
 model output.</sub>
